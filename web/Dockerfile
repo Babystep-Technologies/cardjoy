@@ -1,12 +1,14 @@
-# Use an official node runtime as a parent image
-FROM node:latest
+# Node 22 (LTS) — matches the project's @types/node and ships yarn. Pinned to
+# avoid `node:latest` drift (now Node 26, which no longer bundles yarn/corepack).
+FROM node:22
 
 WORKDIR /app/web
 
-# add `/app/node_modules/.bin` to $PATH
-# ENV PATH /app/web/node_modules/.bin:$PATH
+# Install dependencies first so this layer is cached unless the manifests change.
+COPY package.json yarn.lock ./
+RUN yarn install
 
-# # Add rest of the client code
+# Add the rest of the client code
 COPY . /app/web
 
 CMD ["node"]
