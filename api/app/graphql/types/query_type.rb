@@ -1,0 +1,29 @@
+# typed: true
+# frozen_string_literal: true
+
+module Types
+  class QueryType < Types::BaseObject
+    field :admin_cards, resolver: Queries::AdminCards
+    field :admin_invitations, resolver: Queries::AdminInvitations
+    field :admin_users, resolver: Queries::AdminUsers
+    field :user_cards, resolver: Queries::UserCards
+    field :card, resolver: Queries::Card
+    field :styles, resolver: Queries::Styles
+    field :user, resolver: Queries::User
+    field :user_by_email, resolver: Queries::UserByEmail
+    field :tags, resolver: Queries::Tags
+    field :card_occasions, [ String ], null: false
+    field :collections, resolver: Queries::Collections
+    field :user_promo_code, resolver: Queries::GetUserPromoCode
+    field :business_metrics, resolver: Queries::BusinessMetrics
+    field :daily_metrics, resolver: Queries::DailyMetrics
+    field :user_invitations, resolver: Queries::UserInvitations
+    field :invitation, resolver: Queries::Invitation
+    field :check_rsvp, resolver: Queries::CheckRsvp
+    field :check_slug_availability, resolver: Queries::CheckSlugAvailability
+
+    def card_occasions
+      ::Card::OCCASIONS
+    end
+  end
+end

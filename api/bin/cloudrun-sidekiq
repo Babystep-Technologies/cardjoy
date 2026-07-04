@@ -1,0 +1,28 @@
+#!/bin/sh
+# Launches Sidekiq on Cloud Run.
+#
+# Cloud Run *services* require the container to listen on $PORT and pass an HTTP
+# health check, but a bare Sidekiq worker serves no HTTP. So we run a tiny,
+# dependency-free health server (200 on any path, incl. /up) in the background,
+# then exec Sidekiq as the main process.
+set -e
+
+PORT="${PORT:-8080}"
+
+ruby -rsocket -e '
+  port = (ENV["PORT"] || "8080").to_i
+  server = TCPServer.new("0.0.0.0", port)
+  loop do
+    begin
+      client = server.accept
+      client.gets
+      body = "OK"
+      client.write("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: #{body.bytesize}\r\nConnection: close\r\n\r\n#{body}")
+      client.close
+    rescue StandardError
+      # keep the health server alive regardless of a bad request
+    end
+  end
+' &
+
+exec bundle exec sidekiq

@@ -1,0 +1,70 @@
+<h2>Hey <%= @rsvp.guest_name %>!</h2>
+
+<% if @rsvp.status == "going" %>
+  <p>You're all set! We've received your RSVP for <strong><%= @invitation.title %></strong>.</p>
+
+  <div style="background-color: #f0fdf4; border: 2px solid #86efac; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; font-weight: bold; color: #16a34a;">You're Going!</p>
+    <% if @rsvp.plus_one && @rsvp.plus_one_name.present? %>
+      <p style="margin: 8px 0 0 0; color: #166534;">Plus one: <%= @rsvp.plus_one_name %></p>
+    <% end %>
+  </div>
+
+  <h3>Event Details</h3>
+  <p>
+    <strong>Date:</strong> <%= @invitation.event_date.strftime("%A, %B %d, %Y") %><br/>
+    <strong>Time:</strong> <%= Time.parse(@invitation.event_time).strftime("%I:%M %p") %><br/>
+    <% if @invitation.location.present? %>
+      <strong>Location:</strong> <%= @invitation.location %>
+    <% end %>
+  </p>
+
+  <% if @calendar_links %>
+    <h3>Add to Your Calendar</h3>
+    <p>
+      <a href="<%= @calendar_links.google %>" class="primary-button" style="border-color: #4285f4; color: #4285f4; margin-right: 8px;">Google Calendar</a>
+      <a href="<%= @calendar_links.outlook %>" class="primary-button" style="border-color: #0078d4; color: #0078d4; margin-right: 8px;">Outlook</a>
+      <a href="<%= @calendar_links.yahoo %>" class="primary-button" style="border-color: #720e9e; color: #720e9e;">Yahoo</a>
+    </p>
+  <% end %>
+
+<% elsif @rsvp.status == "maybe" %>
+  <p>We've received your RSVP for <strong><%= @invitation.title %></strong>.</p>
+
+  <div style="background-color: #fefce8; border: 2px solid #fde047; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; font-weight: bold; color: #ca8a04;">Maybe</p>
+    <p style="margin: 8px 0 0 0; color: #854d0e;">You can update your RSVP anytime before the event.</p>
+  </div>
+
+  <h3>Event Details</h3>
+  <p>
+    <strong>Date:</strong> <%= @invitation.event_date.strftime("%A, %B %d, %Y") %><br/>
+    <strong>Time:</strong> <%= Time.parse(@invitation.event_time).strftime("%I:%M %p") %><br/>
+    <% if @invitation.location.present? %>
+      <strong>Location:</strong> <%= @invitation.location %>
+    <% end %>
+  </p>
+
+<% else %>
+  <p>We've received your RSVP for <strong><%= @invitation.title %></strong>.</p>
+
+  <div style="background-color: #f3f4f6; border: 2px solid #d1d5db; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <p style="margin: 0; font-weight: bold; color: #4b5563;">Can't Make It</p>
+    <p style="margin: 8px 0 0 0; color: #6b7280;">We hope to see you at a future event!</p>
+  </div>
+<% end %>
+
+<% if @rsvp.message.present? %>
+  <h3>Your Message</h3>
+  <p style="background-color: #f9fafb; padding: 12px; border-radius: 6px; font-style: italic;">
+    "<%= @rsvp.message %>"
+  </p>
+<% end %>
+
+<p>
+  <a href="<%= @invitation_url %>" class="primary-button">View Invitation</a>
+</p>
+
+<p style="font-size: 12px; color: #6b7280; margin-top: 24px;">
+  Need to change your response? Visit the invitation page to update your RSVP.
+</p>

@@ -1,0 +1,113 @@
+name: API CI
+
+on:
+  pull_request:
+    paths:
+      - "api/**"
+
+jobs:
+  rubocop:
+    name: Rubocop (style check)
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:3.4
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        working-directory: api
+        run: |
+          gem install bundler
+          bundle config set path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+      - name: Run Rubocop
+        working-directory: api
+        run: bundle exec rubocop
+
+  sorbet:
+    name: Sorbet (type check)
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:3.4
+
+    services:
+      db:
+        image: postgres:14.2
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        working-directory: api
+        run: |
+          gem install bundler
+          bundle config set path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+      - name: Run Sorbet
+        working-directory: api
+        env:
+          PGHOST: postgres
+          PGUSER: postgres
+          PGPORT: ${{ job.services.db.ports[5432] }}
+        run: |
+          bin/rails db:create db:schema:load
+          bundle exec tapioca gems
+          bundle exec tapioca dsl
+          bundle exec srb tc
+
+  rspec:
+    name: RSpec (tests)
+    runs-on: ubuntu-latest
+    container:
+      image: ruby:3.4
+    env:
+      RAILS_ENV: test
+      RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+    services:
+      db:
+        image: postgres:14.2
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        working-directory: api
+        env:
+          RAILS_ENV: test
+        run: |
+          gem install bundler
+          bundle config set path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+
+      - name: Setup DB and Run RSpec
+        working-directory: api
+        env:
+          PGHOST: postgres
+          PGUSER: postgres
+          PGPORT: ${{ job.services.db.ports[5432] }}
+          RAILS_ENV: test
+          RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+        run: |
+          echo "RAILS_MASTER_KEY is set and has length: ${#RAILS_MASTER_KEY}"
+          bin/rails db:create db:migrate
+          bundle exec rspec

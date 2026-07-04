@@ -1,0 +1,63 @@
+<h2>New RSVP for <%= @invitation.title %></h2>
+
+<p>
+  <strong><%= @rsvp.guest_name %></strong>
+  <% if @is_update %>
+    has updated their RSVP:
+  <% else %>
+    has responded to your invitation:
+  <% end %>
+</p>
+
+<% status_color = case @rsvp.status
+                  when "going" then "#16a34a"
+                  when "maybe" then "#ca8a04"
+                  else "#6b7280"
+                  end %>
+
+<% status_bg = case @rsvp.status
+               when "going" then "#f0fdf4"
+               when "maybe" then "#fefce8"
+               else "#f3f4f6"
+               end %>
+
+<% status_border = case @rsvp.status
+                   when "going" then "#86efac"
+                   when "maybe" then "#fde047"
+                   else "#d1d5db"
+                   end %>
+
+<% status_emoji = case @rsvp.status
+                  when "going" then "✅"
+                  when "maybe" then "🤔"
+                  else "❌"
+                  end %>
+
+<% status_text = case @rsvp.status
+                 when "going" then "Going"
+                 when "maybe" then "Maybe"
+                 else "Can't Go"
+                 end %>
+
+<div style="background-color: <%= status_bg %>; border: 2px solid <%= status_border %>; border-radius: 8px; padding: 16px; margin: 20px 0;">
+  <p style="margin: 0; font-size: 24px;"><%= status_emoji %> <strong style="color: <%= status_color %>;"><%= status_text %></strong></p>
+
+  <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid <%= status_border %>;">
+    <p style="margin: 0 0 4px 0;"><strong>Guest:</strong> <%= @rsvp.guest_name %></p>
+    <p style="margin: 0 0 4px 0;"><strong>Email:</strong> <%= @rsvp.guest_email %></p>
+    <% if @rsvp.plus_one && @rsvp.plus_one_name.present? %>
+      <p style="margin: 0 0 4px 0;"><strong>Plus One:</strong> <%= @rsvp.plus_one_name %></p>
+    <% end %>
+  </div>
+</div>
+
+<% if @rsvp.message.present? %>
+  <h3>Message from Guest</h3>
+  <p style="background-color: #f9fafb; padding: 12px; border-radius: 6px; font-style: italic;">
+    "<%= @rsvp.message %>"
+  </p>
+<% end %>
+
+<p>
+  <a href="<%= @invitation_url %>" class="primary-button">View Guest List</a>
+</p>

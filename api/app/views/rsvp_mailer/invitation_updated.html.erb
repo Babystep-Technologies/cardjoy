@@ -1,0 +1,50 @@
+<h2>Hey <%= @rsvp.guest_name %>!</h2>
+
+<p>The invitation for <strong><%= @invitation.title %></strong> has been updated.</p>
+
+<div style="background-color: #eff6ff; border: 2px solid #60a5fa; border-radius: 8px; padding: 16px; margin: 20px 0;">
+  <p style="margin: 0; font-weight: bold; color: #1e40af;">📢 Invitation Updated</p>
+  <p style="margin: 8px 0 0 0; color: #1e3a8a;">The host has made changes to the event details. Please review the updated information below.</p>
+</div>
+
+<h3>Current Event Details</h3>
+<p>
+  <strong>Date:</strong> <%= @invitation.event_date.strftime("%A, %B %d, %Y") %><br/>
+  <strong>Time:</strong> <%= Time.parse(@invitation.event_time).strftime("%I:%M %p") %><br/>
+  <% if @invitation.location.present? %>
+    <strong>Location:</strong> <%= @invitation.location %><br/>
+  <% end %>
+  <% if @invitation.event_timezone.present? %>
+    <strong>Timezone:</strong> <%= @invitation.event_timezone %><br/>
+  <% end %>
+</p>
+
+<% if @invitation.description.present? %>
+  <h3>Description</h3>
+  <p><%= simple_format(@invitation.description) %></p>
+<% end %>
+
+<% if @invitation.attire.present? %>
+  <p><strong>Attire:</strong> <%= @invitation.attire %></p>
+<% end %>
+
+<% if @invitation.custom_instructions.present? %>
+  <h3>Additional Information</h3>
+  <p><%= simple_format(@invitation.custom_instructions) %></p>
+<% end %>
+
+<p>
+  <a href="<%= @invitation_url %>" class="primary-button">View Full Invitation</a>
+</p>
+
+<% if @rsvp.status == "going" || @rsvp.status == "maybe" %>
+  <p style="font-size: 12px; color: #6b7280; margin-top: 24px;">
+    Your current RSVP status: <strong><%= @rsvp.status == "going" ? "Going" : "Maybe" %></strong>
+    <% if @rsvp.plus_one && @rsvp.plus_one_name.present? %>
+      (Plus one: <%= @rsvp.plus_one_name %>)
+    <% end %>
+  </p>
+  <p style="font-size: 12px; color: #6b7280;">
+    If these changes affect your attendance, you can update your RSVP by visiting the invitation page.
+  </p>
+<% end %>

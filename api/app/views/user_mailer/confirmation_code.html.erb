@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Hello <%= @user.name %>,</h2>
+
+    <p>Thanks for signing up for CardJoy!</p>
+
+    <p>Your confirmation code is:</p>
+
+    <h1 style="font-size: 32px; letter-spacing: 4px;"><%= @user.confirmation_code %></h1>
+
+    <p>This code will expire in 15 minutes.</p>
+
+    <p>If you didn’t request this, you can safely ignore this email.</p>
+
+    <p>– The CardJoy Team</p>
+  </body>
+</html>

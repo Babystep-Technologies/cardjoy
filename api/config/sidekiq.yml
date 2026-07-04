@@ -1,0 +1,23 @@
+# Sidekiq configuration file
+#
+# This file configures Sidekiq server settings including queues and concurrency
+
+# Default configuration for all environments
+:concurrency: 2
+
+# Queue configuration
+:queues:
+  - default
+  - mailers
+
+# Production environment settings
+production:
+  :concurrency: 2
+
+# Staging environment settings
+staging:
+  :concurrency: 2
+
+# Development environment settings
+development:
+  :concurrency: 2

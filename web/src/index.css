@@ -1,0 +1,251 @@
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/700.css';
+@import '@fontsource/source-serif-4/700.css';
+@import '@fontsource/playfair-display/400.css';
+@import '@fontsource/playfair-display/700.css';
+@import '@fontsource/montserrat/400.css';
+@import '@fontsource/montserrat/700.css';
+@import '@fontsource/dancing-script/400.css';
+@import '@fontsource/dancing-script/700.css';
+@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-brand-green: #21bf68;
+  --color-brand-pink: #ff69d5;
+  --color-brand-yellow: #f9b815;
+  --color-brand-blue: #2c82ff;
+}
+
+:root {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+
+  /* Brand palette */
+  --color-brand-green: #21bf68;
+  --color-brand-pink: #ff69d5;
+  --color-brand-yellow: #f9b815;
+  --color-brand-blue: #2c82ff;
+
+  /* Base Colors (Light Mode) */
+  --background: #ffffff;
+  --foreground: #2c2c2c;
+  --card: #ffffff;
+  --card-foreground: #2c2c2c;
+  --popover: #ffffff;
+  --popover-foreground: #2c2c2c;
+  --primary: var(--color-brand-blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-brand-green);
+  --secondary-foreground: #ffffff;
+  --muted: #f5f5f5;
+  --muted-foreground: #666666;
+  --accent: var(--color-brand-pink);
+  --accent-foreground: #ffffff;
+  --destructive: var(--color-brand-yellow);
+  --destructive-foreground: #000000;
+  --border: #e0e0e0;
+  --input: #f9f9f9;
+  --ring: var(--color-brand-blue);
+  --radius: 0.625rem;
+
+  /* Sidebar */
+  --sidebar: #fdfdfd;
+  --sidebar-foreground: #2c2c2c;
+  --sidebar-primary: var(--color-brand-green);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-brand-yellow);
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #e0e0e0;
+  --sidebar-ring: var(--color-brand-blue);
+
+  /* Charts (optional / fine-tune later) */
+  --chart-1: var(--color-brand-green);
+  --chart-2: var(--color-brand-blue);
+  --chart-3: var(--color-brand-pink);
+  --chart-4: var(--color-brand-yellow);
+  --chart-5: #999999;
+}
+
+.dark {
+  --background: #121212;
+  --foreground: #ffffff;
+  --card: #1c1c1c;
+  --card-foreground: #ffffff;
+  --popover: #1c1c1c;
+  --popover-foreground: #ffffff;
+  --primary: var(--color-brand-blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-brand-green);
+  --secondary-foreground: #ffffff;
+  --muted: #2a2a2a;
+  --muted-foreground: #cccccc;
+  --accent: var(--color-brand-pink);
+  --accent-foreground: #ffffff;
+  --destructive: var(--color-brand-yellow);
+  --destructive-foreground: #000000;
+  --border: #333333;
+  --input: #1c1c1c;
+  --ring: var(--color-brand-blue);
+
+  --sidebar: #1c1c1c;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: var(--color-brand-green);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-brand-yellow);
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #333333;
+  --sidebar-ring: var(--color-brand-blue);
+
+  --chart-1: var(--color-brand-green);
+  --chart-2: var(--color-brand-blue);
+  --chart-3: var(--color-brand-pink);
+  --chart-4: var(--color-brand-yellow);
+  --chart-5: #aaaaaa;
+}
+
+/* Typography */
+* {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+}
+
+.font-heading {
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+}
+
+.font-body {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+}
+
+/* Global base layer */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Optional animation using brand colors */
+@keyframes brand-color-cycle {
+  0% {
+    color: var(--color-brand-green);
+  }
+  25% {
+    color: var(--color-brand-pink);
+  }
+  50% {
+    color: var(--color-brand-blue);
+  }
+  75% {
+    color: var(--color-brand-yellow);
+  }
+  100% {
+    color: var(--color-brand-green);
+  }
+}
+
+.animate-brand-cycle {
+  animation: brand-color-cycle 8s infinite steps(1, end);
+}
+
+.scroll-section {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  flex-direction: column;
+  scroll-snap-align: start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes brand-color-cycle {
+  0% {
+    color: var(--color-brand-green);
+  }
+  25% {
+    color: var(--color-brand-pink);
+  }
+  50% {
+    color: var(--color-brand-blue);
+  }
+  75% {
+    color: var(--color-brand-yellow);
+  }
+  100% {
+    color: var(--color-brand-green);
+  }
+}
+
+.brand-color-animate {
+  animation: brand-color-cycle 10s ease-in-out infinite;
+}

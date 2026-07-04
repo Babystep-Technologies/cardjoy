@@ -1,0 +1,10 @@
+# AI Provider Configuration
+# Sensitive data (API keys) should be in environment variables
+# Non-sensitive configuration goes here
+
+default: &defaults
+  request_timeout: 30
+  max_retries: 2
+  retry_internal: 0.1
+  retry_backoff_factor: 2
+  retry_interval_randomness: 0.5

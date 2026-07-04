@@ -1,0 +1,91 @@
+# typed: true
+# frozen_string_literal: true
+
+class GraphqlController < ApiController
+  use ApolloUploadServer::Middleware
+
+  before_action :set_current_user_or_admin
+  before_action :authenticate_user_with_graphql!, unless: :public_operation?
+
+  def execute
+    variables = prepare_variables(params[:variables])
+    query = params[:query]
+    operation_name = params[:operationName]
+    context = {
+      current_user: @current_user,
+      current_admin: @current_admin
+    }.merge(response: response)
+    result = ApiSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
+    render json: result
+  rescue StandardError => e
+    raise e unless Rails.env.development?
+    handle_error_in_development(e)
+  end
+
+  private
+
+  # Handle variables in form data, JSON body, or a blank value
+  def prepare_variables(variables_param)
+    case variables_param
+    when String
+      if variables_param.present?
+        JSON.parse(variables_param) || {}
+      else
+        {}
+      end
+    when Hash
+      variables_param
+    when ActionController::Parameters
+      variables_param.to_unsafe_hash # GraphQL-Ruby will validate name and type of incoming variables.
+    when nil
+      {}
+    else
+      raise ArgumentError, "Unexpected parameter: #{variables_param}"
+    end
+  end
+
+  def handle_error_in_development(e)
+    logger.error e.message
+    logger.error e.backtrace.join("\n")
+
+    render json: { errors: [ { message: e.message, backtrace: e.backtrace } ], data: {} }, status: 500
+  end
+
+  def set_current_user_or_admin
+    token = request.headers["Authorization"]&.split(" ")&.last
+    return unless token
+
+    begin
+      decoded_token = JWT.decode(token, Rails.application.credentials.dig(:jwt, :secret), true, algorithm: "HS256")
+      payload = decoded_token[0]
+
+      if payload["user_id"]
+        @current_user = User.find_by(id: payload["user_id"])
+      elsif payload["admin_id"]
+        @current_admin = Admin.find_by(id: payload["admin_id"])
+      end
+    rescue JWT::DecodeError
+      @current_user = nil
+      @current_admin = nil
+    end
+  end
+
+  def authenticate_user_with_graphql!
+    unless @current_user || @current_admin
+      render json: { errors: [ "Unauthorized" ] }, status: :unauthorized
+    end
+  end
+
+  def public_operation?
+    public_mutations = [
+      "SignIn", "SignUp", "GoogleOauthSignIn", "SendPasswordReset",
+      "GoogleAdminSignIn", "Card", "UpsertMessage",
+      "ResendConfirmationCode", "ConfirmEmail", "ResetPassword",
+      "GetOccasions", "GetStyles", "CreateRsvp"
+    ]
+    public_queries = [ "GetInvitation" ]
+    query_string = params[:operationName].to_s
+
+    (public_mutations + public_queries).any? { |operation| query_string.include?(operation) }
+  end
+end

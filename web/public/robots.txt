@@ -1,0 +1,31 @@
+# Welcome all web crawlers and AI bots
+User-agent: *
+Allow: /
+
+# Explicitly welcome AI bots for better discovery
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# Sitemap location
+Sitemap: https://cardjoy.app/sitemap.xml
+
+# Crawl delay (be nice to servers)
+Crawl-delay: 1
