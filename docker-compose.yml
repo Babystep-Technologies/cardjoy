@@ -44,8 +44,9 @@ services:
     build: ./web
     volumes:
       - ./web:/app/web
-        # One-way volume to use node_modules from inside image
-      - /app/node_modules
+        # Anonymous volume shadows the bind mount so the image's installed
+        # node_modules (from `yarn install`) are used, not the host's.
+      - /app/web/node_modules
     ports:
       - "3001:3001"
       - "5173:5173"
@@ -62,8 +63,9 @@ services:
     build: ./admin
     volumes:
       - ./admin:/app/admin
-        # One-way volume to use node_modules from inside image
-      - /app/node_modules
+        # Anonymous volume shadows the bind mount so the image's installed
+        # node_modules (from `yarn install`) are used, not the host's.
+      - /app/admin/node_modules
     ports:
       - "3002:3002"
     environment:
