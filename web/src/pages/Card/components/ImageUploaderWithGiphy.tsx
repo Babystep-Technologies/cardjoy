@@ -87,9 +87,15 @@ const ImageUploaderWithGiphy: React.FC<ImageUploaderProps> = ({
   };
 
   const fetchGiphy = async (query: string) => {
+    const apiKey = import.meta.env.VITE_GIPHY_API_KEY;
+    if (!apiKey) {
+      // GIPHY is optional — skip when no key is configured.
+      setGiphyResults([]);
+      setGiphyLoading(false);
+      return;
+    }
     setGiphyLoading(true);
     try {
-      const apiKey = import.meta.env.VITE_GIPHY_API_KEY;
       let url: string;
       if (query && query.trim() !== '') {
         url = `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(query)}&limit=12&rating=pg`;

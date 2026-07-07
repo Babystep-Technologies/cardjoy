@@ -76,6 +76,12 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
 
   // Fetch Unsplash images
   const fetchUnsplashImages = async (query?: string) => {
+    if (!UNSPLASH_ACCESS_KEY) {
+      // Unsplash is optional — skip when no key is configured.
+      setUnsplashImages([]);
+      setUnsplashLoading(false);
+      return;
+    }
     setUnsplashLoading(true);
     try {
       let url = `https://api.unsplash.com/photos?client_id=${UNSPLASH_ACCESS_KEY}&per_page=12`;
