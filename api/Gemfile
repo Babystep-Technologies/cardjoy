@@ -44,8 +44,8 @@ gem "rqrcode"
 gem "chunky_png"
 gem "ostruct"
 gem "ruby_llm"
-gem "sidekiq"
-gem "redis"
+# Postgres-backed ActiveJob backend (no Redis). Runs embedded in Puma (async mode).
+gem "good_job"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
