@@ -33,7 +33,9 @@
 
 /config/credentials/development.key
 
-/config/credentials/test.key
+# test.key is intentionally committed: test.yml.enc holds only dummy values,
+# so CI (incl. external fork PRs) can decrypt it without a secret.
+!/config/credentials/test.key
 
 /config/credentials/staging.key
 
