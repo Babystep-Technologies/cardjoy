@@ -12,7 +12,7 @@ module Mutations
       # Validate the Google id_token (using an appropriate gem or custom code)
       # For instance, using the google-id-token gem:
       validator = GoogleIDToken::Validator.new
-      google_client_id = Rails.application.credentials.dig(:google, :client_id)
+      google_client_id = ENV.fetch("GOOGLE_CLIENT_ID") { Rails.application.credentials.dig(:google, :client_id) }
       payload = validator.check(id_token, google_client_id) rescue nil
 
       if payload
