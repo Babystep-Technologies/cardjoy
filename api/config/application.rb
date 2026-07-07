@@ -39,11 +39,13 @@ module Api
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    # Use Sidekiq when Redis is available; otherwise run jobs inline so the app
-    # works without a Redis/Sidekiq deployment (e.g. current Cloud Run setup and
-    # local dev without Redis). ActiveStorage enqueues jobs on upload, so a
-    # missing Redis would otherwise 500 any request that attaches a file.
-    config.active_job.queue_adapter = ENV["REDIS_URL"].present? ? :sidekiq : :inline
+    # Postgres-backed background jobs via GoodJob (no Redis). See
+    # config/initializers/good_job.rb for the execution mode.
+    config.active_job.queue_adapter = :good_job
+
+    # We don't use ActiveStorage image metadata/variants, so skip analysis
+    # (avoids the AnalyzeJob enqueued on every upload).
+    config.active_storage.analyzers = []
 
     # Enable cookies and session middleware so OmniAuth can function.
     config.middleware.use ActionDispatch::Cookies
