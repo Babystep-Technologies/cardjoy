@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -145,6 +146,14 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-500 text-lg">
               Create group greeting cards or event invitations to get started
             </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button asChild size="lg">
+              <Link to="/card/new">Create a card</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link to="/invitation/new">Create an invitation</Link>
+            </Button>
           </div>
         </div>
       ) : (
