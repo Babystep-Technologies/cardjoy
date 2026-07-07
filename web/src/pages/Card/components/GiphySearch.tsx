@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const gf = new GiphyFetch(import.meta.env.VITE_GIPHY_API_KEY);
+// GIPHY is an optional integration. Only construct the client when a key is
+// configured — the SDK throws on an empty key, which would crash the page.
+const GIPHY_API_KEY = import.meta.env.VITE_GIPHY_API_KEY as string | undefined;
+const gf = GIPHY_API_KEY ? new GiphyFetch(GIPHY_API_KEY) : null;
 interface GiphySearchProps {
   onSelect: (gifUrl: string) => void;
   onClose: () => void;
@@ -17,6 +20,7 @@ export default function GiphySearch({ onSelect, onClose }: GiphySearchProps) {
   const [gifs, setGifs] = useState<IGif[]>([]);
 
   useEffect(() => {
+    if (!gf) return;
     const fetchGifs = async () => {
       try {
         const data =
@@ -64,6 +68,11 @@ export default function GiphySearch({ onSelect, onClose }: GiphySearchProps) {
             />
 
             <div className="flex-1 overflow-y-auto pr-2 grid gap-4 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+              {!gf && (
+                <p className="col-span-full text-sm text-muted-foreground py-8 text-center">
+                  GIPHY search is not configured. Set <code>VITE_GIPHY_API_KEY</code> to enable it.
+                </p>
+              )}
               {gifs.map(gif => (
                 <div
                   key={gif.id}
