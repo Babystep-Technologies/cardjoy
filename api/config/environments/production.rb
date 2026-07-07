@@ -96,7 +96,12 @@ Rails.application.configure do
   #
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
-  config.x.cdn_host = "https://storage.googleapis.com/production-cardjoy-uploads"
-  config.x.app_logo_for_email = "https://storage.googleapis.com/production-cardjoy-uploads/logo.gif"
+  # Serve uploaded images via their public GCS URL. cdn_host is derived from the
+  # GCS bucket (GCS_BUCKET env, injected by infra) so it always matches where
+  # ActiveStorage actually stores the files.
+  cdn_host = "https://storage.googleapis.com/#{ENV.fetch('GCS_BUCKET', 'production-cardjoy-uploads')}"
+  config.x.cdn_enabled = true
+  config.x.cdn_host = cdn_host
+  config.x.app_logo_for_email = "#{cdn_host}/logo.gif"
   config.x.preview_url = "https://preview.cardjoy.app"
 end
