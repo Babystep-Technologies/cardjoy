@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & discussion
+    url: https://github.com/Babystep-Technologies/cardjoy/discussions
+    about: Ask a question or discuss an idea before filing a formal proposal.
+  - name: Contributing guide
+    url: https://github.com/Babystep-Technologies/cardjoy/blob/main/CONTRIBUTING.md
+    about: Local setup, the test/lint workflow, and pull-request conventions.
