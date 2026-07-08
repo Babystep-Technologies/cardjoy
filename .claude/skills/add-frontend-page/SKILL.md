@@ -1,12 +1,12 @@
 ---
 name: add-frontend-page
-description: Scaffold a new React page wired to the GraphQL API following Cardjoy conventions
+description: Scaffold a new React page wired to the GraphQL API following CardJoy conventions
 allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
 # Add a frontend page
 
-Create a new page in the consumer app (`web/`) or admin app (`admin/`) the way Cardjoy does it. Read
+Create a new page in the consumer app (`web/`) or admin app (`admin/`) the way CardJoy does it. Read
 [docs/DEVELOPMENT.md](../../../docs/DEVELOPMENT.md) for the full pattern; the reference
 implementation is `web/src/pages/Card/New.tsx` with `web/src/lib/apollo-client.ts`.
 

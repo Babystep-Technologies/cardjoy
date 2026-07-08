@@ -1,4 +1,4 @@
-# Contributing to Cardjoy
+# Contributing to CardJoy
 
 Thanks for your interest in contributing! This guide covers local setup and the conventions we
 follow.

@@ -1,12 +1,12 @@
 ---
 name: add-graphql-mutation
-description: Scaffold a new GraphQL mutation in the Rails API following Cardjoy conventions
+description: Scaffold a new GraphQL mutation in the Rails API following CardJoy conventions
 allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 ---
 
 # Add a GraphQL mutation
 
-Create a new write operation in the Rails API the way Cardjoy does it. Read
+Create a new write operation in the Rails API the way CardJoy does it. Read
 [docs/DEVELOPMENT.md](../../../docs/DEVELOPMENT.md) for the full pattern; the reference
 implementation is `api/app/graphql/mutations/create_card.rb` and its spec
 `api/spec/graphql/mutations/create_card_spec.rb`.

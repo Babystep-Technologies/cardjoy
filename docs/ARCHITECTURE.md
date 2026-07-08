@@ -1,11 +1,11 @@
 # Architecture
 
-A high-level map of how Cardjoy fits together. For how to *build* something, see
+A high-level map of how CardJoy fits together. For how to *build* something, see
 [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## Overview
 
-Cardjoy is a Rails GraphQL API with two React/TypeScript frontends.
+CardJoy is a Rails GraphQL API with two React/TypeScript frontends.
 
 ```
 ┌─────────────────┐     ┌─────────────────┐

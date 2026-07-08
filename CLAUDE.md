@@ -1,4 +1,4 @@
-# Cardjoy Codebase
+# CardJoy Codebase
 
 Open-source app for creating and sharing group cards and invitations. Hosted at
 [cardjoy.app](https://cardjoy.app). **This repo is public** — never commit secrets.

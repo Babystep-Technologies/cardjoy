@@ -6,7 +6,7 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 
 # Build from an issue
 
-Turn an accepted issue into a reviewed-ready pull request, built to Cardjoy's conventions. This is
+Turn an accepted issue into a reviewed-ready pull request, built to CardJoy's conventions. This is
 the orchestration skill; it leans on [docs/DEVELOPMENT.md](../../../docs/DEVELOPMENT.md) and the
 `add-graphql-mutation`, `add-frontend-page`, and `checks` skills.
 
