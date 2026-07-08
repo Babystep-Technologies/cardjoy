@@ -5,34 +5,73 @@ follow.
 
 ## Local development
 
-Everything runs in Docker — you don't need Ruby or Node installed locally.
+Everything runs in Docker — you don't need Ruby or Node installed locally. A `Makefile` wraps the
+common Docker commands.
 
 ```bash
 git clone git@github.com:Babystep-Technologies/cardjoy.git
 cd cardjoy
-docker compose up
+make setup   # build containers, install deps, create & seed the database
+make dev     # start the api, web, and admin dev servers
+make logs    # follow the server logs
 ```
 
 Services:
-- Web (consumer): http://localhost:5173
-- API: http://localhost:3000
+- Web (consumer): http://localhost:3001
 - Admin: http://localhost:3002
+- API (GraphQL): http://localhost:3000/graphql
+
+`make setup` runs `db:seed`, which loads the card **styles** (background/font colors) the app needs
+to render the create-card page. Run `make` with no target to list every shortcut.
+
+### Behind the Make targets
+
+Each target is a thin wrapper around Docker, if you prefer to run things directly:
+
+```bash
+docker compose up -d                             # start containers
+docker compose exec api ./bin/rails db:prepare   # create/migrate the database
+docker compose exec api ./bin/rails db:seed      # load seed data (styles, ...)
+docker compose exec api ./bin/server             # start the API (rails server)
+docker compose exec web yarn dev                 # start the web dev server
+docker compose exec admin yarn dev               # start the admin dev server
+```
 
 ## Running tests & linters
 
-Run these before opening a pull request:
+Run these before opening a pull request (or just `make check`, which runs them all):
 
 ```bash
-# Backend (Rails)
-docker compose exec api bundle exec rspec        # tests
-docker compose exec api bundle exec rubocop      # style
-docker compose exec api bundle exec srb tc       # Sorbet type check
-
-# Frontend (web / admin)
-docker compose exec web yarn test
-docker compose exec web yarn lint
-docker compose exec web yarn format
+make test    # backend RSpec suite
+make lint    # RuboCop, Sorbet, and web/admin lint + format checks
+make build   # type-check and build the frontends (mirrors CI)
 ```
+
+Under the hood:
+
+```bash
+docker compose exec api bundle exec rspec        # backend tests
+docker compose exec api bundle exec rubocop      # Ruby style
+docker compose exec api bundle exec srb tc       # Sorbet type check
+docker compose exec web   yarn lint              # web ESLint
+docker compose exec web   yarn format-check      # web Prettier
+docker compose exec admin yarn lint              # admin ESLint
+docker compose exec admin yarn format-check      # admin Prettier
+```
+
+## Troubleshooting
+
+- **App looks empty / "no styles" on the create-card page** — the database hasn't been seeded. Run
+  `make seed` (or `docker compose exec api ./bin/rails db:seed`).
+- **API errors about missing tables / pending migrations** — run `make db` to create and migrate the
+  database, then `make dev`.
+- **`make dev` fails with "A server is already running"** — a stale PID file. Run `make restart`,
+  then `make dev` again.
+- **Frontend build fails after pulling new changes** — dependencies changed. Re-run `make deps` (or
+  `docker compose exec web yarn install`).
+- **Nothing responds on the ports** — make sure the containers are up (`make up`) and the dev servers
+  are started (`make dev`); follow `make logs` to see boot output.
+- **Start over from scratch** — `make down && make setup`.
 
 ## Pull requests
 

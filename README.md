@@ -14,29 +14,32 @@ A platform for creating and sharing group cards and invitations. The hosted prod
 
 ### Prerequisites
 - Docker and Docker Compose
+- `make` (standard on macOS/Linux)
 
-### Run it locally
+### Quick start
 
 ```bash
 git clone git@github.com:Babystep-Technologies/cardjoy.git
 cd cardjoy
-docker compose up
+make setup   # build containers, install deps, create & seed the database
+make dev     # start the api, web, and admin dev servers
 ```
 
 Then open:
-- **Web**: http://localhost:5173
-- **API**: http://localhost:3000
+- **Web** (consumer app): http://localhost:3001
 - **Admin**: http://localhost:3002
+- **API** (GraphQL): http://localhost:3000/graphql
 
-### Running tests
+`make setup` seeds the database (card styles, etc.) so the app is usable right away. Run `make` on
+its own to see all available targets. Prefer raw Docker commands? See
+[CONTRIBUTING.md](./CONTRIBUTING.md).
+
+### Running tests & checks
 
 ```bash
-# Backend (Rails / RSpec)
-docker compose exec api bundle exec rspec
-
-# Frontend
-docker compose exec web yarn test
-docker compose exec web yarn lint
+make test    # backend RSpec suite
+make lint    # RuboCop, Sorbet, and frontend lint/format checks
+make check   # everything CI runs (test + lint + build)
 ```
 
 ## Contributing
