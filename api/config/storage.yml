@@ -14,10 +14,9 @@ staging:
 
 production:
   service: GCS
-  # Infra values come from env on Cloud Run (injected by Terraform), falling back
-  # to encrypted credentials elsewhere. When no service-account-key.json is present
-  # (Cloud Run), the GCS client uses Application Default Credentials — i.e. the
-  # Cloud Run runtime service account — so no key file needs to be shipped.
+  # Read from environment variables in production, falling back to encrypted
+  # credentials elsewhere. When no service-account-key.json is present, the GCS
+  # client uses Application Default Credentials, so no key file needs to be shipped.
   project: <%= ENV.fetch("GCS_PROJECT") { Rails.application.credentials.dig(:google, :project_id) } %>
 <% sa_key = Rails.root.join("config/service-account-key.json") %>
 <% if File.exist?(sa_key) %>

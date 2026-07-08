@@ -112,18 +112,18 @@ staging:
 production:
   primary: &primary_production
     <<: *default
-    # Infra values come from env on Cloud Run (injected by Terraform), falling
-    # back to encrypted credentials so other environments are unaffected.
+    # Read from environment variables in production, falling back to encrypted
+    # credentials so other environments are unaffected.
     database: <%= ENV.fetch("DB_NAME") { Rails.application.credentials.dig(:database, :name) } %>
     username: <%= ENV.fetch("DB_USERNAME") { Rails.application.credentials.dig(:database, :username) } %>
     password: <%= ENV.fetch("DB_PASSWORD") { Rails.application.credentials.dig(:database, :password) } %>
     host: <%= ENV.fetch("DB_HOST") { Rails.application.credentials.dig(:database, :host) } %>
     port: <%= ENV.fetch("DB_PORT") { Rails.application.credentials.dig(:database, :port) } %>
 
-  # NOTE (Cloud Run migration): the solid_cache / solid_queue / solid_cable
-  # databases below are disabled — those gems are not installed and their
-  # adapters are commented out in config/environments/production.rb, so the app
-  # uses only the primary DB (jobs run on Sidekiq/Redis). Keeping them would make
+  # NOTE: the solid_cache / solid_queue / solid_cable databases below are
+  # disabled — those gems are not installed and their adapters are commented out
+  # in config/environments/production.rb, so the app uses only the primary DB
+  # (background jobs run in-process via GoodJob). Keeping them would make
   # `db:prepare` try to create/migrate unused databases. Re-enable if you adopt
   # the Solid stack.
   # cache:
