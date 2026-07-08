@@ -1,4 +1,4 @@
-# Cardjoy
+# CardJoy
 
 A platform for creating and sharing group cards and invitations. The hosted product lives at
 [cardjoy.app](https://cardjoy.app); this repository is its open-source codebase.
@@ -51,5 +51,5 @@ test/lint workflow, and pull-request conventions.
 
 Licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0). See [LICENSE](./LICENSE).
 
-If you run a modified version of Cardjoy as a network service, the AGPL requires you to make your
+If you run a modified version of CardJoy as a network service, the AGPL requires you to make your
 modified source available to its users.

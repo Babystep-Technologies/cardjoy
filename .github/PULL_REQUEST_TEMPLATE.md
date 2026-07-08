@@ -1,5 +1,5 @@
 <!--
-Thanks for contributing to Cardjoy! Please fill in the sections below.
+Thanks for contributing to CardJoy! Please fill in the sections below.
 Keep PRs focused — one logical change per PR.
 -->
 

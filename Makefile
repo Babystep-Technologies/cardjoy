@@ -1,4 +1,4 @@
-# Cardjoy developer shortcuts. Everything runs inside Docker — no local Ruby/Node needed.
+# CardJoy developer shortcuts. Everything runs inside Docker — no local Ruby/Node needed.
 # Run `make` (or `make help`) to see the available targets.
 
 COMPOSE := docker compose
@@ -8,7 +8,7 @@ COMPOSE := docker compose
 # ANSI-clean, self-documenting help: any target with a `## comment` is listed.
 .PHONY: help
 help: ## Show this help
-	@echo "Cardjoy — make targets:"
+	@echo "CardJoy — make targets:"
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
 		| sort \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'

@@ -1,6 +1,6 @@
 # AI-assisted contribution workflow
 
-Cardjoy is set up so that well-specified, accepted proposals can be built by an AI assistant
+CardJoy is set up so that well-specified, accepted proposals can be built by an AI assistant
 (Claude) and opened as a pull request for human review. This document describes that flow and how to
 turn it on.
 

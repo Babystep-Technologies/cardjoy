@@ -1,7 +1,7 @@
 # Development guide: how to build a feature
 
 This is the shared reference for **humans, Claude skills, and the GitHub Action**. It shows the
-conventions Cardjoy follows so a change fits the codebase and passes CI. For the big-picture map, see
+conventions CardJoy follows so a change fits the codebase and passes CI. For the big-picture map, see
 [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 Everything runs in Docker. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup; the short version:
