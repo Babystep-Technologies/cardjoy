@@ -83,8 +83,22 @@ docker compose exec admin yarn format-check      # admin Prettier
 
 ## Reporting bugs & requesting features
 
-Please open a GitHub Issue with steps to reproduce (for bugs) or a clear description of the use case
-(for features).
+Open a [new issue](https://github.com/Babystep-Technologies/cardjoy/issues/new/choose) and pick the
+**Bug report** or **Feature request** form. For features, fill in the **acceptance criteria** — a
+concrete checklist of what "done" means. Precise criteria make a proposal easy to review and easy to
+build.
+
+## Building a feature
+
+See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for the step-by-step patterns (backend GraphQL
+mutation, frontend page) and the exact quality gates, and
+[docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the system map.
+
+## AI-assisted contributions
+
+Accepted, well-specified issues can be built by an AI assistant and opened as a PR for review. This
+is **off by default**; see [docs/AI_WORKFLOW.md](./docs/AI_WORKFLOW.md) for how it works and how a
+maintainer enables it. A human reviewer and CI gate every PR, AI-authored or not.
 
 ## License
 
