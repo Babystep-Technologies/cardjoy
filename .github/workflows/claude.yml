@@ -1,0 +1,85 @@
+name: Claude
+
+# AI assistant for issues and PRs, using the Claude Code GitHub Action.
+#
+# ⚠️ SCAFFOLDED BUT INERT. Every job is gated on the `CLAUDE_ENABLED` repo variable
+# AND an auth secret, so nothing runs until a maintainer opts in. To enable, see
+# docs/AI_WORKFLOW.md ("Enabling the assistant"):
+#   1. Install the Claude GitHub App on this repo.
+#   2. Add a secret: ANTHROPIC_API_KEY (or CLAUDE_CODE_OAUTH_TOKEN).
+#   3. Set the repo variable CLAUDE_ENABLED = "true".
+#
+# Two entry points:
+#   • Label an issue `ai-buildable`  -> Claude builds it and opens a PR (automation).
+#   • Mention `@claude` in a comment -> Claude responds/edits (interactive).
+# Both are restricted to maintainers: only triagers can apply labels, and comment
+# triggers require the commenter to be an OWNER/MEMBER/COLLABORATOR.
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+# Least privilege: enough to read the issue/PR and open a branch + PR.
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  # Automation: a maintainer accepted a proposal by labeling it `ai-buildable`.
+  build-from-issue:
+    if: >-
+      vars.CLAUDE_ENABLED == 'true' &&
+      github.event_name == 'issues' &&
+      github.event.label.name == 'ai-buildable'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # If you authenticate with an OAuth token instead, comment the line
+          # above and uncomment this one:
+          # claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            A maintainer labeled issue #${{ github.event.issue.number }} as `ai-buildable`,
+            which means it is accepted and ready to build.
+
+            Use the `build-from-issue` skill in `.claude/skills/` to implement it end to end:
+            read the issue and its acceptance criteria, follow `docs/DEVELOPMENT.md` and
+            `CLAUDE.md`, make the change on a new branch, run every quality gate (the `checks`
+            skill / `make check`), and open a pull request whose body includes
+            "Closes #${{ github.event.issue.number }}".
+
+            Do not merge the PR — a maintainer will review it. If the scope is unclear or too
+            large for a single focused PR, comment on the issue asking for clarification
+            instead of guessing.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 30
+
+  # Interactive: someone mentioned @claude in an issue or PR-review comment.
+  respond:
+    if: >-
+      vars.CLAUDE_ENABLED == 'true' &&
+      contains(github.event.comment.body, '@claude') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          trigger_phrase: "@claude"
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 20
