@@ -1,0 +1,159 @@
+# Development guide: how to build a feature
+
+This is the shared reference for **humans, Claude skills, and the GitHub Action**. It shows the
+conventions Cardjoy follows so a change fits the codebase and passes CI. For the big-picture map, see
+[ARCHITECTURE.md](./ARCHITECTURE.md).
+
+Everything runs in Docker. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup; the short version:
+
+```bash
+make setup   # build, install deps, create & seed the database
+make dev     # start api :3000, web :3001, admin :3002
+```
+
+## Before you start
+
+1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).
+2. Branch off `main`: `git checkout -b feat/<short-name>`.
+3. Restate the scope in your own words before writing code — what the change adds and how you'll
+   verify it against the acceptance criteria.
+
+## Quality gates (what CI checks)
+
+Run `make check` before opening a PR. It runs everything CI runs:
+
+| Area | Command | CI job |
+|------|---------|--------|
+| Ruby style | `docker compose exec api bundle exec rubocop` | `api-ci` / Rubocop |
+| Ruby types | `docker compose exec api bundle exec srb tc` | `api-ci` / Sorbet |
+| Ruby tests | `docker compose exec api bundle exec rspec` | `api-ci` / RSpec |
+| web/admin lint | `yarn lint` in each | `web-ci` / `admin-ci` |
+| web/admin format | `yarn format-check` in each | `web-ci` / `admin-ci` |
+| web/admin build | `yarn build` (tsc) in each | `web-ci` / `admin-ci` |
+
+> If Sorbet complains about a gem or a generated method after you add code, regenerate the RBIs the
+> way CI does: `docker compose exec api bundle exec tapioca gems` and
+> `docker compose exec api bundle exec tapioca dsl`, then re-run `srb tc`.
+
+The `/checks`, `/lint`, and `/rspec` skills run these for you.
+
+---
+
+## Backend: add a GraphQL mutation
+
+The backend exposes a single `/graphql` endpoint. A write is a `Mutations::*` class registered on
+`MutationType`. Reference implementation: `api/app/graphql/mutations/create_card.rb` and its spec
+`api/spec/graphql/mutations/create_card_spec.rb`.
+
+Steps:
+
+1. **Model + migration** (only if you need new data):
+   ```bash
+   docker compose exec api ./bin/rails generate migration AddFooToCards foo:string
+   docker compose exec api ./bin/rails db:migrate
+   ```
+   Add validations/associations to the model in `app/models/`.
+
+2. **Mutation class** in `app/graphql/mutations/<name>.rb`. Follow the house style: `# typed: true`,
+   subclass `BaseMutation`, declare `argument`s and `field`s (always include an
+   `errors: [String]` field), and read the caller via `context[:current_user]`:
+
+   ```ruby
+   # typed: true
+   module Mutations
+     class CreateFoo < BaseMutation
+       argument :name, String, required: true
+
+       field :foo, Types::FooType, null: true
+       field :errors, [ String ], null: false
+
+       def resolve(name:)
+         user = context[:current_user]
+         return { foo: nil, errors: [ "Not authenticated" ] } unless user
+
+         foo = user.foos.build(name:)
+         if foo.save
+           { foo:, errors: [] }
+         else
+           { foo: nil, errors: foo.errors.full_messages }
+         end
+       end
+     end
+   end
+   ```
+
+3. **Object type** in `app/graphql/types/<name>_type.rb` (subclass `Types::BaseObject`), exposing the
+   fields the frontend needs. See `types/card_type.rb` for an example.
+
+4. **Register the mutation** on `app/graphql/types/mutation_type.rb`:
+   ```ruby
+   field :create_foo, mutation: Mutations::CreateFoo
+   ```
+
+5. **Factory** in `spec/factories/<name>s.rb` (mirror `spec/factories/cards.rb`).
+
+6. **Request spec** in `spec/graphql/mutations/<name>_spec.rb`, `type: :request`. Authenticate by
+   encoding a JWT and sending it as a Bearer header, POST the GraphQL query to `/graphql`, and assert
+   on the JSON response — see `create_card_spec.rb` for the exact pattern (including file uploads via
+   the multipart `map`).
+
+7. **Run the gates**: `rubocop`, `srb tc` (regenerate RBIs if needed), `rspec`.
+
+## Backend: add a query field
+
+Add a `field` to `app/graphql/types/query_type.rb` and implement its resolver method there (or a
+resolver class). Return existing `Types::*` objects. Add a request spec under `spec/graphql/`.
+
+---
+
+## Frontend: add a page / wire up the API
+
+The consumer app is `web/`; the admin app is `admin/` (same stack). Reference implementation:
+`web/src/pages/Card/New.tsx` (queries + a mutation) and `web/src/lib/apollo-client.ts`.
+
+Steps:
+
+1. **Page component** in `web/src/pages/<Feature>/<Name>.tsx`. Use Apollo hooks with inline `gql`
+   documents, mirroring `Card/New.tsx`:
+
+   ```tsx
+   import { gql, useQuery, useMutation } from '@apollo/client';
+   import { useNavigate } from 'react-router-dom';
+
+   const CREATE_FOO = gql`
+     mutation CreateFoo($input: CreateFooInput!) {
+       createFoo(input: $input) {
+         foo { id name }
+         errors
+       }
+     }
+   `;
+
+   export default function FooNew() {
+     const navigate = useNavigate();
+     const [createFoo] = useMutation(CREATE_FOO);
+     // ...render a form; on submit call createFoo({ variables: { input } })
+   }
+   ```
+
+   Relay-style mutations take a single `input:` object. Always read and surface the `errors` array.
+
+2. **Route** in `web/src/App.tsx`: import the page and add a `<Route path="..." element={<FooNew />} />`
+   inside `<Routes>`.
+
+3. **UI**: compose from `web/src/components/ui/` (shadcn/ui). Match the existing components' styling
+   rather than introducing new UI primitives.
+
+4. **Run the gates**: `yarn lint`, `yarn format-check` (or `yarn format` to fix), `yarn build`.
+
+Apollo config (`src/lib/apollo-client.ts`) already injects the JWT from `localStorage` and points at
+`VITE_GRAPHQL_ENDPOINT`, so authenticated calls work automatically once the user is signed in.
+
+---
+
+## Opening the PR
+
+- Keep the PR focused on one logical change.
+- Fill in the PR template, including `Closes #<issue>`.
+- Confirm `make check` is green.
+- Commit messages follow `<type>(<scope>): <description>` (e.g. `feat(api): add foo mutation`).
