@@ -8,20 +8,26 @@ Open-source app for creating and sharing group cards and invitations. Hosted at
 - `api/` - Rails backend (GraphQL API), all development within Docker
 - `web/` - Consumer-facing React/TypeScript frontend (Vite)
 - `admin/` - Admin interface (React/TypeScript, Vite)
-- `docs/` - Documentation
+- `docs/` - Documentation ([ARCHITECTURE](docs/ARCHITECTURE.md), [DEVELOPMENT](docs/DEVELOPMENT.md))
 
-## Deployment / infrastructure lives in a SEPARATE repo
+This repo holds the **application only**. Do not add deployment/infrastructure config here.
 
-All infra, Terraform, and deploy pipelines are in the **private `cardjoy-ops`** repo
-(Cloud Run for the API, Firebase Hosting for the frontends). **Do not add infra here.** This repo
-only holds the application; `cardjoy-ops` builds and deploys it from a git ref.
+## Key docs & skills
+
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — how the system fits together.
+- **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — how to build a feature (backend + frontend
+  patterns, with the exact quality-gate commands). Start here for any change.
+- Skills in `.claude/skills/`: `build-from-issue` (issue → PR), `add-graphql-mutation`,
+  `add-frontend-page`, `checks` (all gates), `lint`, `rspec`.
 
 ## Development Commands
 
-Everything runs in Docker — no local Ruby/Node needed.
+Everything runs in Docker — no local Ruby/Node needed. A `Makefile` wraps the common commands:
 
 ```bash
-docker compose up          # start api + db + redis + web + admin
+make setup   # build, install deps, create & seed the database
+make dev     # start api :3000, web :3001, admin :3002
+make check   # run every quality gate (test + lint + build)
 ```
 
 ### Backend (api/)
@@ -30,14 +36,14 @@ docker compose exec api bundle exec rspec        # tests
 docker compose exec api bundle exec rspec spec/path/to/spec.rb
 docker compose exec api bundle exec rubocop      # style
 docker compose exec api bundle exec srb tc       # Sorbet type check
-docker compose exec api rails console
+docker compose exec api ./bin/rails console
 ```
 
 ### Frontend (web/ and admin/)
 ```bash
-docker compose exec web yarn test
-docker compose exec web yarn lint
-docker compose exec web yarn format
+docker compose exec web yarn lint          # ESLint (also: admin)
+docker compose exec web yarn format-check  # Prettier check (yarn format to fix)
+docker compose exec web yarn build         # tsc type-check + build
 ```
 
 ## Conventions & gotchas
@@ -46,9 +52,9 @@ docker compose exec web yarn format
   `web-ci`, `admin-ci`) runs on PRs.
 - Commit format: `<type>(<scope>): <description>`. Before pushing: rspec, RuboCop, Sorbet, Prettier.
 - **Config via env with credential fallback:** production reads `DB_*`, `GCS_*`, `GOOGLE_CLIENT_ID`,
-  `ADDITIONAL_CORS_ORIGINS` from env (injected by `cardjoy-ops` Terraform), falling back to Rails
-  encrypted credentials — so local dev is unaffected. See `api/config/database.yml`, `storage.yml`,
-  the Google sign-in mutations, and `initializers/cors.rb`.
+  `ADDITIONAL_CORS_ORIGINS` from environment variables, falling back to Rails encrypted
+  credentials — so local dev is unaffected. See `api/config/database.yml`, `storage.yml`, the
+  Google sign-in mutations, and `initializers/cors.rb`.
 - **Optional frontend integrations:** GIPHY, Unsplash, and PostHog are gated on their `VITE_*` keys
   being present (blank = feature hidden, no crash). Keys are optional; see `web/.env.example`.
 - **Test credentials are committed** (`api/config/credentials/test.key` + `test.yml.enc`, dummy
