@@ -19,7 +19,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
                         ]
     end
 
-    # Extra origins injected by infra (e.g. Firebase Hosting URLs), comma-separated.
+    # Extra allowed origins from the environment, comma-separated.
     extra_origins = ENV.fetch("ADDITIONAL_CORS_ORIGINS", "").split(",").map(&:strip).reject(&:empty?)
     allowed_origins += extra_origins
 
