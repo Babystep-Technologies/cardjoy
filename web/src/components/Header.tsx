@@ -3,10 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import * as motion from 'motion/react-client';
 import { useFeatureFlagEnabled } from 'posthog-js/react';
-import { Github } from 'lucide-react';
 import { OccasionMegaMenu } from './OccasionMegaMenu';
 import { ProductMenu } from './ProductMenu';
-import { GITHUB_REPO_URL } from '@/lib/constants';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
@@ -103,15 +101,6 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <a
-                  href={GITHUB_REPO_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="CardJoy on GitHub"
-                  className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900 transition"
-                >
-                  <Github className="w-5 h-5" />
-                </a>
                 <Link to="/sign_in" className="text-gray-600 hover:text-gray-900 transition">
                   Sign In
                 </Link>
@@ -183,16 +172,6 @@ const Header: React.FC = () => {
                   >
                     Occasions
                   </Link>
-                  <a
-                    href={GITHUB_REPO_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center justify-center gap-1.5 text-gray-600 hover:text-gray-900 text-center"
-                  >
-                    <Github className="w-4 h-4" />
-                    GitHub
-                  </a>
                   <Link
                     to="/sign_in"
                     onClick={() => setMenuOpen(false)}
