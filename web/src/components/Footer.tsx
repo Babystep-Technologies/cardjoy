@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { Github } from 'lucide-react';
+import { GITHUB_REPO_URL } from '@/lib/constants';
 
 const Footer: React.FC = () => {
   const year = new Date().getFullYear();
@@ -41,6 +43,17 @@ const Footer: React.FC = () => {
               <Link to="/careers" className="hover:underline">
                 Careers
               </Link>
+            </li>
+            <li>
+              <a
+                href={GITHUB_REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 hover:underline"
+              >
+                <Github className="w-4 h-4" />
+                Open Source
+              </a>
             </li>
           </ul>
         </div>

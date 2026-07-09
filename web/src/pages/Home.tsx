@@ -4,9 +4,31 @@ import { WordRotate } from '@/components/magicui/word-rotate';
 import * as motion from 'motion/react-client';
 import Reveal from '@/components/Reveal';
 import Faq from '@/pages/Home/Faq';
-import { Heart, Cake, Baby, GraduationCap, Briefcase } from 'lucide-react';
-import { UseCaseCard } from '@/components/UseCaseCard';
+import {
+  Mail,
+  PartyPopper,
+  Github,
+  Star,
+  Check,
+  CalendarCheck,
+  QrCode,
+  Users,
+  Sparkles,
+} from 'lucide-react';
 import { occasions } from '@/config/occasions';
+import { GITHUB_REPO_URL } from '@/lib/constants';
+
+const cardFeatures = [
+  { icon: Users, text: 'No signup needed for contributors' },
+  { icon: Sparkles, text: 'Works for any occasion' },
+  { icon: QrCode, text: 'QR code for in-person events' },
+];
+
+const invitationFeatures = [
+  { icon: Sparkles, text: 'Animated opening screen' },
+  { icon: Check, text: 'Built-in RSVP tracking' },
+  { icon: CalendarCheck, text: 'One-tap add to calendar' },
+];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -31,6 +53,20 @@ const Home: React.FC = () => {
         </div>
 
         <Reveal>
+          {/* Open-source badge */}
+          <div className="flex justify-center mb-6 relative z-10">
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium backdrop-blur-sm hover:bg-white/20 transition-all"
+            >
+              <Star className="w-4 h-4 text-[var(--color-brand-yellow)]" />
+              Open source &amp; 100% free
+              <Github className="w-4 h-4" />
+            </a>
+          </div>
+
           <h1 className="text-white text-4xl md:text-6xl font-bold text-center px-6 relative z-10">
             Make Life Moments Shine
             <WordRotate
@@ -49,94 +85,111 @@ const Home: React.FC = () => {
               ]}
             />
           </h1>
+
+          <p className="text-white/80 text-lg md:text-2xl font-medium text-center px-6 mt-6 relative z-10 max-w-2xl mx-auto">
+            Group cards and event invitations — beautiful, free, and open source.
+          </p>
         </Reveal>
 
         <motion.div
-          className="mt-8 sm:mt-12 relative z-10 mx-4"
+          className="mt-8 sm:mt-12 relative z-10 mx-4 flex flex-col sm:flex-row items-center gap-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <button
             onClick={() => navigate('/card/new')}
-            className="group bg-white text-gray-900 rounded-2xl px-10 py-6 flex items-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl"
+            className="group bg-white text-gray-900 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
           >
-            <span className="text-xl font-bold">Create for Your Moment</span>
+            <Mail className="w-5 h-5" />
+            <span className="text-lg font-bold">Create a Card</span>
+          </button>
+          <button
+            onClick={() => navigate('/invitation/new')}
+            className="group bg-white/10 text-white border border-white/30 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
+          >
+            <PartyPopper className="w-5 h-5" />
+            <span className="text-lg font-bold">Create an Invitation</span>
           </button>
         </motion.div>
       </section>
 
+      {/* Two-products showcase */}
       <section className="scroll-section bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 min-h-screen overflow-y-hidden flex flex-col justify-center items-center py-[5vh] px-4 text-center">
         <Reveal>
-          <h1 className="text-gray-900 text-4xl md:text-6xl pt-12 font-black mb-4">
-            Every moment, made memorable
-          </h1>
+          <h2 className="text-gray-900 text-4xl md:text-6xl pt-12 font-black mb-4">
+            Two ways to celebrate
+          </h2>
           <p className="text-gray-600 text-lg md:text-2xl font-medium mb-12">
-            From small gestures to big celebrations
+            Bring people together — before and after the moment
           </p>
         </Reveal>
 
-        {/* Use-Case Storytelling Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-8">
+          {/* Group Cards */}
           <Reveal>
-            <UseCaseCard
-              story="Sarah's team surprised her with 47 birthday messages from across 3 offices"
-              occasion="Celebrate a colleague"
-              link="/for/birthday"
-              icon={Cake}
-              gradient="from-pink-400 to-purple-500"
-            />
+            <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
+              <div className="bg-gradient-to-br from-[var(--color-brand-pink)] to-[var(--color-brand-blue)] p-8 text-white">
+                <Mail className="w-12 h-12 drop-shadow-lg mb-4" />
+                <h3 className="text-3xl font-bold drop-shadow-md">Group Cards</h3>
+                <p className="text-white/90 text-lg mt-2 drop-shadow-sm">
+                  Collect heartfelt messages, photos &amp; wishes from everyone who cares — all in
+                  one beautiful keepsake.
+                </p>
+              </div>
+              <div className="flex flex-col flex-1 p-8">
+                <ul className="space-y-3 flex-1">
+                  {cardFeatures.map(feature => (
+                    <li key={feature.text} className="flex items-center gap-3 text-gray-700">
+                      <feature.icon className="w-5 h-5 text-[var(--color-brand-pink)] shrink-0" />
+                      <span className="font-medium">{feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => navigate('/card/new')}
+                  className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
+                >
+                  Create a Card →
+                </button>
+              </div>
+            </div>
           </Reveal>
+
+          {/* Invitations */}
           <Reveal>
-            <UseCaseCard
-              story="When Jordan's team was downsized, colleagues rallied to send a goodbye card that made the hardest day a little brighter"
-              occasion="Support a laid-off colleague"
-              link="/for/job-farewell"
-              icon={Heart}
-              gradient="from-amber-400 to-orange-500"
-            />
-          </Reveal>
-          <Reveal>
-            <UseCaseCard
-              story="Emma's baby shower became a digital keepsake with messages from 60 loved ones"
-              occasion="Welcome the new baby"
-              link="/for/baby-shower"
-              icon={Baby}
-              gradient="from-blue-400 to-cyan-500"
-            />
-          </Reveal>
-          <Reveal>
-            <UseCaseCard
-              story="Alex's family from 12 different states all signed one graduation card"
-              occasion="Congratulate your graduate"
-              link="/for/graduation"
-              icon={GraduationCap}
-              gradient="from-yellow-400 to-orange-500"
-            />
-          </Reveal>
-          <Reveal>
-            <UseCaseCard
-              story="150 wedding guests left notes that the couple will read for years to come"
-              occasion="Celebrate love together"
-              link="/for/wedding"
-              icon={Heart}
-              gradient="from-rose-400 to-pink-500"
-            />
-          </Reveal>
-          <Reveal>
-            <UseCaseCard
-              story="Jake's new job celebration included messages from mentors, colleagues, and friends"
-              occasion="Cheer on the promotion"
-              link="/for/new-job"
-              icon={Briefcase}
-              gradient="from-green-400 to-emerald-500"
-            />
+            <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
+              <div className="bg-gradient-to-br from-[var(--color-brand-blue)] to-[var(--color-brand-green)] p-8 text-white">
+                <PartyPopper className="w-12 h-12 drop-shadow-lg mb-4" />
+                <h3 className="text-3xl font-bold drop-shadow-md">Invitations</h3>
+                <p className="text-white/90 text-lg mt-2 drop-shadow-sm">
+                  Design animated invites your guests will love, with RSVP tracking and event
+                  details built right in.
+                </p>
+              </div>
+              <div className="flex flex-col flex-1 p-8">
+                <ul className="space-y-3 flex-1">
+                  {invitationFeatures.map(feature => (
+                    <li key={feature.text} className="flex items-center gap-3 text-gray-700">
+                      <feature.icon className="w-5 h-5 text-[var(--color-brand-blue)] shrink-0" />
+                      <span className="font-medium">{feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => navigate('/invitation/new')}
+                  className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
+                >
+                  Create an Invitation →
+                </button>
+              </div>
+            </div>
           </Reveal>
         </div>
 
         {/* Quick Occasion Links */}
         <Reveal>
-          <div className="w-full max-w-6xl mx-auto">
+          <div className="w-full max-w-6xl mx-auto mt-8">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
               Or browse by occasion
             </h2>
@@ -166,6 +219,64 @@ const Home: React.FC = () => {
         </Reveal>
       </section>
 
+      {/* Open-source section */}
+      <section className="scroll-section bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 min-h-screen overflow-y-hidden flex flex-col justify-center items-center px-4 py-[5vh] relative w-full">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl"></div>
+        </div>
+
+        <Reveal>
+          <div className="max-w-4xl mx-auto text-center relative z-10">
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-sm">
+                <Github className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <h2 className="text-white text-4xl md:text-6xl font-black mb-6">Built in the open</h2>
+            <p className="text-white/80 text-lg md:text-2xl font-medium mb-10 max-w-2xl mx-auto">
+              CardJoy is fully open source. Inspect the code, self-host it, or contribute — no
+              lock-in, no hidden data practices, no paywalls.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 text-left">
+              {[
+                {
+                  title: 'Transparent',
+                  desc: 'Every line of code is public. See exactly how your data is handled.',
+                },
+                {
+                  title: 'Self-hostable',
+                  desc: 'Run CardJoy on your own infrastructure whenever you want.',
+                },
+                {
+                  title: 'Community-driven',
+                  desc: 'Built with contributors. Open an issue or a pull request anytime.',
+                },
+              ].map(item => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl bg-white/5 border border-white/10 p-6 backdrop-blur-sm"
+                >
+                  <h3 className="text-white text-xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-white/70 text-base leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-white text-gray-900 rounded-2xl px-10 py-5 font-bold text-lg hover:scale-105 transition-all shadow-xl hover:shadow-2xl"
+            >
+              <Star className="w-5 h-5 text-[var(--color-brand-yellow)]" />
+              Star us on GitHub
+            </a>
+          </div>
+        </Reveal>
+      </section>
+
       {/* FAQ Section */}
       <section className="scroll-section bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 min-h-screen overflow-y-hidden flex flex-col justify-center items-center px-4 py-[5vh] w-full">
         <Reveal>
@@ -177,18 +288,28 @@ const Home: React.FC = () => {
       <section className="scroll-section bg-gradient-to-br from-purple-600 via-pink-500 to-blue-600 min-h-[60vh] overflow-y-hidden flex flex-col justify-center items-center px-4 py-16 w-full">
         <Reveal>
           <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
-            <h1 className="text-white text-3xl sm:text-4xl md:text-6xl font-black leading-tight">
+            <h2 className="text-white text-3xl sm:text-4xl md:text-6xl font-black leading-tight">
               Let's get the party started
-            </h1>
+            </h2>
             <p className="text-white/90 text-lg sm:text-xl md:text-2xl font-medium mb-4">
-              100% free, no credit card required
+              Free forever. Open source. Start in seconds — no credit card required.
             </p>
-            <button
-              onClick={() => navigate('/card/new')}
-              className="bg-white text-gray-900 rounded-2xl px-10 py-6 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl mx-auto"
-            >
-              <span className="text-xl font-bold">Create for Your Moment</span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button
+                onClick={() => navigate('/card/new')}
+                className="bg-white text-gray-900 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
+              >
+                <Mail className="w-5 h-5" />
+                <span className="text-lg font-bold">Create a Card</span>
+              </button>
+              <button
+                onClick={() => navigate('/invitation/new')}
+                className="bg-white/15 text-white border border-white/40 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
+              >
+                <PartyPopper className="w-5 h-5" />
+                <span className="text-lg font-bold">Create an Invitation</span>
+              </button>
+            </div>
           </div>
         </Reveal>
       </section>

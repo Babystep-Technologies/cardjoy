@@ -1,5 +1,6 @@
 export const APP_TOKEN_KEY = `cardjoy_${import.meta.env.VITE_ENV}_token`;
 export const POSTHOG_HOST = 'https://us.i.posthog.com';
+export const GITHUB_REPO_URL = 'https://github.com/Babystep-Technologies/cardjoy';
 export const CREDIT_PLANS = [
   {
     title: 'Single Card',
