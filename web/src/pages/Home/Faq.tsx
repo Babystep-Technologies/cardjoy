@@ -10,7 +10,7 @@ const faqs = [
   {
     question: 'What is CardJoy?',
     answer:
-      'CardJoy is a 100% free platform for creating digital group cards. Create beautiful, shareable cards everyone can sign and send heartfelt messages. No paywalls, no hidden fees!',
+      'CardJoy is a 100% free, open-source platform for creating digital group cards and event invitations. Collect heartfelt messages on a shareable group card, or design an animated invitation with built-in RSVP tracking. No paywalls, no hidden fees!',
   },
   {
     question: 'How much does it cost?',
@@ -35,6 +35,11 @@ const faqs = [
   {
     question: 'Can I make edits after sending?',
     answer: 'Yes! You can update your card details anytime.',
+  },
+  {
+    question: 'Is CardJoy really open source?',
+    answer:
+      'Yes! CardJoy is fully open source. You can inspect the code, self-host it on your own infrastructure, or contribute on GitHub at https://github.com/Babystep-Technologies/cardjoy. No lock-in and no hidden data practices.',
   },
   {
     question: 'Is my data safe and secure?',

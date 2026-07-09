@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import * as motion from 'motion/react-client';
 import { useFeatureFlagEnabled } from 'posthog-js/react';
 import { OccasionMegaMenu } from './OccasionMegaMenu';
+import { ProductMenu } from './ProductMenu';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
@@ -83,7 +84,12 @@ const Header: React.FC = () => {
 
           {/* Desktop Nav */}
           <div className="hidden sm:flex items-center gap-6 text-base">
-            {!user && <OccasionMegaMenu />}
+            {!user && (
+              <>
+                <ProductMenu />
+                <OccasionMegaMenu />
+              </>
+            )}
             {user ? (
               <div className="flex items-center gap-4">
                 <Link to="/dashboard" className="text-black text-bold text-xl transition">
@@ -145,6 +151,20 @@ const Header: React.FC = () => {
                 </>
               ) : (
                 <>
+                  <Link
+                    to="/card/new"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-gray-600 hover:text-gray-900 text-center"
+                  >
+                    Group Cards
+                  </Link>
+                  <Link
+                    to="/invitation/new"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-gray-600 hover:text-gray-900 text-center"
+                  >
+                    Invitations
+                  </Link>
                   <Link
                     to="/occasions"
                     onClick={() => setMenuOpen(false)}
