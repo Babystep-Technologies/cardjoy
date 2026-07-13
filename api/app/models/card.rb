@@ -9,17 +9,21 @@ class Card < ApplicationRecord
   has_one_attached :qr_code
   has_one_attached :cover_image
 
+  KINDS = %w[group one_on_one].freeze
+
   validates :title, presence: true
   validates :recipients, presence: true
   validates :external_id, presence: true, uniqueness: true, format: { with: /\A[A-Z]{7}\z/ }
   validates :max_messages, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 500 }
   validates :require_login_to_contribute, inclusion: { in: [ true, false ] }
+  validates :kind, inclusion: { in: KINDS }
   validates :slug, uniqueness: true, allow_nil: true,
     format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/, message: "must be lowercase letters, numbers, and hyphens only" },
     length: { minimum: 3, maximum: 100 },
     if: :slug_present?
 
   before_validation :normalize_slug
+  before_validation :enforce_one_on_one_defaults
   validates :cover_image, content_type: { in: %w[image/png image/jpeg image/gif], message: "must be a valid image format" },
     size: { less_than: 10.megabytes, message: "must be less than 10MB" },
     if: :cover_image_attached?
@@ -77,6 +81,10 @@ class Card < ApplicationRecord
   def flagged; flagged_at.present?; end
   def locked; locked_at.present?; end
 
+  def one_on_one?
+    kind == "one_on_one"
+  end
+
   def message_limit_reached?
     messages.count + guest_messages.count >= max_messages
   end
@@ -105,6 +113,10 @@ class Card < ApplicationRecord
     # Only capital letters A-Z
     # T.unsafe: Sorbet doesn't understand this is called in before_validation where external_id may be nil
     T.unsafe(self).external_id ||= T.cast(Array("A".."Z").sample(7), T::Array[String]).join
+  end
+
+  def enforce_one_on_one_defaults
+    self.require_login_to_contribute = false if one_on_one?
   end
 
   def normalize_slug

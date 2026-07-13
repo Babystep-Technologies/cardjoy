@@ -3,6 +3,7 @@ FactoryBot.define do
     title { "Test Card" }
     recipients { "John Doe, Joan Doe" }
     user
+    kind { "group" }
 
     external_id { Array('A'..'Z').sample(7).join }
     trait :with_messages do
@@ -19,6 +20,10 @@ FactoryBot.define do
 
     trait :with_style do
       styles { [ create(:style) ] }
+    end
+
+    trait :one_on_one do
+      kind { "one_on_one" }
     end
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_07_163514) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_13_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -70,6 +70,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_07_163514) do
     t.datetime "deleted_at"
     t.string "external_id", null: false
     t.datetime "flagged_at"
+    t.string "kind", default: "group", null: false
     t.datetime "locked_at"
     t.integer "max_messages", default: 20, null: false
     t.string "occasion"

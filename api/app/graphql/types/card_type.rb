@@ -20,6 +20,7 @@ module Types
     field :message_limit_reached, Boolean, null: false
     field :max_messages, Integer, null: false
     field :require_login_to_contribute, Boolean, null: false
+    field :kind, String, null: false
 
     field :messages, [ Types::MessageType ], null: true
     def messages
