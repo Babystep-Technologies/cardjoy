@@ -53,20 +53,6 @@ const Home: React.FC = () => {
         </div>
 
         <Reveal>
-          {/* Open-source badge */}
-          <div className="flex justify-center mb-6 relative z-10">
-            <a
-              href={GITHUB_REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium backdrop-blur-sm hover:bg-white/20 transition-all"
-            >
-              <Star className="w-4 h-4 text-[var(--color-brand-yellow)]" />
-              Open source &amp; 100% free
-              <Github className="w-4 h-4" />
-            </a>
-          </div>
-
           <h1 className="text-white text-4xl md:text-6xl font-bold text-center px-6 relative z-10">
             Make Life Moments Shine
             <WordRotate
