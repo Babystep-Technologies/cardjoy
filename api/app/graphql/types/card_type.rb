@@ -7,6 +7,7 @@ module Types
     field :slug, String, null: true
     field :qr_code_url, String, null: true
     field :title, String, null: false
+    field :kind, String, null: false
     field :locked, Boolean, null: false
     field :flagged, Boolean, null: false
     field :deleted, Boolean, null: false

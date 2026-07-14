@@ -9,11 +9,14 @@ class Card < ApplicationRecord
   has_one_attached :qr_code
   has_one_attached :cover_image
 
+  KINDS = %w[group one_on_one].freeze
+
   validates :title, presence: true
   validates :recipients, presence: true
   validates :external_id, presence: true, uniqueness: true, format: { with: /\A[A-Z]{7}\z/ }
   validates :max_messages, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 500 }
   validates :require_login_to_contribute, inclusion: { in: [ true, false ] }
+  validates :kind, inclusion: { in: KINDS }
   validates :slug, uniqueness: true, allow_nil: true,
     format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/, message: "must be lowercase letters, numbers, and hyphens only" },
     length: { minimum: 3, maximum: 100 },
@@ -25,6 +28,7 @@ class Card < ApplicationRecord
     if: :cover_image_attached?
 
   before_validation :generate_external_id, on: :create
+  before_validation :enforce_one_on_one_defaults
   default_scope { where(deleted_at: nil) }
   OCCASIONS = [
     "Birthday",
@@ -77,6 +81,9 @@ class Card < ApplicationRecord
   def flagged; flagged_at.present?; end
   def locked; locked_at.present?; end
 
+  def one_on_one?; kind == "one_on_one"; end
+  def group?; kind == "group"; end
+
   def message_limit_reached?
     messages.count + guest_messages.count >= max_messages
   end
@@ -118,5 +125,10 @@ class Card < ApplicationRecord
 
   def cover_image_attached?
     cover_image.attached?
+  end
+
+  # One-on-one cards have no signing loop, so the login-to-contribute gate never applies.
+  def enforce_one_on_one_defaults
+    self.require_login_to_contribute = false if one_on_one?
   end
 end
