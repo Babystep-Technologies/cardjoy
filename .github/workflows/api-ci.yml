@@ -59,6 +59,12 @@ jobs:
           PGHOST: postgres
           PGUSER: postgres
           PGPORT: ${{ job.services.db.ports[5432] }}
+          # These steps boot the app in development to load the schema and
+          # generate RBIs. They never sign a token, but the app refuses to boot
+          # without a signing secret (config/initializers/jwt_secret.rb), and
+          # development credentials aren't readable in CI. Throwaway, same as
+          # the one docker-compose.yml sets for local dev.
+          JWT_SECRET_KEY: local-development-jwt-secret-do-not-use-in-production
         run: |
           bin/rails db:create db:schema:load
           bundle exec tapioca gems
