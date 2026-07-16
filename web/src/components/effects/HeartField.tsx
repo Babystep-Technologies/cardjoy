@@ -30,7 +30,7 @@ const HeartField: React.FC<HeartFieldProps> = ({ count = 12, className }) => {
         x: `${Math.random() * 90 + 5}%`,
         size: Math.random() * 16 + 14,
         opacity: Math.random() * 0.4 + 0.45,
-        delay: Math.random() * 6,
+        delay: Math.random() * 3.5,
         duration: Math.random() * 4 + 7,
         drift: Math.random() * 40 - 20,
       })),
@@ -40,13 +40,16 @@ const HeartField: React.FC<HeartFieldProps> = ({ count = 12, className }) => {
   return (
     <div className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}>
       {hearts.map(heart => (
-        // The track spans the container, so `y` is a share of the full height
-        // and every heart crosses the same distance whatever its size.
+        // The track spans the container and the heart rides its bottom edge, so
+        // `y` is a share of the full height and every heart crosses the same
+        // distance whatever its size. It runs 0% -> -100% — exactly one
+        // container height — because the heart starts already at the bottom
+        // edge; starting at 100% would spend half the animation below the fold.
         <motion.div
           key={heart.id}
           className="absolute inset-y-0"
           style={{ left: heart.x }}
-          initial={{ y: '100%', opacity: 0 }}
+          initial={{ y: '0%', opacity: 0 }}
           animate={{ y: '-100%', opacity: [0, heart.opacity, heart.opacity, 0] }}
           transition={{
             duration: heart.duration,
@@ -57,7 +60,7 @@ const HeartField: React.FC<HeartFieldProps> = ({ count = 12, className }) => {
               duration: heart.duration,
               repeat: Infinity,
               delay: heart.delay,
-              times: [0, 0.15, 0.8, 1],
+              times: [0, 0.12, 0.85, 1],
             },
           }}
         >
