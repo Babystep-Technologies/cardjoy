@@ -4,7 +4,9 @@ module Types
   class MessageType < Types::BaseObject
     field :id, ID, null: false
     field :text, String, null: false
-    field :title, String, null: false
+    # Nullable to match the column: createOneOnOneCard writes a message with no
+    # title, and nothing validates its presence.
+    field :title, String, null: true
     field :flagged, Boolean, null: false
     field :image_url, String, null: true
     field :user, Types::UserType, null: false

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { gql, useQuery } from '@apollo/client';
 
@@ -14,7 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
 import { Send, ArrowLeft, Settings, Pencil, LayoutGrid } from 'lucide-react';
 import ShareDialog from '@/components/ShareDialog';
-import ConfettiScene, { type ConfettiSceneHandle } from '@/components/ConfettiScene';
+import { CardEffect, isEffectSlug } from '@/components/effects';
 
 const GET_CARD = gql`
   query Card($cardId: ID!, $showFlaggedMessages: Boolean!) {
@@ -66,7 +66,6 @@ const CardViewable: React.FC = () => {
   const { user } = useAuth();
   const { cardExternalId } = useParams<{ cardExternalId: string }>();
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const confettiSceneRef = useRef<ConfettiSceneHandle>(null);
 
   const { data, loading, error } = useQuery(GET_CARD, {
     variables: {
@@ -91,6 +90,10 @@ const CardViewable: React.FC = () => {
   const textColor = textColorStyle?.value || '#1a1a1a';
   const coverImageUrl = cardData?.coverImageUrl;
 
+  // Cards with no effect style — every group card — fall back to confetti.
+  const effectStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'effect');
+  const effect = isEffectSlug(effectStyle?.value) ? effectStyle.value : null;
+
   const handleShareClick = () => {
     setShareDialogOpen(true);
   };
@@ -99,24 +102,6 @@ const CardViewable: React.FC = () => {
     if (!cardTitle) return;
     document.title = `${cardTitle} | CardJoy`;
   }, [cardTitle]);
-
-  // Trigger confetti burst when card data first loads — retry until renderer is ready
-  useEffect(() => {
-    if (!cardData) return;
-    let cancelled = false;
-    const tryBurst = () => {
-      if (cancelled) return;
-      if (confettiSceneRef.current) {
-        confettiSceneRef.current.triggerBurst(1.5);
-      } else {
-        setTimeout(tryBurst, 200);
-      }
-    };
-    setTimeout(tryBurst, 300);
-    return () => {
-      cancelled = true;
-    };
-  }, [cardData]);
 
   if (loading) return <LoadingScreen />;
   if (error) return <ErrorScreen />;
@@ -143,9 +128,10 @@ const CardViewable: React.FC = () => {
     <div className="relative" style={{ backgroundColor: backgroundColorStyle?.value || '#fff' }}>
       <Toaster />
 
-      {/* 3D Confetti — fixed canvas behind everything */}
-      <ConfettiScene
-        ref={confettiSceneRef}
+      {/* The sender's chosen effect — a fixed layer behind everything */}
+      <CardEffect
+        effect={effect}
+        scope="page"
         backgroundColor={backgroundColorStyle?.value || '#fff'}
         sectionCount={visibleMessages.length}
       />

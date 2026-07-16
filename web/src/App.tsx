@@ -15,6 +15,7 @@ import BuyCreditsSuccess from '@/pages/BuyCredits/Success';
 import RedeemPromo from '@/pages/RedeemPromo';
 import Dashboard from '@/pages/Dashboard';
 import CardNew from '@/pages/Card/New';
+import CardOneOnOneNew from '@/pages/Card/OneOnOneNew';
 import CardEdit from '@/pages/Card/Edit';
 import CardEditable from '@/pages/Card/Editable';
 import CardViewable from '@/pages/Card/Viewable';
@@ -71,6 +72,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
 
           <Route path="/card/new" element={<CardNew />} />
+          <Route path="/card/one-on-one/new" element={<CardOneOnOneNew />} />
           <Route path="/card/:cardExternalId/edit" element={<CardEdit />} />
           <Route path="/card/:cardExternalId/viewable" element={<CardViewable />} />
           <Route path="/card/:cardExternalId/editable" element={<CardEditable />} />

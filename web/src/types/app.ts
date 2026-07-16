@@ -27,7 +27,8 @@ export type CardType = {
 
 export type UserMessageType = {
   id: string;
-  title: string;
+  // Nullable in the API: a 1-on-1 card's message carries no title.
+  title?: string | null;
   text: string;
   imageUrl?: string | null;
   flagged?: boolean;
@@ -40,11 +41,11 @@ export type UserMessageType = {
 
 export type GuestMessageType = {
   id: string;
-  title: string;
-  text: string;
+  title?: string | null;
+  text?: string | null;
   imageUrl?: string | null;
   flagged?: boolean;
-  name?: string;
+  name?: string | null;
 };
 
 export type MessageType = UserMessageType | GuestMessageType;

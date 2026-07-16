@@ -51,3 +51,20 @@ font_colors.each do |color|
   )
 end
 puts "✅ Seeded #{font_colors.count} font color styles."
+
+puts "🌱 Seeding Effects..."
+# `source` is the slug the web app switches on to pick an animation component.
+effects = [
+  { name: "Confetti", value: "confetti" },
+  { name: "Sparkles", value: "sparkles" },
+  { name: "Floating Hearts", value: "hearts" }
+]
+
+effects.each do |effect|
+  Style.find_or_create_by!(
+    name: effect[:name],
+    kind: "effect",
+    source: effect[:value]
+  )
+end
+puts "✅ Seeded #{effects.count} effect styles."

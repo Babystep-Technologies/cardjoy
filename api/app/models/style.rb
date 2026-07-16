@@ -12,10 +12,11 @@ class Style < ApplicationRecord
   has_many :collections, through: :collection_styles
 
   validates :name, presence: true
-  validates :kind, presence: true, inclusion: { in: %w[cover background_color text_color] }
+  validates :kind, presence: true, inclusion: { in: %w[cover background_color text_color effect] }
 
   default_scope { where(deleted_at: nil) }
   scope :cover, -> { where(kind: "cover") }
+  scope :effect, -> { where(kind: "effect") }
 
   def archive!
     update!(deleted_at: Time.current)
