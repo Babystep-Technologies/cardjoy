@@ -14,6 +14,7 @@ module Types
     field :delete_card, mutation: Mutations::DeleteCard
     field :update_card, mutation: Mutations::UpdateCard
     field :invite_to_card, mutation: Mutations::InviteToCard
+    field :deliver_card, mutation: Mutations::DeliverCard
     field :create_stripe_checkout_session, mutation: Mutations::CreateStripeCheckoutSession
     field :redeem_promo_code, mutation: Mutations::RedeemPromoCode
     field :update_cover_style, mutation: Mutations::UpdateCoverStyle
