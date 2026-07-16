@@ -56,7 +56,7 @@ class GraphqlController < ApiController
     return unless token
 
     begin
-      decoded_token = JWT.decode(token, Rails.application.credentials.dig(:jwt, :secret), true, algorithm: "HS256")
+      decoded_token = JWT.decode(token, Rails.configuration.x.jwt_secret, true, algorithm: "HS256")
       payload = decoded_token[0]
 
       if payload["user_id"]

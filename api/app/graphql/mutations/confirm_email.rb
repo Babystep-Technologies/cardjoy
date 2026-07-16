@@ -35,7 +35,7 @@ module Mutations
           name: user.name,
           email: user.email
         },
-        Rails.application.credentials.dig(:jwt, :secret)
+        Rails.configuration.x.jwt_secret
       )
 
       Response.new(user: user, token: token, errors: [])

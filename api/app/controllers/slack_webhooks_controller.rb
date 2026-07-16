@@ -319,7 +319,7 @@ class SlackWebhooksController < ApplicationController
         name: user.name,
         email: user.email
       },
-      Rails.application.credentials.dig(:jwt, :secret)
+      Rails.configuration.x.jwt_secret
     )
   end
 

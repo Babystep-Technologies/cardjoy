@@ -13,7 +13,7 @@ module Mutations
 
       payload = JWT.decode(
         state,
-        Rails.application.credentials.dig(:jwt, :secret),
+        Rails.configuration.x.jwt_secret,
         true,
         { algorithm: "HS256" }
       ).first

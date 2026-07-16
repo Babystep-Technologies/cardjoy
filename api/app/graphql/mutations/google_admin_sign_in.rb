@@ -12,7 +12,7 @@ module Mutations
       validator = GoogleIDToken::Validator.new
       google_client_id = ENV.fetch("GOOGLE_CLIENT_ID") { Rails.application.credentials.dig(:google, :client_id) }
       payload = validator.check(id_token, google_client_id) rescue nil
-      jwt_secret = Rails.application.credentials.dig(:jwt, :secret)
+      jwt_secret = Rails.configuration.x.jwt_secret
 
       if payload
         admin = Admin.from_google(
