@@ -11,6 +11,24 @@ make setup   # build, install deps, create & seed the database
 make dev     # start api :3000, web :3001, admin :3002
 ```
 
+### Secrets in local development
+
+You do **not** need any secret to run CardJoy locally. `config/credentials/development.key` is
+gitignored and never committed, so on a fresh clone `Rails.application.credentials` decrypts to an
+empty hash — that is expected.
+
+Anything local dev genuinely needs therefore reads an env var, falling back to credentials. The JWT
+signing secret works this way (`config.x.jwt_secret` in `config/application.rb`), and
+`docker-compose.yml` sets a throwaway `JWT_SECRET_KEY` for the `api` service. If you run the API
+outside Docker, export one yourself:
+
+```bash
+export JWT_SECRET_KEY=local-development-jwt-secret-do-not-use-in-production
+```
+
+Without it, `signIn` still returns a token but the API can never verify it, so every request is
+anonymous and sign-in appears to succeed while silently doing nothing.
+
 ## Before you start
 
 1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).

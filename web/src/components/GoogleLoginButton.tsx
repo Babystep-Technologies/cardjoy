@@ -28,6 +28,8 @@ export default function GoogleLoginButton() {
 
   const [googleOauthSignIn, { data, loading, error }] = useMutation(GOOGLE_OAUTH_MUTATION);
 
+  const signInErrors: string[] = data?.googleOauthSignIn?.errors ?? [];
+
   useEffect(() => {
     if (data?.googleOauthSignIn?.token) {
       const token = data.googleOauthSignIn.token;
@@ -81,7 +83,9 @@ export default function GoogleLoginButton() {
     <div className="flex flex-col items-center justify-center min-h-[100px]">
       <div id="googleSignInDiv" />
       {loading && <p>Loading...</p>}
-      {data && <p>Success! Redirecting...</p>}
+      {/* A rejected sign-in still returns data — only a token means success. */}
+      {data?.googleOauthSignIn?.token && <p>Success! Redirecting...</p>}
+      {signInErrors.length > 0 && <p className="text-red-500">{signInErrors.join(', ')}</p>}
       {error && <p className="text-red-500">Error with Google Sign-In</p>}
     </div>
   );

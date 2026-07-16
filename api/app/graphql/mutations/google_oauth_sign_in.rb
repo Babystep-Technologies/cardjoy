@@ -26,7 +26,7 @@ module Mutations
             exp: 6.months.from_now.to_i,
             name: payload["name"],
             email: payload["email"]
-          }, Rails.application.credentials.dig(:jwt, :secret)
+          }, Rails.configuration.x.jwt_secret
         )
         {
           user: user,

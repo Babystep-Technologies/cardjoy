@@ -17,6 +17,17 @@ services:
     command: tail -f /dev/null
     environment:
       - REDIS_URL=redis://redis:6379/0
+      # Local-only JWT signing secret. config/credentials/development.key is
+      # gitignored, so credentials decrypt to {} on a fresh clone and sign-in
+      # would mint tokens the API can never verify. Not a real secret — deployed
+      # environments read theirs from credentials.
+      - JWT_SECRET_KEY=local-development-jwt-secret-do-not-use-in-production
+      # Must match web/.env.development's VITE_GOOGLE_CLIENT_ID: the browser
+      # gets an ID token for this client, and the API validates it against the
+      # same one. Without it Google sign-in fails with "Invalid Google token".
+      # A public client ID, not a secret — Google sign-in here is token-based
+      # and uses no client secret.
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-577617815739-khjjo3bv6e673en0rth3rgrpt56gr9lc.apps.googleusercontent.com}
   db:
     image: postgres:14.2
     ports:

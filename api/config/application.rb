@@ -39,6 +39,16 @@ module Api
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
+    # Single source for the JWT signing secret. Credentials win, so deployed
+    # environments keep signing with the key they already use; JWT_SECRET_KEY is
+    # the fallback for local development, where the gitignored
+    # `config/credentials/development.key` is absent on a fresh clone and
+    # credentials decrypt to an empty hash. Set here rather than in an
+    # initializer because config/initializers/devise.rb reads it and would
+    # otherwise load first. See docs/DEVELOPMENT.md.
+    config.x.jwt_secret =
+      Rails.application.credentials.dig(:jwt, :secret).presence || ENV["JWT_SECRET_KEY"].presence
+
     # Postgres-backed background jobs via GoodJob (no Redis). See
     # config/initializers/good_job.rb for the execution mode.
     config.active_job.queue_adapter = :good_job

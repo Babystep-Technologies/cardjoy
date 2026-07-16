@@ -36,7 +36,7 @@ module Mutations
           exp: 6.months.from_now.to_i,
           name: user.name,
           email: user.email
-        }, Rails.application.credentials.dig(:jwt, :secret))
+        }, Rails.configuration.x.jwt_secret)
 
       context[:response].set_cookie(:auth_token, {
         value: token,
