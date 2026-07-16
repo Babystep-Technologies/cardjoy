@@ -64,7 +64,12 @@ class GraphqlController < ApiController
       elsif payload["admin_id"]
         @current_admin = Admin.find_by(id: payload["admin_id"])
       end
-    rescue JWT::DecodeError
+    rescue JWT::DecodeError => e
+      # A malformed or expired token from a client is a client problem: treat the
+      # request as anonymous rather than raising. Log it so that never happens
+      # silently — a JWT::VerificationError here means tokens are signed with a
+      # different secret than this process holds, which no client can cause.
+      Rails.logger.warn("Ignoring unverifiable JWT (#{e.class}): #{e.message}")
       @current_user = nil
       @current_admin = nil
     end

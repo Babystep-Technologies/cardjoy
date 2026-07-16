@@ -26,8 +26,12 @@ outside Docker, export one yourself:
 export JWT_SECRET_KEY=local-development-jwt-secret-do-not-use-in-production
 ```
 
-Without it, `signIn` still returns a token but the API can never verify it, so every request is
-anonymous and sign-in appears to succeed while silently doing nothing.
+Without it, the API refuses to boot and tells you to set one
+(`config/initializers/jwt_secret.rb`). That check is deliberate: `JWT.encode` signs happily with a
+nil key, so a missing secret used to let `signIn` return a token the API could never verify — every
+request was anonymous and sign-in appeared to succeed while silently doing nothing.
+
+`credentials:edit` does not run initializers, so a missing secret is still fixable through it.
 
 ## Before you start
 
