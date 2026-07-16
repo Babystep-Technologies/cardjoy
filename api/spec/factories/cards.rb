@@ -1,7 +1,9 @@
 FactoryBot.define do
   factory :card do
     title { "Test Card" }
-    recipients { "John Doe, Joan Doe" }
+    # jsonb array column, exposed as [String!]! — a bare String breaks any query
+    # selecting Card.recipients.
+    recipients { [ "John Doe", "Joan Doe" ] }
     kind { "group" }
     user
 
