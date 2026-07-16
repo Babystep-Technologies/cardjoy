@@ -9,6 +9,7 @@ module Types
     field :google_admin_sign_in, mutation: Mutations::GoogleAdminSignIn
     field :send_password_reset, mutation: Mutations::SendPasswordReset
     field :create_card, mutation: Mutations::CreateCard
+    field :create_one_on_one_card, mutation: Mutations::CreateOneOnOneCard
     field :upsert_message, mutation: Mutations::UpsertMessage
     field :delete_card, mutation: Mutations::DeleteCard
     field :update_card, mutation: Mutations::UpdateCard
