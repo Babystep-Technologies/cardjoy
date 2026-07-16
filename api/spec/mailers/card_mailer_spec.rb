@@ -34,4 +34,17 @@ RSpec.describe CardMailer, type: :mailer do
       expect(mail.body.encoded).to include("#{frontend_url}/card/#{card.external_id}/viewable")
     end
   end
+
+  describe '#one_on_one_delivery' do
+    subject(:mail) { described_class.one_on_one_delivery(email, card) }
+
+    it 'renders the correct headers' do
+      expect(mail.to).to eq([ email ])
+      expect(mail.subject).to eq("Someone sent you a CardJoy card!")
+    end
+
+    it 'includes the viewable reveal link in the body' do
+      expect(mail.body.encoded).to include("#{frontend_url}/card/#{card.external_id}/viewable")
+    end
+  end
 end

@@ -11,6 +11,9 @@ class CardMailer
     def collaborator_invite(email, card); end
 
     sig { params(email: T.untyped, card: T.untyped).returns(::ActionMailer::MessageDelivery) }
+    def one_on_one_delivery(email, card); end
+
+    sig { params(email: T.untyped, card: T.untyped).returns(::ActionMailer::MessageDelivery) }
     def viewer_invite(email, card); end
   end
 end
