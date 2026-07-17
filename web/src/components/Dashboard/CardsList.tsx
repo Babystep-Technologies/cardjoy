@@ -297,6 +297,11 @@ interface CardsListProps {
   onRefetch: () => void;
   onShareClick: (cardId: string) => void;
   onQrClick: (cardId: string) => void;
+  // Supplied per card kind by the dashboard, so a new kind needs no changes here.
+  createPath: string;
+  createLabel: string;
+  emptyTitle: string;
+  emptyDescription: string;
 }
 
 export const CardsList: React.FC<CardsListProps> = ({
@@ -304,6 +309,10 @@ export const CardsList: React.FC<CardsListProps> = ({
   onRefetch,
   onShareClick,
   onQrClick,
+  createPath,
+  createLabel,
+  emptyTitle,
+  emptyDescription,
 }) => {
   const navigate = useNavigate();
   const [openSheetCardId, setOpenSheetCardId] = useState<string | null>(null);
@@ -324,20 +333,16 @@ export const CardsList: React.FC<CardsListProps> = ({
       <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
         <img src="/logo.svg" alt="CardJoy Logo" className="opacity-80 w-24 h-24" />
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {`You haven't created any cards yet`}
-          </h2>
-          <p className="text-gray-500 text-lg">
-            Get started by creating your first card — it's quick and easy!
-          </p>
+          <h2 className="text-2xl font-semibold text-gray-800">{emptyTitle}</h2>
+          <p className="text-gray-500 text-lg">{emptyDescription}</p>
         </div>
         <motion.button
-          onClick={() => navigate('/card/new')}
+          onClick={() => navigate(createPath)}
           className="px-6 py-3 text-lg sm:text-xl font-extrabold bg-black text-white rounded-xl shadow-xl w-full sm:w-auto"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          Create New Card
+          {createLabel}
         </motion.button>
       </div>
     );
@@ -346,12 +351,12 @@ export const CardsList: React.FC<CardsListProps> = ({
   return (
     <div className="w-full">
       <motion.button
-        onClick={() => navigate('/card/new')}
+        onClick={() => navigate(createPath)}
         className="mb-6 px-6 py-4 text-xl font-extrabold bg-black text-white rounded-xl shadow-xl w-full sm:w-auto"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
-        Create New Card
+        {createLabel}
       </motion.button>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {cards.map((card: CardType) => (

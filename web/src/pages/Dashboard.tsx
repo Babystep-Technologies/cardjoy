@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { gql, useQuery, useMutation } from '@apollo/client';
+import { CardKind, CardType } from '@/types/app';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -20,6 +21,7 @@ const GET_USER_CARDS = gql`
       externalId
       slug
       title
+      kind
       locked
       recipients
       coverImageUrl
@@ -57,9 +59,41 @@ const DELETE_CARD = gql`
   }
 `;
 
+// One entry per card kind, in tab order. Adding a kind (e.g. holiday) means adding an
+// entry here — the first entry doubles as the fallback bucket, see cardsByKind below.
+const CARD_TABS: {
+  kind: CardKind;
+  label: string;
+  shortLabel: string;
+  createPath: string;
+  createLabel: string;
+  emptyTitle: string;
+  emptyDescription: string;
+}[] = [
+  {
+    kind: 'group',
+    label: 'Group Cards',
+    shortLabel: 'Group',
+    createPath: '/card/new',
+    createLabel: 'Create New Card',
+    emptyTitle: `You haven't created any group cards yet`,
+    emptyDescription: `Get started by creating your first card — it's quick and easy!`,
+  },
+  {
+    kind: 'one_on_one',
+    label: '1-on-1 Cards',
+    shortLabel: '1-on-1',
+    createPath: '/card/one-on-one/new',
+    createLabel: 'Send a 1-on-1 card',
+    emptyTitle: `You haven't sent any 1-on-1 cards yet`,
+    emptyDescription: 'Pick a design, write your message, and send it — no group signing needed.',
+  },
+];
+
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('cards');
+  // Null until the user picks a tab, so the default can follow the data once it loads.
+  const [activeTab, setActiveTab] = useState<string | null>(null);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -86,8 +120,26 @@ const Dashboard: React.FC = () => {
     nextFetchPolicy: 'network-only',
   });
 
-  const cards = data?.userCards || [];
+  const cards: CardType[] = useMemo(() => data?.userCards || [], [data]);
   const invitations = invitationsData?.userInvitations || [];
+
+  // Bucket cards by kind for the per-kind tabs. A kind the API knows about but this UI
+  // doesn't have a tab for yet falls back to the first tab, so no card ever goes missing.
+  const cardsByKind = useMemo(() => {
+    const buckets = Object.fromEntries(
+      CARD_TABS.map(tab => [tab.kind, [] as CardType[]])
+    ) as Record<string, CardType[]>;
+    cards.forEach(card => {
+      const bucket = buckets[card.kind] ?? buckets[CARD_TABS[0].kind];
+      bucket.push(card);
+    });
+    return buckets;
+  }, [cards]);
+
+  // Land on the first kind the user actually has, so someone who only sends 1-on-1 cards
+  // doesn't open the dashboard on an empty Group tab. A manual choice always wins.
+  const selectedTab =
+    activeTab ?? CARD_TABS.find(tab => cardsByKind[tab.kind].length > 0)?.kind ?? CARD_TABS[0].kind;
 
   // Listen for delete events from child components
   useEffect(() => {
@@ -144,12 +196,16 @@ const Dashboard: React.FC = () => {
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold text-gray-800">Welcome to CardJoy!</h2>
             <p className="text-gray-500 text-lg">
-              Create group greeting cards or event invitations to get started
+              Create group greeting cards, send a 1-on-1 card, or plan an event invitation to get
+              started
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button asChild size="lg">
               <Link to="/card/new">Create a card</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link to="/card/one-on-one/new">Send a 1-on-1 card</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link to="/invitation/new">Create an invitation</Link>
@@ -158,14 +214,19 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="w-full max-w-7xl mx-auto mt-4 sm:mt-8 px-2 sm:px-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="inline-flex h-9 sm:h-10 items-center justify-center rounded-full bg-gray-100 p-1 mb-4 sm:mb-6 w-auto mx-auto">
-              <TabsTrigger
-                value="cards"
-                className="rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
-              >
-                Cards{hasCards && ` (${cards.length})`}
-              </TabsTrigger>
+          <Tabs value={selectedTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="flex h-9 sm:h-10 items-center justify-center rounded-full bg-gray-100 p-1 mb-4 sm:mb-6 w-fit max-w-full mx-auto">
+              {CARD_TABS.map(tab => (
+                <TabsTrigger
+                  key={tab.kind}
+                  value={tab.kind}
+                  className="rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
+                >
+                  <span className="sm:hidden">{tab.shortLabel}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  {cardsByKind[tab.kind].length > 0 && `(${cardsByKind[tab.kind].length})`}
+                </TabsTrigger>
+              ))}
               <TabsTrigger
                 value="invitations"
                 className="rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
@@ -174,14 +235,20 @@ const Dashboard: React.FC = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="cards" className="mt-0">
-              <CardsList
-                cards={cards}
-                onRefetch={refetch}
-                onShareClick={handleCardShareClick}
-                onQrClick={setQrCardId}
-              />
-            </TabsContent>
+            {CARD_TABS.map(tab => (
+              <TabsContent key={tab.kind} value={tab.kind} className="mt-0">
+                <CardsList
+                  cards={cardsByKind[tab.kind]}
+                  onRefetch={refetch}
+                  onShareClick={handleCardShareClick}
+                  onQrClick={setQrCardId}
+                  createPath={tab.createPath}
+                  createLabel={tab.createLabel}
+                  emptyTitle={tab.emptyTitle}
+                  emptyDescription={tab.emptyDescription}
+                />
+              </TabsContent>
+            ))}
 
             <TabsContent value="invitations" className="mt-0">
               <InvitationsList

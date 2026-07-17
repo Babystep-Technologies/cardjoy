@@ -13,10 +13,14 @@ export type UserType = {
   email: string;
 };
 
+// Mirrors Card::KINDS in the API.
+export type CardKind = 'group' | 'one_on_one';
+
 export type CardType = {
   externalId: string;
   slug?: string | null;
   title: string;
+  kind: CardKind;
   locked: boolean;
   coverImageUrl?: string | null;
   styles: StyleType[];
