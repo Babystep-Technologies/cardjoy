@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { WordRotate } from '@/components/magicui/word-rotate';
 import * as motion from 'motion/react-client';
@@ -16,8 +16,11 @@ import {
   Sparkles,
   Heart,
   Send,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { occasions } from '@/config/occasions';
+import { cardTypes, type CardTypeId } from '@/config/cardTypes';
 import { GITHUB_REPO_URL } from '@/lib/constants';
 
 const cardFeatures = [
@@ -38,8 +41,36 @@ const invitationFeatures = [
   { icon: CalendarCheck, text: 'One-tap add to calendar' },
 ];
 
+const holidayFeatures = [
+  { icon: Sparkles, text: 'Festive seasonal designs' },
+  { icon: Heart, text: 'Warm wishes for the whole list' },
+  { icon: Send, text: 'Share by link or send by email' },
+];
+
+const featuresByType: Record<CardTypeId, { icon: typeof Users; text: string }[]> = {
+  group: cardFeatures,
+  one_on_one: oneOnOneFeatures,
+  invitation: invitationFeatures,
+  holiday: holidayFeatures,
+};
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
+
+  // Card-type showcase slideshow: emphasise one type at a time, themed in its brand color.
+  const [activeSlide, setActiveSlide] = useState(0);
+  const goToSlide = (index: number) =>
+    setActiveSlide((index + cardTypes.length) % cardTypes.length);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSlide(current => (current + 1) % cardTypes.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [activeSlide]);
+
+  const activeType = cardTypes[activeSlide];
+  const activeFeatures = featuresByType[activeType.id];
 
   return (
     <div className="flex flex-col w-full overflow-x-hidden overscroll-y-auto">
@@ -58,16 +89,16 @@ const Home: React.FC = () => {
             <WordRotate
               className="text-4xl md:text-6xl font-bold text-center px-6"
               words={[
-                "Celebrate a Colleague's Birthday",
-                'Say Goodbye to a Friend',
-                'Welcome the New Baby',
-                'Congratulate Your Graduate',
+                'Sign a Group Card Together',
+                'Send a Heartfelt 1-on-1 Card',
+                'Invite Everyone to Celebrate',
+                'Send Holiday Cards to Friends & Family',
               ]}
               colors={[
                 'text-[var(--color-brand-pink)]',
-                'text-[var(--color-brand-yellow)]',
                 'text-[var(--color-brand-blue)]',
                 'text-[var(--color-brand-green)]',
+                'text-[var(--color-brand-yellow)]',
               ]}
             />
           </h1>
@@ -115,104 +146,101 @@ const Home: React.FC = () => {
       <section className="scroll-section bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 min-h-screen overflow-y-hidden flex flex-col justify-center items-center py-[5vh] px-4 text-center">
         <Reveal>
           <h2 className="text-gray-900 text-4xl md:text-6xl pt-12 font-black mb-4">
-            Three ways to celebrate
+            Four ways to celebrate
           </h2>
           <p className="text-gray-600 text-lg md:text-2xl font-medium mb-12">
             A card for every moment — whether it's from a crowd or just from you
           </p>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto w-full mb-8">
-          {/* Group Cards */}
-          <Reveal>
-            <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
-              <div className="bg-gradient-to-br from-[var(--color-brand-pink)] to-[var(--color-brand-blue)] p-8 text-white">
-                <Mail className="w-12 h-12 drop-shadow-lg mb-4" />
-                <h3 className="text-3xl font-bold drop-shadow-md">Group Cards</h3>
-                <p className="text-white/90 text-lg mt-2 drop-shadow-sm">
-                  Collect heartfelt messages, photos &amp; wishes from everyone who cares — all in
-                  one beautiful keepsake.
+        <Reveal>
+          <div className="relative w-full max-w-5xl mx-auto mb-8">
+            {/* Slide — re-keyed per type so it re-triggers the fade on change */}
+            <div
+              key={activeType.id}
+              className="animate-fade-in grid md:grid-cols-2 rounded-3xl bg-white shadow-2xl overflow-hidden text-left"
+            >
+              {/* Themed visual side, emphasising the type's brand color */}
+              <div
+                className={`bg-gradient-to-br ${activeType.gradient} p-10 sm:p-14 text-white flex flex-col justify-center min-h-[300px] sm:min-h-[360px]`}
+              >
+                {activeType.comingSoon && (
+                  <span className="self-start mb-4 text-xs font-semibold uppercase tracking-wide bg-white/20 rounded-full px-3 py-1">
+                    Coming soon
+                  </span>
+                )}
+                <activeType.icon className="w-16 h-16 drop-shadow-lg mb-6" />
+                <h3 className="text-4xl font-bold drop-shadow-md">{activeType.label}</h3>
+                <p className="text-white/90 text-lg mt-3 drop-shadow-sm max-w-md">
+                  {activeType.description}
                 </p>
               </div>
-              <div className="flex flex-col flex-1 p-8">
-                <ul className="space-y-3 flex-1">
-                  {cardFeatures.map(feature => (
-                    <li key={feature.text} className="flex items-center gap-3 text-gray-700">
-                      <feature.icon className="w-5 h-5 text-[var(--color-brand-pink)] shrink-0" />
-                      <span className="font-medium">{feature.text}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => navigate('/group-card/new')}
-                  className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
-                >
-                  Create a Group Card →
-                </button>
-              </div>
-            </div>
-          </Reveal>
 
-          {/* 1-on-1 Cards */}
-          <Reveal>
-            <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
-              <div className="bg-gradient-to-br from-purple-600 to-[var(--color-brand-pink)] p-8 text-white">
-                <Heart className="w-12 h-12 drop-shadow-lg mb-4" />
-                <h3 className="text-3xl font-bold drop-shadow-md">1-on-1 Cards</h3>
-                <p className="text-white/90 text-lg mt-2 drop-shadow-sm">
-                  Send one person a single heartfelt message that opens with an effect — no group
-                  signing needed.
-                </p>
-              </div>
-              <div className="flex flex-col flex-1 p-8">
-                <ul className="space-y-3 flex-1">
-                  {oneOnOneFeatures.map(feature => (
+              {/* Content side */}
+              <div className="p-10 sm:p-14 flex flex-col justify-center">
+                <ul className="space-y-4 mb-8">
+                  {activeFeatures.map(feature => (
                     <li key={feature.text} className="flex items-center gap-3 text-gray-700">
-                      <feature.icon className="w-5 h-5 text-purple-600 shrink-0" />
+                      <feature.icon
+                        className="w-5 h-5 shrink-0"
+                        style={{ color: activeType.colorVar }}
+                      />
                       <span className="font-medium">{feature.text}</span>
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => navigate('/one-on-one-card/new')}
-                  className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
-                >
-                  Send a 1-on-1 Card →
-                </button>
+                {activeType.comingSoon ? (
+                  <span className="inline-flex w-fit items-center justify-center rounded-2xl border-2 border-gray-200 px-6 py-4 font-bold text-gray-400">
+                    Coming soon
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => navigate(activeType.route)}
+                    className={`w-fit bg-gradient-to-r ${activeType.gradient} text-white rounded-2xl px-8 py-4 font-bold hover:opacity-90 hover:scale-105 transition-all shadow-md hover:shadow-xl`}
+                  >
+                    {activeType.cta} →
+                  </button>
+                )}
               </div>
             </div>
-          </Reveal>
 
-          {/* Invitations */}
-          <Reveal>
-            <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
-              <div className="bg-gradient-to-br from-[var(--color-brand-blue)] to-[var(--color-brand-green)] p-8 text-white">
-                <PartyPopper className="w-12 h-12 drop-shadow-lg mb-4" />
-                <h3 className="text-3xl font-bold drop-shadow-md">Invitations</h3>
-                <p className="text-white/90 text-lg mt-2 drop-shadow-sm">
-                  Design animated invites your guests will love, with RSVP tracking and event
-                  details built right in.
-                </p>
-              </div>
-              <div className="flex flex-col flex-1 p-8">
-                <ul className="space-y-3 flex-1">
-                  {invitationFeatures.map(feature => (
-                    <li key={feature.text} className="flex items-center gap-3 text-gray-700">
-                      <feature.icon className="w-5 h-5 text-[var(--color-brand-blue)] shrink-0" />
-                      <span className="font-medium">{feature.text}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => navigate('/invitation/new')}
-                  className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
-                >
-                  Create an Invitation →
-                </button>
-              </div>
+            {/* Prev / next arrows */}
+            <button
+              type="button"
+              aria-label="Previous card type"
+              onClick={() => goToSlide(activeSlide - 1)}
+              className="absolute left-2 sm:-left-5 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-white shadow-lg hover:scale-110 transition-all text-gray-700"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              type="button"
+              aria-label="Next card type"
+              onClick={() => goToSlide(activeSlide + 1)}
+              className="absolute right-2 sm:-right-5 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-white shadow-lg hover:scale-110 transition-all text-gray-700"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+
+            {/* Dots */}
+            <div className="flex justify-center items-center gap-3 mt-6">
+              {cardTypes.map((type, index) => {
+                const isActive = index === activeSlide;
+                return (
+                  <button
+                    key={type.id}
+                    type="button"
+                    aria-label={`Show ${type.label}`}
+                    aria-current={isActive}
+                    onClick={() => goToSlide(index)}
+                    className={`h-2.5 rounded-full transition-all ${isActive ? 'w-8' : 'w-2.5 bg-gray-300 hover:bg-gray-400'}`}
+                    style={isActive ? { backgroundColor: type.colorVar } : undefined}
+                  />
+                );
+              })}
             </div>
-          </Reveal>
-        </div>
+          </div>
+        </Reveal>
 
         {/* Quick Occasion Links */}
         <Reveal>

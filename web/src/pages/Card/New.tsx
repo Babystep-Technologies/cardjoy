@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { StyleType } from '@/types/app';
+import { cardTypeById } from '@/config/cardTypes';
 import { X, Sparkles, Upload, Users, Heart } from 'lucide-react';
 import {
   Select,
@@ -251,7 +252,9 @@ const CardNew: React.FC = () => {
 
         {/* Fun Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+          <h1
+            className={`text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r ${cardTypeById.group.gradient} bg-clip-text text-transparent`}
+          >
             Create Your Group Card
           </h1>
           <p className="text-gray-600 text-lg">
@@ -507,7 +510,7 @@ const CardNew: React.FC = () => {
               <Button
                 onClick={handleCreateCard}
                 disabled={!isFormValid || creating}
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all"
+                className={`w-full sm:w-auto bg-gradient-to-r ${cardTypeById.group.gradient} hover:opacity-90 text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all`}
               >
                 {creating ? 'Creating...' : 'Create Card'}
               </Button>

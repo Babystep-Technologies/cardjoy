@@ -23,6 +23,7 @@ import CardOneOnOneEdit from './OneOnOneEdit';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { X } from 'lucide-react';
 import { getGuestMessageIdKey } from '@/lib/utils';
+import { cardTypeById } from '@/config/cardTypes';
 
 const GET_CARD_KIND = gql`
   query CardKind($cardId: ID!) {
@@ -490,7 +491,7 @@ function PageEdit() {
             {isCreator && !editingSettings ? (
               <>
                 <h1
-                  className="text-3xl font-bold cursor-pointer hover:underline transition bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent hover:from-purple-700 hover:via-pink-700 hover:to-blue-700"
+                  className={`text-3xl font-bold cursor-pointer hover:underline transition bg-gradient-to-r ${cardTypeById.group.gradient} bg-clip-text text-transparent hover:opacity-90`}
                   onClick={() => navigate(`/card/${cardExternalId}/editable`)}
                 >
                   {cardTitle}
@@ -544,7 +545,7 @@ function PageEdit() {
             ) : (
               <>
                 <h1
-                  className="text-3xl font-bold cursor-pointer hover:underline transition bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent hover:from-purple-700 hover:via-pink-700 hover:to-blue-700"
+                  className={`text-3xl font-bold cursor-pointer hover:underline transition bg-gradient-to-r ${cardTypeById.group.gradient} bg-clip-text text-transparent hover:opacity-90`}
                   onClick={() => navigate(`/card/${cardExternalId}/editable`)}
                 >
                   {cardTitle}
@@ -660,7 +661,7 @@ function PageEdit() {
                     type="submit"
                     disabled={!isCardMessageValid || submitting}
                     onClick={handleUpsertMessage}
-                    className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg py-6 px-8 shadow-lg hover:shadow-xl transition-all"
+                    className={`w-full sm:w-auto bg-gradient-to-r ${cardTypeById.group.gradient} hover:opacity-90 text-white font-bold text-lg py-6 px-8 shadow-lg hover:shadow-xl transition-all`}
                   >
                     {submitting ? 'Submitting...' : 'Submit Message'}
                   </Button>

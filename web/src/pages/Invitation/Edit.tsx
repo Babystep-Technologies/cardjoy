@@ -31,6 +31,7 @@ import CoverImageDialog from '../Card/components/CoverImageDialog';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import RSVPManagement from './components/RSVPManagement';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
+import { cardTypeById } from '@/config/cardTypes';
 import LoadingScreen from '@/components/Loading';
 
 const GET_INVITATION = gql`
@@ -486,7 +487,9 @@ const InvitationEdit: React.FC = () => {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+          <h1
+            className={`text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r ${cardTypeById.invitation.gradient} bg-clip-text text-transparent`}
+          >
             Edit Invitation
           </h1>
           <p className="text-gray-600 text-lg">Make changes to your event details</p>
@@ -563,7 +566,7 @@ const InvitationEdit: React.FC = () => {
                 <Button
                   type="button"
                   onClick={() => setOpeningEditorOpen(true)}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+                  className={`bg-gradient-to-r ${cardTypeById.invitation.gradient} hover:opacity-90 text-white shadow-md`}
                 >
                   {openingMessageConfig ? 'Edit' : 'Customize'}
                 </Button>
@@ -882,7 +885,7 @@ const InvitationEdit: React.FC = () => {
               <Button
                 onClick={handleSave}
                 disabled={saving || !!slugError || slugChecking}
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                className={`w-full sm:w-auto bg-gradient-to-r ${cardTypeById.invitation.gradient} hover:opacity-90 text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all disabled:opacity-50`}
               >
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>

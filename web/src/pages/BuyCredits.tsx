@@ -72,7 +72,7 @@ const BuyCredits: React.FC = () => {
       {showPromoModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4">
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-xl p-6 text-center space-y-4">
-            <div className="flex justify-center text-brand-yellow">
+            <div className="flex justify-center text-[var(--color-brand-yellow)]">
               <GiftIcon className="w-12 h-12" />
             </div>
             <h2 className="text-2xl font-bold">Our Gift to You</h2>
