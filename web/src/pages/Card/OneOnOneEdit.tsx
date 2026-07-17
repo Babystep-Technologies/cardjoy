@@ -27,6 +27,7 @@ import { StyleType } from '@/types/app';
 import CoverImageDialog from './components/CoverImageDialog';
 import CardPreview from './components/CardPreview';
 import EffectPicker from './components/EffectPicker';
+import { cardTypeById } from '@/config/cardTypes';
 
 const GET_CARD = gql`
   query OneOnOneEditCard($cardId: ID!) {
@@ -306,7 +307,9 @@ const CardOneOnOneEdit: React.FC = () => {
         <Toaster />
 
         <div className="mb-8 text-center">
-          <h1 className="mb-3 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-4xl font-bold text-transparent sm:text-5xl">
+          <h1
+            className={`mb-3 bg-gradient-to-r ${cardTypeById.one_on_one.gradient} bg-clip-text text-4xl font-bold text-transparent sm:text-5xl`}
+          >
             Edit Card
           </h1>
           <p className="text-lg text-gray-600">Update the design and message, then save.</p>
@@ -505,7 +508,7 @@ const CardOneOnOneEdit: React.FC = () => {
                   <Button
                     onClick={handleSave}
                     disabled={!isFormValid || saving}
-                    className="h-14 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-lg font-bold text-white shadow-lg transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-xl sm:w-auto"
+                    className={`h-14 w-full bg-gradient-to-r ${cardTypeById.one_on_one.gradient} text-lg font-bold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl sm:w-auto`}
                   >
                     {saving ? 'Saving…' : 'Save Changes'}
                   </Button>

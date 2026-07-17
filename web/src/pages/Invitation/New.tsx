@@ -19,6 +19,7 @@ import { detectTimezone } from '@/lib/timezone';
 import CoverImageDialog from '../Card/components/CoverImageDialog';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
+import { cardTypeById } from '@/config/cardTypes';
 import {
   Dialog,
   DialogContent,
@@ -241,7 +242,9 @@ const InvitationNew: React.FC = () => {
 
         {/* Fun Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+          <h1
+            className={`text-4xl sm:text-5xl font-bold mb-3 bg-gradient-to-r ${cardTypeById.invitation.gradient} bg-clip-text text-transparent`}
+          >
             Create Your Invitation
           </h1>
           <p className="text-gray-600 text-lg">
@@ -320,7 +323,7 @@ const InvitationNew: React.FC = () => {
                 <Button
                   type="button"
                   onClick={() => setOpeningEditorOpen(true)}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+                  className={`bg-gradient-to-r ${cardTypeById.invitation.gradient} hover:opacity-90 text-white shadow-md`}
                 >
                   {openingMessageConfig ? 'Edit' : 'Customize'}
                 </Button>
@@ -590,7 +593,7 @@ const InvitationNew: React.FC = () => {
               <Button
                 onClick={handleCreateInvitation}
                 disabled={!isFormValid || creating}
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all"
+                className={`w-full sm:w-auto bg-gradient-to-r ${cardTypeById.invitation.gradient} hover:opacity-90 text-white font-bold text-lg h-14 shadow-lg hover:shadow-xl transition-all`}
               >
                 {creating ? 'Creating...' : 'Create Invitation'}
               </Button>

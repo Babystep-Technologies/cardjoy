@@ -32,6 +32,7 @@ import { StyleType } from '@/types/app';
 import CoverImageDialog from './components/CoverImageDialog';
 import CardPreview from './components/CardPreview';
 import EffectPicker from './components/EffectPicker';
+import { cardTypeById } from '@/config/cardTypes';
 
 const CREATE_ONE_ON_ONE_CARD_DOCUMENT = `
   mutation CreateOneOnOneCard($input: CreateOneOnOneCardInput!) {
@@ -308,7 +309,9 @@ const CardOneOnOneNew: React.FC = () => {
         <Toaster />
 
         <div className="mb-8 text-center">
-          <h1 className="mb-3 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-4xl font-bold text-transparent sm:text-5xl">
+          <h1
+            className={`mb-3 bg-gradient-to-r ${cardTypeById.one_on_one.gradient} bg-clip-text text-4xl font-bold text-transparent sm:text-5xl`}
+          >
             Send a Card
           </h1>
           <p className="text-lg text-gray-600">
@@ -519,7 +522,7 @@ const CardOneOnOneNew: React.FC = () => {
                       <Button
                         onClick={handleCreateCard}
                         disabled={!isFormValid || creating}
-                        className="h-14 w-full bg-gradient-to-r from-purple-600 to-pink-600 text-lg font-bold text-white shadow-lg transition-all hover:from-purple-700 hover:to-pink-700 hover:shadow-xl sm:w-auto"
+                        className={`h-14 w-full bg-gradient-to-r ${cardTypeById.one_on_one.gradient} text-lg font-bold text-white shadow-lg transition-all hover:opacity-90 hover:shadow-xl sm:w-auto`}
                       >
                         {creating ? 'Creating…' : 'Create Card'}
                       </Button>

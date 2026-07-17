@@ -227,25 +227,3 @@ h3 {
     opacity: 1;
   }
 }
-
-@keyframes brand-color-cycle {
-  0% {
-    color: var(--color-brand-green);
-  }
-  25% {
-    color: var(--color-brand-pink);
-  }
-  50% {
-    color: var(--color-brand-blue);
-  }
-  75% {
-    color: var(--color-brand-yellow);
-  }
-  100% {
-    color: var(--color-brand-green);
-  }
-}
-
-.brand-color-animate {
-  animation: brand-color-cycle 10s ease-in-out infinite;
-}
