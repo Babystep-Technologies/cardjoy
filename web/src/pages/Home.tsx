@@ -14,6 +14,8 @@ import {
   QrCode,
   Users,
   Sparkles,
+  Heart,
+  Send,
 } from 'lucide-react';
 import { occasions } from '@/config/occasions';
 import { GITHUB_REPO_URL } from '@/lib/constants';
@@ -22,6 +24,12 @@ const cardFeatures = [
   { icon: Users, text: 'No signup needed for contributors' },
   { icon: Sparkles, text: 'Works for any occasion' },
   { icon: QrCode, text: 'QR code for in-person events' },
+];
+
+const oneOnOneFeatures = [
+  { icon: Heart, text: 'One heartfelt message, just for them' },
+  { icon: Sparkles, text: 'Opens with a celebratory effect' },
+  { icon: Send, text: 'Share by link or send by email' },
 ];
 
 const invitationFeatures = [
@@ -73,7 +81,7 @@ const Home: React.FC = () => {
           </h1>
 
           <p className="text-white/80 text-lg md:text-2xl font-medium text-center px-6 mt-6 relative z-10 max-w-2xl mx-auto">
-            Group cards and event invitations — beautiful, free, and open source.
+            Group cards, 1-on-1 cards, and event invitations — beautiful, free, and open source.
           </p>
         </Reveal>
 
@@ -91,6 +99,13 @@ const Home: React.FC = () => {
             <span className="text-lg font-bold">Create a Card</span>
           </button>
           <button
+            onClick={() => navigate('/card/one-on-one/new')}
+            className="group bg-white/10 text-white border border-white/30 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
+          >
+            <Heart className="w-5 h-5" />
+            <span className="text-lg font-bold">Send a 1-on-1 Card</span>
+          </button>
+          <button
             onClick={() => navigate('/invitation/new')}
             className="group bg-white/10 text-white border border-white/30 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
           >
@@ -100,18 +115,18 @@ const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* Two-products showcase */}
+      {/* Three-products showcase */}
       <section className="scroll-section bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 min-h-screen overflow-y-hidden flex flex-col justify-center items-center py-[5vh] px-4 text-center">
         <Reveal>
           <h2 className="text-gray-900 text-4xl md:text-6xl pt-12 font-black mb-4">
-            Two ways to celebrate
+            Three ways to celebrate
           </h2>
           <p className="text-gray-600 text-lg md:text-2xl font-medium mb-12">
-            Bring people together — before and after the moment
+            A card for every moment — whether it's from a crowd or just from you
           </p>
         </Reveal>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto w-full mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto w-full mb-8">
           {/* Group Cards */}
           <Reveal>
             <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
@@ -137,6 +152,36 @@ const Home: React.FC = () => {
                   className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
                 >
                   Create a Card →
+                </button>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* 1-on-1 Cards */}
+          <Reveal>
+            <div className="h-full flex flex-col rounded-3xl bg-white shadow-lg hover:shadow-2xl transition-all overflow-hidden text-left">
+              <div className="bg-gradient-to-br from-purple-600 to-[var(--color-brand-pink)] p-8 text-white">
+                <Heart className="w-12 h-12 drop-shadow-lg mb-4" />
+                <h3 className="text-3xl font-bold drop-shadow-md">1-on-1 Cards</h3>
+                <p className="text-white/90 text-lg mt-2 drop-shadow-sm">
+                  Send one person a single heartfelt message that opens with an effect — no group
+                  signing needed.
+                </p>
+              </div>
+              <div className="flex flex-col flex-1 p-8">
+                <ul className="space-y-3 flex-1">
+                  {oneOnOneFeatures.map(feature => (
+                    <li key={feature.text} className="flex items-center gap-3 text-gray-700">
+                      <feature.icon className="w-5 h-5 text-purple-600 shrink-0" />
+                      <span className="font-medium">{feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => navigate('/card/one-on-one/new')}
+                  className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
+                >
+                  Send a 1-on-1 Card →
                 </button>
               </div>
             </div>
@@ -287,6 +332,13 @@ const Home: React.FC = () => {
               >
                 <Mail className="w-5 h-5" />
                 <span className="text-lg font-bold">Create a Card</span>
+              </button>
+              <button
+                onClick={() => navigate('/card/one-on-one/new')}
+                className="bg-white/15 text-white border border-white/40 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
+              >
+                <Heart className="w-5 h-5" />
+                <span className="text-lg font-bold">Send a 1-on-1 Card</span>
               </button>
               <button
                 onClick={() => navigate('/invitation/new')}
