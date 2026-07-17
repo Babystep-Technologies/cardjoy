@@ -58,7 +58,14 @@
 
   <!-- Group Card Features -->
   <url>
-    <loc>https://cardjoy.app/card/new</loc>
+    <loc>https://cardjoy.app/group-card/new</loc>
+    <priority>0.9</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <!-- 1-on-1 Card Features -->
+  <url>
+    <loc>https://cardjoy.app/one-on-one-card/new</loc>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>

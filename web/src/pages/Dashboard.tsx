@@ -74,7 +74,7 @@ const CARD_TABS: {
     kind: 'group',
     label: 'Group Cards',
     shortLabel: 'Group',
-    createPath: '/card/new',
+    createPath: '/group-card/new',
     createLabel: 'Create New Card',
     emptyTitle: `You haven't created any group cards yet`,
     emptyDescription: `Get started by creating your first card — it's quick and easy!`,
@@ -83,7 +83,7 @@ const CARD_TABS: {
     kind: 'one_on_one',
     label: '1-on-1 Cards',
     shortLabel: '1-on-1',
-    createPath: '/card/one-on-one/new',
+    createPath: '/one-on-one-card/new',
     createLabel: 'Send a 1-on-1 card',
     emptyTitle: `You haven't sent any 1-on-1 cards yet`,
     emptyDescription: 'Pick a design, write your message, and send it — no group signing needed.',
@@ -202,10 +202,10 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button asChild size="lg">
-              <Link to="/card/new">Create a card</Link>
+              <Link to="/group-card/new">Create a card</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/card/one-on-one/new">Send a 1-on-1 card</Link>
+              <Link to="/one-on-one-card/new">Send a 1-on-1 card</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link to="/invitation/new">Create an invitation</Link>

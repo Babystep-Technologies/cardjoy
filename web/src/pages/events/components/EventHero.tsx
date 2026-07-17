@@ -13,7 +13,7 @@ export const EventHero: React.FC<EventHeroProps> = ({ config, occasion }) => {
   const navigate = useNavigate();
 
   const handleCTAClick = () => {
-    navigate(`/card/new?occasion=${occasion}`);
+    navigate(`/group-card/new?occasion=${occasion}`);
   };
 
   return (

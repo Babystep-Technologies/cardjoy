@@ -6,15 +6,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, Mail, PartyPopper } from 'lucide-react';
+import { ChevronDown, Mail, Heart, PartyPopper } from 'lucide-react';
 
 const products = [
   {
     name: 'Group Cards',
-    to: '/card/new',
+    to: '/group-card/new',
     description: 'Collect heartfelt messages, photos & wishes from everyone.',
     icon: Mail,
     gradient: 'from-[var(--color-brand-pink)] to-[var(--color-brand-blue)]',
+  },
+  {
+    name: '1-on-1 Cards',
+    to: '/one-on-one-card/new',
+    description: 'Send one person a single heartfelt message that opens with an effect.',
+    icon: Heart,
+    gradient: 'from-purple-600 to-[var(--color-brand-pink)]',
   },
   {
     name: 'Invitations',

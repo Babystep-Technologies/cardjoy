@@ -52,14 +52,6 @@ const Home: React.FC = () => {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Decorative elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-16 h-16 bg-pink-400/20 rounded-full blur-sm animate-bounce" />
-          <div className="absolute top-40 right-20 w-14 h-14 bg-purple-400/20 rounded-full blur-sm" />
-          <div className="absolute bottom-32 left-20 w-12 h-12 bg-yellow-400/20 rounded-full blur-sm" />
-          <div className="absolute bottom-20 right-10 w-16 h-16 bg-blue-400/20 rounded-full blur-sm" />
-        </div>
-
         <Reveal>
           <h1 className="text-white text-4xl md:text-6xl font-bold text-center px-6 relative z-10">
             Make Life Moments Shine
@@ -81,37 +73,41 @@ const Home: React.FC = () => {
           </h1>
 
           <p className="text-white/80 text-lg md:text-2xl font-medium text-center px-6 mt-6 relative z-10 max-w-2xl mx-auto">
-            Group cards, 1-on-1 cards, and event invitations — beautiful, free, and open source.
+            Beautiful digital cards that make life&apos;s occasions memorable.
           </p>
         </Reveal>
 
         <motion.div
-          className="mt-8 sm:mt-12 relative z-10 mx-4 flex flex-col sm:flex-row items-center gap-4"
+          className="mt-8 sm:mt-12 relative z-10 mx-4 flex flex-col items-center gap-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
           <button
-            onClick={() => navigate('/card/new')}
-            className="group bg-white text-gray-900 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
+            onClick={() => navigate('/group-card/new')}
+            className="group bg-white text-gray-900 rounded-2xl px-10 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
           >
             <Mail className="w-5 h-5" />
-            <span className="text-lg font-bold">Create a Card</span>
+            <span className="text-lg font-bold">Create a Group Card</span>
           </button>
-          <button
-            onClick={() => navigate('/card/one-on-one/new')}
-            className="group bg-white/10 text-white border border-white/30 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
-          >
-            <Heart className="w-5 h-5" />
-            <span className="text-lg font-bold">Send a 1-on-1 Card</span>
-          </button>
-          <button
-            onClick={() => navigate('/invitation/new')}
-            className="group bg-white/10 text-white border border-white/30 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/20 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
-          >
-            <PartyPopper className="w-5 h-5" />
-            <span className="text-lg font-bold">Create an Invitation</span>
-          </button>
+          <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-white/70">
+            <span>or</span>
+            <button
+              onClick={() => navigate('/one-on-one-card/new')}
+              className="inline-flex items-center gap-1.5 font-semibold text-white underline-offset-4 hover:underline"
+            >
+              <Heart className="w-4 h-4" />
+              send a 1-on-1 card
+            </button>
+            <span aria-hidden="true">·</span>
+            <button
+              onClick={() => navigate('/invitation/new')}
+              className="inline-flex items-center gap-1.5 font-semibold text-white underline-offset-4 hover:underline"
+            >
+              <PartyPopper className="w-4 h-4" />
+              create an invitation
+            </button>
+          </p>
         </motion.div>
       </section>
 
@@ -148,10 +144,10 @@ const Home: React.FC = () => {
                   ))}
                 </ul>
                 <button
-                  onClick={() => navigate('/card/new')}
+                  onClick={() => navigate('/group-card/new')}
                   className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
                 >
-                  Create a Card →
+                  Create a Group Card →
                 </button>
               </div>
             </div>
@@ -178,7 +174,7 @@ const Home: React.FC = () => {
                   ))}
                 </ul>
                 <button
-                  onClick={() => navigate('/card/one-on-one/new')}
+                  onClick={() => navigate('/one-on-one-card/new')}
                   className="mt-8 bg-gray-900 text-white rounded-2xl px-6 py-4 font-bold hover:scale-105 transition-all shadow-md hover:shadow-xl"
                 >
                   Send a 1-on-1 Card →
@@ -228,7 +224,7 @@ const Home: React.FC = () => {
               {occasions.slice(0, 12).map(occasion => {
                 const destination = occasion.hasLandingPage
                   ? `/for/${occasion.slug}`
-                  : `/card/new?occasion=${encodeURIComponent(occasion.name)}`;
+                  : `/group-card/new?occasion=${encodeURIComponent(occasion.name)}`;
                 return (
                   <Link
                     key={occasion.slug}
@@ -327,14 +323,14 @@ const Home: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
-                onClick={() => navigate('/card/new')}
+                onClick={() => navigate('/group-card/new')}
                 className="bg-white text-gray-900 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
               >
                 <Mail className="w-5 h-5" />
-                <span className="text-lg font-bold">Create a Card</span>
+                <span className="text-lg font-bold">Create a Group Card</span>
               </button>
               <button
-                onClick={() => navigate('/card/one-on-one/new')}
+                onClick={() => navigate('/one-on-one-card/new')}
                 className="bg-white/15 text-white border border-white/40 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
               >
                 <Heart className="w-5 h-5" />
