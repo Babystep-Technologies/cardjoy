@@ -102,7 +102,7 @@ const RedeemPromo: React.FC = () => {
                   Go back to home
                 </Link>{' '}
                 or{' '}
-                <Link to="/card/new" className="text-blue-600 underline hover:text-blue-800">
+                <Link to="/group-card/new" className="text-blue-600 underline hover:text-blue-800">
                   start creating a card
                 </Link>
                 .

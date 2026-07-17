@@ -12,7 +12,7 @@ export const EventCTA: React.FC<EventCTAProps> = ({ config, occasion }) => {
   const navigate = useNavigate();
 
   const handleCTAClick = () => {
-    navigate(`/card/new?occasion=${occasion}`);
+    navigate(`/group-card/new?occasion=${occasion}`);
   };
 
   return (

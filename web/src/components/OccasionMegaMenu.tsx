@@ -23,7 +23,7 @@ export const OccasionMegaMenu: React.FC = () => {
           {featuredOccasions.map(occasion => {
             const destination = occasion.hasLandingPage
               ? `/for/${occasion.slug}`
-              : `/card/new?occasion=${encodeURIComponent(occasion.name)}`;
+              : `/group-card/new?occasion=${encodeURIComponent(occasion.name)}`;
 
             return (
               <DropdownMenuItem key={occasion.slug} asChild className="p-0 focus:bg-transparent">

@@ -12,7 +12,7 @@ interface OccasionCardProps {
 export const OccasionCard: React.FC<OccasionCardProps> = ({ occasion }) => {
   const destination = occasion.hasLandingPage
     ? `/for/${occasion.slug}`
-    : `/card/new?occasion=${encodeURIComponent(occasion.name)}`;
+    : `/group-card/new?occasion=${encodeURIComponent(occasion.name)}`;
 
   const isInternal = occasion.hasLandingPage;
 

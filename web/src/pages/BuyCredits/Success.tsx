@@ -34,7 +34,7 @@ const BuyCreditsSuccess: React.FC = () => {
             whileTap={{ scale: 0.98 }}
           >
             <Link
-              to="/card/new"
+              to="/group-card/new"
               className="w-full sm:w-auto bg-black text-white px-6 py-3 rounded-xl font-semibold text-lg transition-colors hover:bg-gray-800 shadow-md"
             >
               Create New Card

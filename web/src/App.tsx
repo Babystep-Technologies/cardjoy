@@ -52,6 +52,12 @@ const MaintenanceGate: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return <>{children}</>;
 };
 
+/** Permanent redirect for a renamed route, preserving any query string (e.g. ?occasion=). */
+const LegacyRedirect: React.FC<{ to: string }> = ({ to }) => {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+};
+
 const App: React.FC = () => {
   return (
     <RootLayout>
@@ -71,8 +77,14 @@ const App: React.FC = () => {
           <Route path="/redeem" element={<RedeemPromo />} />
           <Route path="/dashboard" element={<Dashboard />} />
 
-          <Route path="/card/new" element={<CardNew />} />
-          <Route path="/card/one-on-one/new" element={<CardOneOnOneNew />} />
+          <Route path="/group-card/new" element={<CardNew />} />
+          <Route path="/one-on-one-card/new" element={<CardOneOnOneNew />} />
+          {/* Legacy paths — keep old links / indexed URLs working */}
+          <Route path="/card/new" element={<LegacyRedirect to="/group-card/new" />} />
+          <Route
+            path="/card/one-on-one/new"
+            element={<LegacyRedirect to="/one-on-one-card/new" />}
+          />
           <Route path="/card/:cardExternalId/edit" element={<CardEdit />} />
           <Route path="/card/:cardExternalId/viewable" element={<CardViewable />} />
           <Route path="/card/:cardExternalId/editable" element={<CardEditable />} />

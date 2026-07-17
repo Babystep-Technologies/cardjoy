@@ -152,7 +152,7 @@ const Header: React.FC = () => {
               ) : (
                 <>
                   <Link
-                    to="/card/new"
+                    to="/group-card/new"
                     onClick={() => setMenuOpen(false)}
                     className="text-gray-600 hover:text-gray-900 text-center"
                   >
