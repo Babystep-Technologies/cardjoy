@@ -5,6 +5,7 @@ import { gql, useQuery } from '@apollo/client';
 import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
 import CardNotFound from './components/CardNotFound';
+import OneOnOneCardView from './components/OneOnOneCardView';
 import ScrollStorySection from './components/ScrollStorySection';
 import { ScrollProgress } from '@/components/magicui/scroll-progress';
 import { SparklesText } from '@/components/magicui/sparkles-text';
@@ -21,6 +22,7 @@ const GET_CARD = gql`
     card(cardId: $cardId, showFlaggedMessages: $showFlaggedMessages) {
       title
       slug
+      kind
       locked
       flagged
       messageLimitReached
@@ -121,6 +123,28 @@ const CardViewable: React.FC = () => {
           Contact our team
         </Button>
       </div>
+    );
+  }
+
+  // A 1-on-1 card gets its own single-message reveal, not the group scroll story.
+  if (cardData.kind === 'one_on_one') {
+    return (
+      <>
+        <Toaster />
+        <OneOnOneCardView
+          card={cardData}
+          externalId={cardExternalId || ''}
+          isCreator={!!isCardCreator}
+          onShareClick={handleShareClick}
+        />
+        <ShareDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          cardId={cardExternalId || ''}
+          slug={data?.card?.slug}
+          type="card"
+        />
+      </>
     );
   }
 

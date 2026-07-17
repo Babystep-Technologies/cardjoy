@@ -19,9 +19,18 @@ import { Area } from 'react-easy-crop';
 import GuestEntry from './components/GuestEntry';
 import ImageUploaderWithGiphy from './components/ImageUploaderWithGiphy';
 import EditCardSettings from './components/EditCardSettings';
+import CardOneOnOneEdit from './OneOnOneEdit';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { X } from 'lucide-react';
 import { getGuestMessageIdKey } from '@/lib/utils';
+
+const GET_CARD_KIND = gql`
+  query CardKind($cardId: ID!) {
+    card(cardId: $cardId) {
+      kind
+    }
+  }
+`;
 
 const GET_CARD = gql`
   query Card($cardId: ID!) {
@@ -665,4 +674,17 @@ function PageEdit() {
   );
 }
 
-export default PageEdit;
+// A 1-on-1 card is a single message with no message wall or contributor
+// settings, so it gets its own editor. Dispatch on kind before rendering either.
+function CardEdit() {
+  const { cardExternalId } = useParams();
+  const { data, loading } = useQuery(GET_CARD_KIND, {
+    variables: { cardId: cardExternalId },
+  });
+
+  if (loading) return <LoadingScreen />;
+  if (data?.card?.kind === 'one_on_one') return <CardOneOnOneEdit />;
+  return <PageEdit />;
+}
+
+export default CardEdit;

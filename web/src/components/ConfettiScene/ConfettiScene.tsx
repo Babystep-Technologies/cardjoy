@@ -6,6 +6,10 @@ const ConfettiScene = forwardRef<ConfettiSceneHandle, ConfettiSceneProps>(
   ({ backgroundColor = '#ffffff', sectionCount = 0 }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const rendererRef = useRef<ConfettiRenderer | null>(null);
+    // A burst can be requested (e.g. a card's open animation) before the renderer
+    // finishes its lazy import. Hold the last such request and fire it on init —
+    // otherwise a single-screen card with no scroll bursts would show nothing.
+    const pendingBurstRef = useRef<number | null>(null);
     const [reducedMotion] = useState(
       () =>
         typeof window !== 'undefined' &&
@@ -36,6 +40,11 @@ const ConfettiScene = forwardRef<ConfettiSceneHandle, ConfettiSceneProps>(
 
         renderer.init();
         rendererRef.current = renderer;
+
+        if (pendingBurstRef.current !== null) {
+          renderer.triggerBurst(pendingBurstRef.current);
+          pendingBurstRef.current = null;
+        }
       });
 
       return () => {
@@ -69,7 +78,14 @@ const ConfettiScene = forwardRef<ConfettiSceneHandle, ConfettiSceneProps>(
     useImperativeHandle(
       ref,
       () => ({
-        triggerBurst: (intensity?: number) => rendererRef.current?.triggerBurst(intensity),
+        triggerBurst: (intensity = 1.0) => {
+          if (rendererRef.current) {
+            rendererRef.current.triggerBurst(intensity);
+          } else {
+            // Renderer still importing — remember the request and fire it on init.
+            pendingBurstRef.current = intensity;
+          }
+        },
       }),
       []
     );
