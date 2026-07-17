@@ -192,9 +192,10 @@ function PageEdit() {
   );
 
   const validateTitle = useCallback(
-    (title: string): string | null => {
+    // A 1-on-1 card's message carries no title, so this can be null.
+    (title: string | null | undefined): string | null => {
       // Remove required check:
-      if (title.length > validations.maxTitleLength)
+      if ((title?.length ?? 0) > validations.maxTitleLength)
         return `Message title is too long (maximum ${validations.maxTitleLength} characters allowed)`;
       return null;
     },
@@ -217,7 +218,7 @@ function PageEdit() {
       setRequireLoginToContribute(cardData.requireLoginToContribute || false);
       setSlug(cardData.slug || '');
       if (userMessage) {
-        setMessageTitle(userMessage.title);
+        setMessageTitle(userMessage.title ?? '');
         setText(userMessage.text);
         setDisplayName(userMessage.displayName || user?.name || '');
         setImageUrl(userMessage.imageUrl || null);
@@ -225,8 +226,8 @@ function PageEdit() {
         setTitleError(validateTitle(userMessage.title));
         setTextError(validateText(userMessage.text));
       } else if (guestMessage) {
-        setMessageTitle(guestMessage.title);
-        setText(guestMessage.text);
+        setMessageTitle(guestMessage.title ?? '');
+        setText(guestMessage.text ?? '');
         setGuestName(guestMessage.name);
         setImageUrl(guestMessage.imageUrl || null);
         setImagePreview(guestMessage.imageUrl || null);
