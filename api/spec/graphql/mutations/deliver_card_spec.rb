@@ -16,7 +16,7 @@ RSpec.describe Mutations::DeliverCard, type: :request do
     <<~GRAPHQL
       mutation DeliverCard($cardId: ID!, $recipientEmail: String!, $deliverAt: ISO8601DateTime) {
         deliverCard(input: { cardId: $cardId, recipientEmail: $recipientEmail, deliverAt: $deliverAt }) {
-          card { externalId deliverAt }
+          card { externalId deliverAt deliverToEmail }
           errors
         }
       }
@@ -57,7 +57,20 @@ RSpec.describe Mutations::DeliverCard, type: :request do
     data = json.dig("data", "deliverCard")
     expect(data["errors"]).to be_empty
     expect(data.dig("card", "deliverAt")).to eq(deliver_at.iso8601)
+    expect(data.dig("card", "deliverToEmail")).to eq("friend@example.com")
     expect(card.reload.deliver_at).to eq(deliver_at)
+    expect(card.deliver_to_email).to eq("friend@example.com")
+  end
+
+  it "clears a prior schedule when sending immediately, so the stale job can't double-send" do
+    card.update!(deliver_at: 3.days.from_now.change(usec: 0), deliver_to_email: "friend@example.com")
+
+    expect {
+      post_query(cardId: card.external_id, recipientEmail: "friend@example.com")
+    }.to have_enqueued_mail(CardMailer, :one_on_one_delivery).with("friend@example.com", card)
+
+    expect(card.reload.deliver_at).to be_nil
+    expect(card.deliver_to_email).to be_nil
   end
 
   it "sends immediately when deliverAt is in the past" do

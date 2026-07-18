@@ -27,6 +27,9 @@ export type CardType = {
   recipients: string[];
   maxMessages?: number;
   requireLoginToContribute?: boolean;
+  // Set only for a 1-on-1 card with a pending scheduled send (UTC ISO instant).
+  deliverAt?: string | null;
+  deliverToEmail?: string | null;
 };
 
 export type UserMessageType = {
