@@ -21,6 +21,8 @@ module Types
     field :invitation, resolver: Queries::Invitation
     field :check_rsvp, resolver: Queries::CheckRsvp
     field :check_slug_availability, resolver: Queries::CheckSlugAvailability
+    field :my_contacts, resolver: Queries::MyContacts
+    field :upcoming_occasions, resolver: Queries::UpcomingOccasions
 
     def card_occasions
       ::Card::OCCASIONS

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_18_021747) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_18_145135) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,6 +86,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_021747) do
     t.index ["external_id"], name: "index_cards_on_external_id", unique: true
     t.index ["slug"], name: "index_cards_on_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["user_id"], name: "index_cards_on_user_id"
+  end
+
+  create_table "contacts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.string "name", null: false
+    t.string "relationship"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_contacts_on_user_id"
   end
 
   create_table "credits", force: :cascade do |t|
@@ -254,6 +264,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_021747) do
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
+  create_table "occasions", force: :cascade do |t|
+    t.bigint "contact_id", null: false
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.date "occurs_on", null: false
+    t.boolean "recurring", default: true, null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_occasions_on_contact_id"
+    t.index ["occurs_on"], name: "index_occasions_on_occurs_on"
+  end
+
   create_table "promo_code_redemptions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "promo_code_id", null: false
@@ -361,11 +382,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_18_021747) do
   add_foreign_key "card_styles", "cards"
   add_foreign_key "card_styles", "styles"
   add_foreign_key "cards", "users"
+  add_foreign_key "contacts", "users"
   add_foreign_key "credits", "users"
   add_foreign_key "guest_messages", "cards"
   add_foreign_key "invitations", "users"
   add_foreign_key "messages", "cards"
   add_foreign_key "messages", "users"
+  add_foreign_key "occasions", "contacts"
   add_foreign_key "promo_code_redemptions", "promo_codes"
   add_foreign_key "promo_code_redemptions", "users"
   add_foreign_key "promo_codes", "users"
