@@ -14,9 +14,9 @@ RSpec.describe Mutations::DeliverCard, type: :request do
 
   let(:query) do
     <<~GRAPHQL
-      mutation DeliverCard($cardId: ID!, $recipientEmail: String!) {
-        deliverCard(input: { cardId: $cardId, recipientEmail: $recipientEmail }) {
-          card { externalId }
+      mutation DeliverCard($cardId: ID!, $recipientEmail: String!, $deliverAt: ISO8601DateTime) {
+        deliverCard(input: { cardId: $cardId, recipientEmail: $recipientEmail, deliverAt: $deliverAt }) {
+          card { externalId deliverAt }
           errors
         }
       }
@@ -38,6 +38,36 @@ RSpec.describe Mutations::DeliverCard, type: :request do
     data = json.dig("data", "deliverCard")
     expect(data["errors"]).to be_empty
     expect(data.dig("card", "externalId")).to eq(card.external_id)
+  end
+
+  it "schedules a DeliverCardJob for a future deliverAt instead of sending now" do
+    deliver_at = 3.days.from_now.change(usec: 0)
+
+    expect {
+      post_query(
+        cardId: card.external_id,
+        recipientEmail: "friend@example.com",
+        deliverAt: deliver_at.iso8601
+      )
+    }.to have_enqueued_job(DeliverCardJob)
+      .with(card.external_id, "friend@example.com", deliver_at.iso8601)
+      .at(deliver_at)
+
+    json = JSON.parse(response.body)
+    data = json.dig("data", "deliverCard")
+    expect(data["errors"]).to be_empty
+    expect(data.dig("card", "deliverAt")).to eq(deliver_at.iso8601)
+    expect(card.reload.deliver_at).to eq(deliver_at)
+  end
+
+  it "sends immediately when deliverAt is in the past" do
+    expect {
+      post_query(
+        cardId: card.external_id,
+        recipientEmail: "friend@example.com",
+        deliverAt: 1.day.ago.iso8601
+      )
+    }.to have_enqueued_mail(CardMailer, :one_on_one_delivery).with("friend@example.com", card)
   end
 
   it "does not let a non-owner deliver the card" do
