@@ -2,6 +2,17 @@
 # frozen_string_literal: true
 
 class GraphqlController < ApiController
+  # Operations that must work without authentication (sign-in/sign-up, the public
+  # card reveal + guest messaging, RSVP, and the cover-style/occasion pickers used
+  # before login). Matched exactly against the incoming operationName — a substring
+  # match would let any operation whose name merely *contains* one of these (e.g.
+  # "UpdateCard" contains "Card") skip the controller-level auth gate.
+  PUBLIC_OPERATIONS = %w[
+    SignIn SignUp GoogleOauthSignIn SendPasswordReset GoogleAdminSignIn
+    Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
+    GetOccasions GetStyles CreateRsvp GetInvitation
+  ].freeze
+
   use ApolloUploadServer::Middleware
 
   before_action :set_current_user_or_admin
@@ -82,15 +93,6 @@ class GraphqlController < ApiController
   end
 
   def public_operation?
-    public_mutations = [
-      "SignIn", "SignUp", "GoogleOauthSignIn", "SendPasswordReset",
-      "GoogleAdminSignIn", "Card", "UpsertMessage",
-      "ResendConfirmationCode", "ConfirmEmail", "ResetPassword",
-      "GetOccasions", "GetStyles", "CreateRsvp"
-    ]
-    public_queries = [ "GetInvitation" ]
-    query_string = params[:operationName].to_s
-
-    (public_mutations + public_queries).any? { |operation| query_string.include?(operation) }
+    PUBLIC_OPERATIONS.include?(params[:operationName].to_s)
   end
 end
