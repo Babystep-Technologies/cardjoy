@@ -79,10 +79,16 @@ export function utcToZonedParts(iso: string, timeZone: string): { date: Date; ti
 
 /** Formats a UTC ISO instant for display in `timeZone`, e.g. "Jul 20, 2026, 9:00 AM PDT". */
 export function formatInTimezone(iso: string, timeZone: string): string {
+  // Note: `timeZoneName` can't be combined with the `dateStyle`/`timeStyle`
+  // shorthands (Intl throws "Invalid option : option"), so spell out the
+  // individual date/time components instead.
   return new Intl.DateTimeFormat('en-US', {
     timeZone,
-    dateStyle: 'medium',
-    timeStyle: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
     timeZoneName: 'short',
   }).format(new Date(iso));
 }
