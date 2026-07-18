@@ -60,4 +60,50 @@ RSpec.describe Occasion, type: :model do
       expect(described_class.upcoming(user: other_user, within_days: 30)).to be_empty
     end
   end
+
+  describe ".due_for_reminder" do
+    it "includes occasions within the lead window across all users, soonest first" do
+      soon = create(:occasion, :non_recurring, occurs_on: Date.current + 2.days)
+      also_soon = create(:occasion, :non_recurring, occurs_on: Date.current + 6.days)
+      # Outside the 7-day window.
+      create(:occasion, :non_recurring, occurs_on: Date.current + 20.days)
+      # Already in the past.
+      create(:occasion, :non_recurring, occurs_on: Date.current - 3.days)
+
+      expect(described_class.due_for_reminder).to eq([ soon, also_soon ])
+    end
+
+    it "excludes occasions already reminded for the current occurrence" do
+      occasion = create(:occasion, :non_recurring, occurs_on: Date.current + 3.days,
+        last_reminded_at: Time.current)
+      expect(described_class.due_for_reminder).not_to include(occasion)
+    end
+
+    it "re-includes a recurring occasion once a new year's occurrence enters the window" do
+      # Reminded for last year's occurrence; this year's is coming up now.
+      occasion = create(:occasion, recurring: true,
+        occurs_on: Date.new(1990, (Date.current + 4.days).month, (Date.current + 4.days).day),
+        last_reminded_at: 1.year.ago)
+      expect(described_class.due_for_reminder).to include(occasion)
+    end
+  end
+
+  describe "#reminded_for? / #record_reminder!" do
+    let(:occasion) { create(:occasion, :non_recurring, occurs_on: Date.current + 3.days) }
+    let(:occurrence) { occasion.next_occurrence }
+
+    it "is false when never reminded" do
+      expect(occasion.reminded_for?(occurrence)).to be(false)
+    end
+
+    it "is true after recording a reminder for the current occurrence" do
+      occasion.record_reminder!
+      expect(occasion.reminded_for?(occurrence)).to be(true)
+    end
+
+    it "treats a reminder before the current occurrence's window as not yet reminded" do
+      occasion.update!(last_reminded_at: (occurrence - 30.days).to_time)
+      expect(occasion.reminded_for?(occurrence)).to be(false)
+    end
+  end
 end
