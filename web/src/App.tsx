@@ -27,6 +27,7 @@ import Careers from '@/pages/Careers';
 import ForTeams from '@/pages/ForTeams';
 import ConnectSlack from '@/pages/ConnectSlack';
 import Occasions from '@/pages/Occasions';
+import Contacts from '@/pages/Contacts/Index';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Disclaimer from './pages/Disclaimer';
@@ -77,6 +78,7 @@ const App: React.FC = () => {
           <Route path="/buy_credits/success" element={<BuyCreditsSuccess />} />
           <Route path="/redeem" element={<RedeemPromo />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/contacts" element={<Contacts />} />
 
           <Route path="/group-card/new" element={<CardNew />} />
           <Route path="/one-on-one-card/new" element={<CardOneOnOneNew />} />

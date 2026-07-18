@@ -14,17 +14,20 @@ import { cardTypes } from '@/config/cardTypes';
 interface IntentPickerDialogProps {
   // The single CTA button that opens the picker.
   children: React.ReactNode;
+  // When set, carried into the chosen create flow as ?occasion= so the moment is
+  // pre-selected (the create flows match it against the card occasion vocabulary).
+  occasion?: string;
 }
 
 // One strong call to action that opens a lightweight chooser: the user picks the
 // moment they have in mind (framed by intent) and lands in the matching create flow.
-export const IntentPickerDialog: React.FC<IntentPickerDialogProps> = ({ children }) => {
+export const IntentPickerDialog: React.FC<IntentPickerDialogProps> = ({ children, occasion }) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const handlePick = (route: string) => {
     setOpen(false);
-    navigate(route);
+    navigate(occasion ? `${route}?occasion=${encodeURIComponent(occasion)}` : route);
   };
 
   return (
