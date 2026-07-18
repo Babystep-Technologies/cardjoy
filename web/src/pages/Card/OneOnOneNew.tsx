@@ -277,9 +277,10 @@ const CardOneOnOneNew: React.FC = () => {
 
   const isScheduling = deliveryMode === 'schedule';
   const scheduleReady = scheduleDate !== undefined && scheduleTime !== '';
-  // UTC instant for the chosen wall-clock time, or null until date+time are set.
+  // UTC instant for the chosen wall-clock time, or null until both date and time
+  // are set — an empty time would build an Invalid Date and throw in toISOString.
   const deliverAtIso =
-    isScheduling && scheduleDate
+    isScheduling && scheduleReady && scheduleDate
       ? zonedWallTimeToUtcISO(format(scheduleDate, 'yyyy-MM-dd'), scheduleTime, scheduleTimezone)
       : null;
   const scheduleInPast = deliverAtIso !== null && new Date(deliverAtIso).getTime() <= Date.now();
