@@ -5,8 +5,6 @@ import * as motion from 'motion/react-client';
 import Reveal from '@/components/Reveal';
 import Faq from '@/pages/Home/Faq';
 import {
-  Mail,
-  PartyPopper,
   Github,
   Star,
   Check,
@@ -18,10 +16,14 @@ import {
   Send,
   ChevronLeft,
   ChevronRight,
+  Building2,
+  ArrowRight,
 } from 'lucide-react';
 import { occasions } from '@/config/occasions';
 import { cardTypes, type CardTypeId } from '@/config/cardTypes';
 import { GITHUB_REPO_URL } from '@/lib/constants';
+import { IntentPickerDialog } from '@/components/IntentPickerDialog';
+import { useAuth } from '@/contexts/AuthContext';
 
 const cardFeatures = [
   { icon: Users, text: 'No signup needed for contributors' },
@@ -56,6 +58,10 @@ const featuresByType: Record<CardTypeId, { icon: typeof Users; text: string }[]>
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Only dangle "for free" at signed-out visitors; it reads oddly once they have an account.
+  const createCtaLabel = user ? 'Create a card' : 'Create a card for free';
 
   // Card-type showcase slideshow: emphasise one type at a time, themed in its brand color.
   const [activeSlide, setActiveSlide] = useState(0);
@@ -89,10 +95,10 @@ const Home: React.FC = () => {
             <WordRotate
               className="text-4xl md:text-6xl font-bold text-center px-6"
               words={[
-                'Sign a Group Card Together',
-                'Send a Heartfelt 1-on-1 Card',
+                'Get Everyone to Sign One Card',
+                'Send Someone a Heartfelt Note',
                 'Invite Everyone to Celebrate',
-                'Send Holiday Cards to Friends & Family',
+                'Send Holiday Cheer to Your List',
               ]}
               colors={[
                 'text-[var(--color-brand-pink)]',
@@ -114,31 +120,12 @@ const Home: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
         >
-          <button
-            onClick={() => navigate('/group-card/new')}
-            className="group bg-white text-gray-900 rounded-2xl px-10 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
-          >
-            <Mail className="w-5 h-5" />
-            <span className="text-lg font-bold">Create a Group Card</span>
-          </button>
-          <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-white/70">
-            <span>or</span>
-            <button
-              onClick={() => navigate('/one-on-one-card/new')}
-              className="inline-flex items-center gap-1.5 font-semibold text-white underline-offset-4 hover:underline"
-            >
-              <Heart className="w-4 h-4" />
-              send a 1-on-1 card
+          <IntentPickerDialog>
+            <button className="group bg-white text-gray-900 rounded-2xl px-10 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto">
+              <Sparkles className="w-5 h-5" />
+              <span className="text-lg font-bold">{createCtaLabel}</span>
             </button>
-            <span aria-hidden="true">·</span>
-            <button
-              onClick={() => navigate('/invitation/new')}
-              className="inline-flex items-center gap-1.5 font-semibold text-white underline-offset-4 hover:underline"
-            >
-              <PartyPopper className="w-4 h-4" />
-              create an invitation
-            </button>
-          </p>
+          </IntentPickerDialog>
         </motion.div>
       </section>
 
@@ -146,10 +133,10 @@ const Home: React.FC = () => {
       <section className="scroll-section bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 min-h-screen overflow-y-hidden flex flex-col justify-center items-center py-[5vh] px-4 text-center">
         <Reveal>
           <h2 className="text-gray-900 text-4xl md:text-6xl pt-12 font-black mb-4">
-            Four ways to celebrate
+            What do you want to do?
           </h2>
           <p className="text-gray-600 text-lg md:text-2xl font-medium mb-12">
-            A card for every moment — whether it's from a crowd or just from you
+            Start with the moment you have in mind — we'll pick the right card for it
           </p>
         </Reveal>
 
@@ -170,7 +157,10 @@ const Home: React.FC = () => {
                   </span>
                 )}
                 <activeType.icon className="w-16 h-16 drop-shadow-lg mb-6" />
-                <h3 className="text-4xl font-bold drop-shadow-md">{activeType.label}</h3>
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/70 mb-2">
+                  {activeType.label}
+                </span>
+                <h3 className="text-4xl font-bold drop-shadow-md">{activeType.intent}</h3>
                 <p className="text-white/90 text-lg mt-3 drop-shadow-sm max-w-md">
                   {activeType.description}
                 </p>
@@ -198,7 +188,7 @@ const Home: React.FC = () => {
                     onClick={() => navigate(activeType.route)}
                     className={`w-fit bg-gradient-to-r ${activeType.gradient} text-white rounded-2xl px-8 py-4 font-bold hover:opacity-90 hover:scale-105 transition-all shadow-md hover:shadow-xl`}
                   >
-                    {activeType.cta} →
+                    Get started →
                   </button>
                 )}
               </div>
@@ -339,6 +329,34 @@ const Home: React.FC = () => {
         </Reveal>
       </section>
 
+      {/* For Teams handoff band */}
+      <section className="bg-gray-900 py-12 px-4 w-full">
+        <Reveal>
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 border border-white/20 shrink-0">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white text-xl font-bold">
+                  Running celebrations for a whole team?
+                </h3>
+                <p className="text-white/70">
+                  Automate every birthday, work anniversary, and farewell across your company.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/for-teams"
+              className="group inline-flex items-center gap-2 bg-white text-gray-900 rounded-2xl px-7 py-4 font-bold hover:scale-105 transition-all shadow-lg whitespace-nowrap"
+            >
+              CardJoy for Teams
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+        </Reveal>
+      </section>
+
       {/* Final CTA Section */}
       <section className="scroll-section bg-gradient-to-br from-purple-600 via-pink-500 to-blue-600 min-h-[60vh] overflow-y-hidden flex flex-col justify-center items-center px-4 py-16 w-full">
         <Reveal>
@@ -349,28 +367,13 @@ const Home: React.FC = () => {
             <p className="text-white/90 text-lg sm:text-xl md:text-2xl font-medium mb-4">
               Free forever. Open source. Start in seconds — no credit card required.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button
-                onClick={() => navigate('/group-card/new')}
-                className="bg-white text-gray-900 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto"
-              >
-                <Mail className="w-5 h-5" />
-                <span className="text-lg font-bold">Create a Group Card</span>
-              </button>
-              <button
-                onClick={() => navigate('/one-on-one-card/new')}
-                className="bg-white/15 text-white border border-white/40 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
-              >
-                <Heart className="w-5 h-5" />
-                <span className="text-lg font-bold">Send a 1-on-1 Card</span>
-              </button>
-              <button
-                onClick={() => navigate('/invitation/new')}
-                className="bg-white/15 text-white border border-white/40 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto"
-              >
-                <PartyPopper className="w-5 h-5" />
-                <span className="text-lg font-bold">Create an Invitation</span>
-              </button>
+            <div className="flex justify-center">
+              <IntentPickerDialog>
+                <button className="bg-white text-gray-900 rounded-2xl px-8 py-5 flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-xl hover:shadow-2xl w-full sm:w-auto">
+                  <Sparkles className="w-5 h-5" />
+                  <span className="text-lg font-bold">{createCtaLabel}</span>
+                </button>
+              </IntentPickerDialog>
             </div>
           </div>
         </Reveal>

@@ -30,6 +30,11 @@ const Footer: React.FC = () => {
           <h4 className="font-semibold text-gray-900 text-lg">Explore</h4>
           <ul className="space-y-2">
             <li>
+              <Link to="/for-teams" className="hover:underline">
+                For Teams
+              </Link>
+            </li>
+            <li>
               <Link to="https://blog.cardjoy.app" className="hover:underline">
                 Blog
               </Link>

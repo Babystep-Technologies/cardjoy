@@ -24,6 +24,7 @@ import InvitationView from '@/pages/Invitation/View';
 import InvitationEdit from '@/pages/Invitation/Edit';
 import Maintenance from '@/pages/Maintenance';
 import Careers from '@/pages/Careers';
+import ForTeams from '@/pages/ForTeams';
 import ConnectSlack from '@/pages/ConnectSlack';
 import Occasions from '@/pages/Occasions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -109,6 +110,7 @@ const App: React.FC = () => {
 
           <Route path="/connect-slack" element={<ConnectSlack />} />
           <Route path="/occasions" element={<Occasions />} />
+          <Route path="/for-teams" element={<ForTeams />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
