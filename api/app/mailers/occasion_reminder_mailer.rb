@@ -24,13 +24,22 @@ class OccasionReminderMailer < ApplicationMailer
 
   private
 
-  # Deep link into the pre-filled 1-on-1 create flow. The flow already reads the
-  # `occasion` query param; `recipient` is consumed once #29 lands.
+  # Deep link into the pre-filled 1-on-1 create flow (issue #29). The flow reads
+  # `recipient`, `occasion`, `effect` (the curated design's effect slug) and
+  # `deliverAt` (the occasion's calendar date) to pre-select the design and
+  # pre-fill the recipient, occasion, and scheduled send — the user only writes
+  # the message and confirms. Every pre-filled field stays editable.
   sig { params(occasion: Occasion).returns(String) }
   def create_flow_url(occasion)
     base = Rails.application.credentials.dig(:frontend_url)
-    query = { occasion: occasion.kind, recipient: T.must(occasion.contact).name }.to_query
-    "#{base}/one-on-one-card/new?#{query}"
+    suggestion = OccasionDesignSuggestion.for(occasion.kind)
+    query = {
+      occasion: occasion.kind,
+      recipient: T.must(occasion.contact).name,
+      deliverAt: occasion.next_occurrence.iso8601
+    }
+    query[:effect] = suggestion.effect if suggestion.effect
+    "#{base}/one-on-one-card/new?#{query.to_query}"
   end
 
   sig { params(days: Integer).returns(String) }
