@@ -149,10 +149,10 @@ RSpec.describe Mutations::CreateOneOnOneCard, type: :request do
         headers: { "Content-Type" => "application/json" } # no Authorization header
     }.to change(Card, :count).by(0).and change(Message, :count).by(0)
 
-    json = JSON.parse(response.body)
-    data = json.dig("data", "createOneOnOneCard")
-    expect(data["card"]).to be_nil
-    expect(data["errors"]).to eq([ "Not authenticated" ])
+    # Challenged at the controller gate before the resolver runs: CreateOneOnOneCard
+    # is not a public operation, so it never reaches its own "Not authenticated" check.
+    expect(response).to have_http_status(:unauthorized)
+    expect(JSON.parse(response.body)["errors"]).to include("Unauthorized")
   end
 
   describe "credit deduction" do
