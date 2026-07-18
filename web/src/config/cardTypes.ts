@@ -11,6 +11,9 @@ export interface CardTypeTheme {
   shortLabel: string;
   // Action-phrased call to action, e.g. "Create a Group Card".
   cta: string;
+  // Job-to-be-done phrasing for intent-led marketing CTAs — leads with what the
+  // user wants to do rather than the internal card-type name.
+  intent: string;
   // Empty when the type has no working create flow yet (holiday).
   route: string;
   icon: LucideIcon;
@@ -31,6 +34,7 @@ export const cardTypes: CardTypeTheme[] = [
     label: 'Group Cards',
     shortLabel: 'Group',
     cta: 'Create a Group Card',
+    intent: 'Get everyone to sign a card',
     route: '/group-card/new',
     icon: Mail,
     description:
@@ -43,6 +47,7 @@ export const cardTypes: CardTypeTheme[] = [
     label: '1-on-1 Cards',
     shortLabel: '1-on-1',
     cta: 'Send a 1-on-1 Card',
+    intent: 'Send a heartfelt note to one person',
     route: '/one-on-one-card/new',
     icon: Heart,
     description:
@@ -55,6 +60,7 @@ export const cardTypes: CardTypeTheme[] = [
     label: 'Invitations',
     shortLabel: 'Invites',
     cta: 'Create an Invitation',
+    intent: 'Invite people to an event',
     route: '/invitation/new',
     icon: PartyPopper,
     description:
@@ -67,6 +73,7 @@ export const cardTypes: CardTypeTheme[] = [
     label: 'Holiday Cards',
     shortLabel: 'Holiday',
     cta: 'Create a Holiday Card',
+    intent: 'Send holiday cards to your list',
     route: '',
     icon: Gift,
     description:

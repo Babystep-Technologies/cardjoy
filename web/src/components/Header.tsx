@@ -88,6 +88,12 @@ const Header: React.FC = () => {
               <>
                 <ProductMenu />
                 <OccasionMegaMenu />
+                <Link
+                  to="/for-teams"
+                  className="text-gray-600 hover:text-gray-900 transition font-medium text-base"
+                >
+                  For Teams
+                </Link>
               </>
             )}
             {user ? (
@@ -171,6 +177,13 @@ const Header: React.FC = () => {
                     className="text-gray-600 hover:text-gray-900 text-center"
                   >
                     Occasions
+                  </Link>
+                  <Link
+                    to="/for-teams"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-gray-600 hover:text-gray-900 text-center"
+                  >
+                    For Teams
                   </Link>
                   <Link
                     to="/sign_in"
