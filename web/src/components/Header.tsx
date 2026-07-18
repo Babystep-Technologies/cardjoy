@@ -101,6 +101,9 @@ const Header: React.FC = () => {
                 <Link to="/dashboard" className="text-black text-bold text-xl transition">
                   Dashboard
                 </Link>
+                <Link to="/contacts" className="text-black text-bold text-xl transition">
+                  Contacts
+                </Link>
                 <Link to="/profile" className="text-black text-bold text-xl transition">
                   Profile
                 </Link>
@@ -146,6 +149,13 @@ const Header: React.FC = () => {
                     className="text-gray-600 hover:text-gray-900 text-center"
                   >
                     Dashboard
+                  </Link>
+                  <Link
+                    to="/contacts"
+                    onClick={() => setMenuOpen(false)}
+                    className="text-gray-600 hover:text-gray-900 text-center"
+                  >
+                    Contacts
                   </Link>
                   <Link
                     to="/profile"
