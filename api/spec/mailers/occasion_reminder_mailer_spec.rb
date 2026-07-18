@@ -28,11 +28,15 @@ RSpec.describe OccasionReminderMailer, type: :mailer do
       expect(mail.body.encoded).to include(suggestion.headline)
     end
 
-    it "deep-links into the pre-filled create flow with occasion and recipient" do
+    it "deep-links into the pre-filled create flow with occasion, recipient, effect and deliverAt" do
       body = mail.body.encoded
       expect(body).to include("#{frontend_url}/one-on-one-card/new?")
       expect(body).to include("occasion=Birthday")
       expect(body).to include("recipient=Jordan")
+      # The curated Birthday suggestion pre-selects the confetti effect, and the
+      # send is pre-scheduled for the occasion's next occurrence.
+      expect(body).to include("effect=confetti")
+      expect(body).to include("deliverAt=#{occasion.next_occurrence.iso8601}")
     end
 
     it "names the person in the reminder body" do

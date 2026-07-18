@@ -103,14 +103,40 @@ const suggestTitle = (occasion: string | undefined, recipient: string) => {
   return occasion ? `${occasion} — ${name}` : `For ${name}`;
 };
 
+/**
+ * Parse a reminder deep-link `deliverAt` param into a schedule date + time. The
+ * reminder email (occasion engine) sends the occasion's calendar date as
+ * `YYYY-MM-DD`; a full `YYYY-MM-DDTHH:mm` is also accepted. The date is built in
+ * local wall time (never `new Date('YYYY-MM-DD')`, which is UTC midnight and can
+ * land on the previous day). Date-only links default to 09:00 so scheduling is
+ * ready without the user picking a time — but every field stays editable.
+ */
+const parseDeliverAt = (raw: string | null): { date: Date; time: string } | null => {
+  if (!raw) return null;
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+  if (!match) return null;
+  const [, year, month, day, hours, minutes] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  if (Number.isNaN(date.getTime())) return null;
+  const time = hours && minutes ? `${hours}:${minutes}` : '09:00';
+  return { date, time };
+};
+
 const CardOneOnOneNew: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
 
+  // One-tap deep link from the occasion reminder email: pre-fill the schedule
+  // date/time from `deliverAt`. Computed once — only the initial state matters.
+  const presetDeliverAt = useMemo(
+    () => parseDeliverAt(searchParams.get('deliverAt')),
+    [searchParams]
+  );
+
   const [title, setTitle] = useState('');
   const [titleEdited, setTitleEdited] = useState(false);
-  const [recipient, setRecipient] = useState('');
+  const [recipient, setRecipient] = useState(() => searchParams.get('recipient') ?? '');
   const [text, setText] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [occasion, setOccasion] = useState<string | undefined>(undefined);
@@ -131,9 +157,11 @@ const CardOneOnOneNew: React.FC = () => {
   const [scheduled, setScheduled] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  const [deliveryMode, setDeliveryMode] = useState<'now' | 'schedule'>('now');
-  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
-  const [scheduleTime, setScheduleTime] = useState('');
+  const [deliveryMode, setDeliveryMode] = useState<'now' | 'schedule'>(
+    presetDeliverAt ? 'schedule' : 'now'
+  );
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(presetDeliverAt?.date);
+  const [scheduleTime, setScheduleTime] = useState(presetDeliverAt?.time ?? '');
   const [scheduleTimezone, setScheduleTimezone] = useState(() => detectTimezone());
 
   const [createOneOnOneCard] = useMutation(CREATE_ONE_ON_ONE_CARD);
@@ -179,13 +207,20 @@ const CardOneOnOneNew: React.FC = () => {
     }
   }, [backgroundColorStyles, textColorStyles, selectedBackgroundColorId, selectedTextColorId]);
 
+  // Default the effect once styles load. A reminder deep link may pre-select the
+  // curated effect via `?effect=<slug>`; otherwise fall back to Confetti so the
+  // preview is never blank. Either way it stays editable in the picker.
   const [effectDefaulted, setEffectDefaulted] = useState(false);
   useEffect(() => {
     if (effectDefaulted || effectStyles.length === 0) return;
+    const presetEffect = searchParams.get('effect');
+    const preset = presetEffect
+      ? effectStyles.find((style: StyleType) => style.value === presetEffect)
+      : undefined;
     const confetti = effectStyles.find((style: StyleType) => style.value === 'confetti');
-    setSelectedEffectId(confetti?.id ?? effectStyles[0].id);
+    setSelectedEffectId(preset?.id ?? confetti?.id ?? effectStyles[0].id);
     setEffectDefaulted(true);
-  }, [effectStyles, effectDefaulted]);
+  }, [effectStyles, effectDefaulted, searchParams]);
 
   // Keep the title in step with the occasion and recipient until it is hand-edited.
   useEffect(() => {
