@@ -13,6 +13,10 @@ class Occasion < ApplicationRecord
   # Reuse the card occasion vocabulary so the two stay in sync (issue #26).
   KINDS = ::Card::OCCASIONS
 
+  # How far ahead the proactive reminder engine looks (issue #28): an occasion
+  # gets a reminder once its next occurrence is within this many days.
+  REMINDER_LEAD_DAYS = 7
+
   validates :kind, presence: true, inclusion: { in: KINDS }
   validates :occurs_on, presence: true
   validates :recurring, inclusion: { in: [ true, false ] }
@@ -37,6 +41,40 @@ class Occasion < ApplicationRecord
     where(contact: user.contacts)
       .select { |occasion| occasion.next_occurrence.between?(today, window_end) }
       .sort_by(&:next_occurrence)
+  end
+
+  # Occasions across all users whose next occurrence falls within the reminder
+  # lead window and that have not yet been reminded for that occurrence. This is
+  # the daily reminder engine's query (issue #28). Recurring occurrences differ
+  # from the stored `occurs_on`, so the window can't be a pure SQL range; we
+  # narrow on `occurs_on` where cheap and finish the filter in Ruby.
+  sig { params(lead_days: Integer).returns(T::Array[Occasion]) }
+  def self.due_for_reminder(lead_days: REMINDER_LEAD_DAYS)
+    today = Date.current
+    window_end = today + lead_days.days
+    includes(contact: :user).select do |occasion|
+      occurrence = occasion.next_occurrence(from: today)
+      occurrence.between?(today, window_end) && !occasion.reminded_for?(occurrence, lead_days: lead_days)
+    end.sort_by { |occasion| occasion.next_occurrence(from: today) }
+  end
+
+  # Whether a reminder has already gone out for the given occurrence. Reminders
+  # only ever send inside the window [occurrence - lead_days, occurrence], so any
+  # prior reminder timestamp on or after that window's start belongs to this
+  # occurrence — which makes the check correct across recurring years without a
+  # separate per-occurrence record.
+  sig { params(occurrence: Date, lead_days: Integer).returns(T::Boolean) }
+  def reminded_for?(occurrence, lead_days: REMINDER_LEAD_DAYS)
+    reminded_at = last_reminded_at
+    return false if reminded_at.nil?
+    reminded_at.to_date >= occurrence - lead_days.days
+  end
+
+  # Mark this occasion as reminded now, so the daily job won't re-select it for
+  # the current occurrence.
+  sig { void }
+  def record_reminder!
+    update!(last_reminded_at: Time.current)
   end
 
   private
