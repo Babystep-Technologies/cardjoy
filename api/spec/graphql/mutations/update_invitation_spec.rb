@@ -104,6 +104,19 @@ RSpec.describe Mutations::UpdateInvitation, type: :request do
     expect(invitation.location).to eq("456 New Street, Chicago, IL")
   end
 
+  it "does not deduct a credit when editing an invitation" do
+    invitation # ensure the invitation exists before measuring
+
+    expect do
+      post "/graphql",
+        params: {
+          query: query,
+          variables: { externalId: invitation.external_id, title: "Edited" }
+        }.to_json,
+        headers: headers.merge("Content-Type" => "application/json")
+    end.not_to change { user.reload.credit_balance }
+  end
+
   it "updates event date and time" do
     post "/graphql",
       params: {

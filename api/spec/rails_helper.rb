@@ -49,8 +49,12 @@ RSpec.configure do |config|
     DatabaseCleaner.strategy = :transaction
   end
 
-  # Start transaction before each test
-  config.before(:each) do
+  # Start transaction before each test. Examples tagged `:truncation` (e.g.
+  # multi-connection concurrency specs) need their data committed and visible
+  # to other connections, so clean by truncation instead. Those groups must
+  # also set `self.use_transactional_tests = false`.
+  config.before(:each) do |example|
+    DatabaseCleaner.strategy = example.metadata[:truncation] ? :truncation : :transaction
     DatabaseCleaner.start
   end
 

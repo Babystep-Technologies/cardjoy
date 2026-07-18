@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { detectTimezone } from '@/lib/timezone';
+import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import CoverImageDialog from '../Card/components/CoverImageDialog';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
@@ -160,6 +161,11 @@ const InvitationNew: React.FC = () => {
         const json = await res.json();
 
         if (json.errors || json.data.createInvitation.errors.length > 0) {
+          const mutationErrors = json.data?.createInvitation?.errors ?? json.errors ?? [];
+          if (isInsufficientCreditsError(mutationErrors)) {
+            navigate(INSUFFICIENT_CREDITS_REDIRECT);
+            return;
+          }
           toast.error(
             'Upload failed: ' +
               (json.errors?.[0]?.message ?? json.data.createInvitation.errors.join(', '))
@@ -223,6 +229,8 @@ const InvitationNew: React.FC = () => {
           setTimeout(() => {
             navigate(`/invitation/${data.createInvitation.invitation.externalId}`);
           }, 500);
+        } else if (isInsufficientCreditsError(data.createInvitation.errors)) {
+          navigate(INSUFFICIENT_CREDITS_REDIRECT);
         } else {
           toast.error(data.createInvitation.errors.join(', ') || 'Failed to create invitation');
         }

@@ -105,6 +105,26 @@ RSpec.describe Mutations::CreateInvitationDraft, type: :request do
     end
   end
 
+  describe 'credit deduction' do
+    it 'does not deduct a credit for a transient draft' do
+      expect do
+        post '/graphql',
+          params: {
+            query: mutation,
+            variables: {
+              input: {
+                previewTitle: 'Wedding Celebration',
+                previewEventDate: '2026-06-15',
+                previewEventTime: '18:00',
+                aiPayload: { 'content' => { 'title' => 'Test' } }
+              }
+            }
+          }.to_json,
+          headers: headers
+      end.not_to change { user.reload.credit_balance }
+    end
+  end
+
   describe 'error handling' do
     it 'returns error when not signed in' do
       post '/graphql',

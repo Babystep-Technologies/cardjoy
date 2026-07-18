@@ -365,7 +365,7 @@ const Home: React.FC = () => {
               Let's get the party started
             </h2>
             <p className="text-white/90 text-lg sm:text-xl md:text-2xl font-medium mb-4">
-              Free forever. Open source. Start in seconds — no credit card required.
+              5 free credits to start. Open source. Start in seconds — no credit card required.
             </p>
             <div className="flex justify-center">
               <IntentPickerDialog>

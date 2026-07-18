@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { captureError, captureInfo } from '@/lib/posthog-capture';
+import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import { uploadGraphQLMutation } from '@/lib/graphql-upload';
 import { isEffectSlug, type EffectSlug } from '@/components/effects';
 import { StyleType } from '@/types/app';
@@ -237,6 +238,8 @@ const CardOneOnOneNew: React.FC = () => {
         setCreatedCard(card);
         toast.success('Card created! Now send it.');
         captureInfo('One-on-One Card Created', { cardTitle: card.title, cardId: card.externalId });
+      } else if (isInsufficientCreditsError(errors)) {
+        navigate(INSUFFICIENT_CREDITS_REDIRECT);
       } else {
         toast.error(errors.join(', ') || 'Failed to create card');
         captureError('One-on-One Card Creation Error', { errors: errors.join(', ') });

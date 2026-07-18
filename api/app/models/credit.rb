@@ -6,7 +6,9 @@ class Credit < ApplicationRecord
   scope :available, -> { where("amount > 0") }
 
   EVENT_KINDS = %w[
+    signup_bonus
     card_created
+    invitation_created
     credit_purchased
     credit_redeemed
     promo_code_redeemed

@@ -1,6 +1,18 @@
 # typed: true
 
 class User < ApplicationRecord
+  extend T::Sig
+
+  # Free credits every new user receives on creation so they can try the
+  # product before buying. See #grant_signup_credits.
+  SIGNUP_CREDIT_GRANT = 5
+
+  # Cost, in credits, of creating a card or invitation. See #spend_credit!.
+  CREATION_CREDIT_COST = 1
+
+  # Raised by #spend_credit! when the user cannot afford a creation.
+  class InsufficientCreditsError < StandardError; end
+
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, :omniauthable,
@@ -16,6 +28,38 @@ class User < ApplicationRecord
 
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true
+
+  after_create :grant_signup_credits
+
+  # Signed sum of the credit ledger. Positive rows are grants/purchases,
+  # negative rows are spends.
+  sig { returns(Integer) }
+  def credit_balance
+    credits.sum(:amount).to_i
+  end
+
+  # Debit a single credit for a card/invitation creation. Must run inside a
+  # transaction: it locks the user row for the duration of that transaction so
+  # concurrent creations can't drive the balance below zero, checks the
+  # balance, then writes a negative ledger row. Raises InsufficientCreditsError
+  # (rolling back the surrounding transaction) when the user can't afford it.
+  sig { params(reason: String, event_kind: String, event_data: T::Hash[T.untyped, T.untyped]).returns(Credit) }
+  def spend_credit!(reason:, event_kind:, event_data: {})
+    lock!
+    raise InsufficientCreditsError, "Not enough credits" if credit_balance < CREATION_CREDIT_COST
+
+    credits.create!(
+      amount: -CREATION_CREDIT_COST,
+      reason: reason,
+      events: [
+        {
+          event_kind: event_kind,
+          event_happened_at: Time.now.utc.iso8601(3),
+          event_data: event_data
+        }
+      ]
+    )
+  end
 
   # ---------------------
   # OAuth: Google
@@ -82,6 +126,29 @@ class User < ApplicationRecord
       email_confirmed: true,
       confirmation_code: nil,
       confirmation_sent_at: nil
+    )
+  end
+
+  private
+
+  # Grant the one-time signup bonus. Guarded on the presence of an existing
+  # signup_bonus row so re-running the callback (or a backfill) can't
+  # double-grant. Runs as an after_create callback so every creation path
+  # (email signup, Google/Slack OAuth, seeds, admin) is covered.
+  sig { void }
+  def grant_signup_credits
+    return if credits.where(reason: "signup_bonus").exists?
+
+    credits.create!(
+      amount: SIGNUP_CREDIT_GRANT,
+      reason: "signup_bonus",
+      events: [
+        {
+          event_kind: "signup_bonus",
+          event_happened_at: Time.now.utc.iso8601(3),
+          event_data: {}
+        }
+      ]
     )
   end
 end
