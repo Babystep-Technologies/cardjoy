@@ -25,6 +25,8 @@ const GET_USER_CARDS = gql`
       locked
       recipients
       coverImageUrl
+      deliverAt
+      deliverToEmail
       styles {
         name
         kind

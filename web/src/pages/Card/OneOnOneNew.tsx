@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { format } from 'date-fns';
 import { Check, Copy, Heart, Mail, PenLine, Send, Sparkles, Upload, X } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -30,9 +31,11 @@ import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib
 import { uploadGraphQLMutation } from '@/lib/graphql-upload';
 import { isEffectSlug, type EffectSlug } from '@/components/effects';
 import { StyleType } from '@/types/app';
+import { detectTimezone, formatInTimezone, zonedWallTimeToUtcISO } from '@/lib/timezone';
 import CoverImageDialog from './components/CoverImageDialog';
 import CardPreview from './components/CardPreview';
 import EffectPicker from './components/EffectPicker';
+import SchedulePicker from './components/SchedulePicker';
 import { cardTypeById } from '@/config/cardTypes';
 
 const CREATE_ONE_ON_ONE_CARD_DOCUMENT = `
@@ -125,7 +128,13 @@ const CardOneOnOneNew: React.FC = () => {
   const [recipientEmail, setRecipientEmail] = useState('');
   const [delivering, setDelivering] = useState(false);
   const [delivered, setDelivered] = useState(false);
+  const [scheduled, setScheduled] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  const [deliveryMode, setDeliveryMode] = useState<'now' | 'schedule'>('now');
+  const [scheduleDate, setScheduleDate] = useState<Date | undefined>(undefined);
+  const [scheduleTime, setScheduleTime] = useState('');
+  const [scheduleTimezone, setScheduleTimezone] = useState(() => detectTimezone());
 
   const [createOneOnOneCard] = useMutation(CREATE_ONE_ON_ONE_CARD);
   const [deliverCard] = useMutation(DELIVER_CARD);
@@ -266,20 +275,48 @@ const CardOneOnOneNew: React.FC = () => {
     }
   };
 
+  const isScheduling = deliveryMode === 'schedule';
+  const scheduleReady = scheduleDate !== undefined && scheduleTime !== '';
+  // UTC instant for the chosen wall-clock time, or null until date+time are set.
+  const deliverAtIso =
+    isScheduling && scheduleDate
+      ? zonedWallTimeToUtcISO(format(scheduleDate, 'yyyy-MM-dd'), scheduleTime, scheduleTimezone)
+      : null;
+  const scheduleInPast = deliverAtIso !== null && new Date(deliverAtIso).getTime() <= Date.now();
+  const canDeliver =
+    recipientEmail.trim() !== '' && (!isScheduling || (scheduleReady && !scheduleInPast));
+
   const handleDeliver = async () => {
-    if (!createdCard || !recipientEmail.trim()) return;
+    if (!createdCard || !canDeliver) return;
     setDelivering(true);
 
     try {
       // `cardId` resolves by external_id on the API, not the database id.
       const { data } = await deliverCard({
-        variables: { input: { cardId: createdCard.externalId, recipientEmail } },
+        variables: {
+          input: {
+            cardId: createdCard.externalId,
+            recipientEmail,
+            ...(deliverAtIso ? { deliverAt: deliverAtIso } : {}),
+          },
+        },
       });
 
       if (data.deliverCard.errors.length === 0) {
-        setDelivered(true);
-        toast.success(`Sent to ${recipientEmail}`);
-        captureInfo('One-on-One Card Delivered', { cardId: createdCard.externalId });
+        if (deliverAtIso) {
+          setScheduled(true);
+          toast.success(
+            `Scheduled for ${recipientEmail} on ${formatInTimezone(deliverAtIso, scheduleTimezone)}`
+          );
+          captureInfo('One-on-One Card Scheduled', {
+            cardId: createdCard.externalId,
+            deliverAt: deliverAtIso,
+          });
+        } else {
+          setDelivered(true);
+          toast.success(`Sent to ${recipientEmail}`);
+          captureInfo('One-on-One Card Delivered', { cardId: createdCard.externalId });
+        }
       } else {
         toast.error(data.deliverCard.errors.join(', ') || 'Failed to send card');
         captureError('One-on-One Card Delivery Error', {
@@ -552,31 +589,99 @@ const CardOneOnOneNew: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Label htmlFor="recipientEmail" className="text-base font-semibold">
                         Or send by email
                       </Label>
-                      <div className="flex flex-col gap-2 sm:flex-row">
-                        <Input
-                          id="recipientEmail"
-                          type="email"
-                          placeholder="sarah@example.com"
-                          value={recipientEmail}
-                          onChange={e => {
-                            setDelivered(false);
-                            setRecipientEmail(e.target.value);
-                          }}
-                          className="border-2 bg-white"
-                        />
-                        <Button
-                          onClick={handleDeliver}
-                          disabled={!recipientEmail.trim() || delivering || delivered}
-                          className="shrink-0 gap-2 bg-blue-600 font-bold text-white hover:bg-blue-700"
-                        >
-                          {delivered ? <Check className="h-4 w-4" /> : <Mail className="h-4 w-4" />}
-                          {delivering ? 'Sending…' : delivered ? 'Sent' : 'Send'}
-                        </Button>
+                      <Input
+                        id="recipientEmail"
+                        type="email"
+                        placeholder="sarah@example.com"
+                        value={recipientEmail}
+                        onChange={e => {
+                          setDelivered(false);
+                          setScheduled(false);
+                          setRecipientEmail(e.target.value);
+                        }}
+                        className="border-2 bg-white"
+                      />
+
+                      <div className="grid grid-cols-2 gap-2 rounded-xl bg-white/70 p-1">
+                        {(['now', 'schedule'] as const).map(mode => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => {
+                              setDeliveryMode(mode);
+                              setDelivered(false);
+                              setScheduled(false);
+                            }}
+                            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all ${
+                              deliveryMode === mode
+                                ? 'bg-blue-600 text-white shadow'
+                                : 'text-gray-600 hover:bg-white'
+                            }`}
+                          >
+                            {mode === 'now' ? 'Send now' : 'Schedule for a date'}
+                          </button>
+                        ))}
                       </div>
+
+                      {isScheduling && (
+                        <div className="space-y-3 rounded-xl border-2 border-blue-200 bg-white p-4">
+                          <SchedulePicker
+                            date={scheduleDate}
+                            time={scheduleTime}
+                            timezone={scheduleTimezone}
+                            onDateChange={date => {
+                              setScheduled(false);
+                              setScheduleDate(date);
+                            }}
+                            onTimeChange={time => {
+                              setScheduled(false);
+                              setScheduleTime(time);
+                            }}
+                            onTimezoneChange={tz => {
+                              setScheduled(false);
+                              setScheduleTimezone(tz);
+                            }}
+                          />
+                          {deliverAtIso && scheduleReady && (
+                            <p
+                              className={`text-sm ${scheduleInPast ? 'text-red-600' : 'text-gray-600'}`}
+                            >
+                              {scheduleInPast
+                                ? 'Pick a time in the future.'
+                                : `Sends ${formatInTimezone(deliverAtIso, scheduleTimezone)}`}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      <Button
+                        onClick={handleDeliver}
+                        disabled={!canDeliver || delivering || delivered || scheduled}
+                        className="w-full shrink-0 gap-2 bg-blue-600 font-bold text-white hover:bg-blue-700"
+                      >
+                        {delivered || scheduled ? (
+                          <Check className="h-4 w-4" />
+                        ) : isScheduling ? (
+                          <Send className="h-4 w-4" />
+                        ) : (
+                          <Mail className="h-4 w-4" />
+                        )}
+                        {delivering
+                          ? isScheduling
+                            ? 'Scheduling…'
+                            : 'Sending…'
+                          : scheduled
+                            ? 'Scheduled'
+                            : delivered
+                              ? 'Sent'
+                              : isScheduling
+                                ? 'Schedule send'
+                                : 'Send'}
+                      </Button>
                     </div>
 
                     <Button

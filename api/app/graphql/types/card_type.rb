@@ -18,6 +18,7 @@ module Types
     field :recipients, [ String ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :deliver_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :deliver_to_email, String, null: true
     field :cover_image_url, String, null: true
     field :message_limit_reached, Boolean, null: false
     field :max_messages, Integer, null: false

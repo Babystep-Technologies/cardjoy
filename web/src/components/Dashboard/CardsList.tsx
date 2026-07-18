@@ -3,9 +3,18 @@ import { useMutation } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { gql } from '@apollo/client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,10 +22,29 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Lock, Edit2, Eye, Send, Unlock, QrCode, RotateCcw } from 'lucide-react';
+import {
+  MoreHorizontal,
+  Lock,
+  Edit2,
+  Eye,
+  Send,
+  Unlock,
+  QrCode,
+  RotateCcw,
+  CalendarClock,
+  XCircle,
+} from 'lucide-react';
 import * as motion from 'motion/react-client';
+import { format } from 'date-fns';
 import { isMobile } from '@/lib/utils';
 import { CardType } from '@/types/app';
+import {
+  detectTimezone,
+  formatInTimezone,
+  utcToZonedParts,
+  zonedWallTimeToUtcISO,
+} from '@/lib/timezone';
+import SchedulePicker from '@/pages/Card/components/SchedulePicker';
 import { toast } from 'sonner';
 
 const TOGGLE_LOCK_CARD = gql`
@@ -26,6 +54,35 @@ const TOGGLE_LOCK_CARD = gql`
     }
   }
 `;
+
+const DELIVER_CARD = gql`
+  mutation DeliverCard($input: DeliverCardInput!) {
+    deliverCard(input: $input) {
+      card {
+        externalId
+        deliverAt
+      }
+      errors
+    }
+  }
+`;
+
+const CANCEL_SCHEDULED_DELIVERY = gql`
+  mutation CancelScheduledDelivery($input: CancelScheduledDeliveryInput!) {
+    cancelScheduledDelivery(input: $input) {
+      card {
+        externalId
+      }
+      errors
+    }
+  }
+`;
+
+// A card with a `deliverAt` still in the future has a pending scheduled send.
+const pendingScheduledSend = (card: CardType): string | null => {
+  if (!card.deliverAt) return null;
+  return new Date(card.deliverAt).getTime() > Date.now() ? card.deliverAt : null;
+};
 
 // Custom hook to handle image loading state
 const useImageLoader = (src: string | null) => {
@@ -76,6 +133,8 @@ const CardWithImageLoader: React.FC<{
   onQr: (id: string) => void;
   onToggleLock: (id: string) => void;
   onDelete: (id: string) => void;
+  onEditSchedule: (card: CardType) => void;
+  onCancelSchedule: (card: CardType) => void;
   onOpenSheet: (id: string) => void;
   openSheetCardId: string | null;
   navigate: (path: string) => void;
@@ -87,11 +146,14 @@ const CardWithImageLoader: React.FC<{
   onQr,
   onToggleLock,
   onDelete,
+  onEditSchedule,
+  onCancelSchedule,
   onOpenSheet,
   openSheetCardId,
   navigate,
 }) => {
   const { loading, error, retry } = useImageLoader(card.coverImageUrl || null);
+  const scheduledAt = pendingScheduledSend(card);
 
   if (loading) {
     return (
@@ -149,10 +211,22 @@ const CardWithImageLoader: React.FC<{
           </div>
         )}
 
+        {scheduledAt && (
+          <div className="absolute top-3 left-3 z-10">
+            <Badge className="gap-1 bg-blue-600 text-white shadow">
+              <CalendarClock className="h-3 w-3" />
+              {formatInTimezone(scheduledAt, detectTimezone())}
+            </Badge>
+          </div>
+        )}
+
         <div className="bg-white/90 text-black text-center px-4 py-3 rounded-md shadow-md mx-auto w-[80%] max-w-[90%] overflow-hidden">
           <h2 className="font-bold text-lg truncate">{card.title}</h2>
           {card.recipients?.length > 0 && (
             <p className="text-sm font-medium mt-1 truncate">For: {card.recipients.join(', ')}</p>
+          )}
+          {scheduledAt && card.deliverToEmail && (
+            <p className="text-xs text-gray-600 mt-1 truncate">Sending to {card.deliverToEmail}</p>
           )}
         </div>
 
@@ -231,6 +305,30 @@ const CardWithImageLoader: React.FC<{
                         </>
                       )}
                     </Button>
+                    {scheduledAt && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            onOpenSheet('');
+                            onEditSchedule(card);
+                          }}
+                        >
+                          <CalendarClock className="w-4 h-4 mr-2" /> Edit schedule
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => {
+                            onOpenSheet('');
+                            onCancelSchedule(card);
+                          }}
+                        >
+                          <XCircle className="w-4 h-4 mr-2" /> Cancel scheduled send
+                        </Button>
+                      </>
+                    )}
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-red-600"
@@ -276,6 +374,16 @@ const CardWithImageLoader: React.FC<{
                     </>
                   )}
                 </DropdownMenuItem>
+                {scheduledAt && (
+                  <>
+                    <DropdownMenuItem onClick={() => onEditSchedule(card)}>
+                      <CalendarClock className="w-4 h-4 mr-2" /> Edit schedule
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onCancelSchedule(card)}>
+                      <XCircle className="w-4 h-4 mr-2" /> Cancel scheduled send
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => onDelete(card.externalId)}
@@ -317,6 +425,15 @@ export const CardsList: React.FC<CardsListProps> = ({
   const navigate = useNavigate();
   const [openSheetCardId, setOpenSheetCardId] = useState<string | null>(null);
   const [toggleLockCard] = useMutation(TOGGLE_LOCK_CARD);
+  const [deliverCard] = useMutation(DELIVER_CARD);
+  const [cancelScheduledDelivery] = useMutation(CANCEL_SCHEDULED_DELIVERY);
+
+  // The card whose schedule is being edited, plus the picker's working state.
+  const [editCard, setEditCard] = useState<CardType | null>(null);
+  const [editDate, setEditDate] = useState<Date | undefined>(undefined);
+  const [editTime, setEditTime] = useState('');
+  const [editTimezone, setEditTimezone] = useState(() => detectTimezone());
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   const handleToggleLockCard = async (cardId: string) => {
     try {
@@ -325,6 +442,67 @@ export const CardsList: React.FC<CardsListProps> = ({
       toast.success('Card lock state updated.');
     } catch {
       toast.error('Failed to update lock state');
+    }
+  };
+
+  const openScheduleEditor = (card: CardType) => {
+    const timezone = detectTimezone();
+    if (card.deliverAt) {
+      const { date, time } = utcToZonedParts(card.deliverAt, timezone);
+      setEditDate(date);
+      setEditTime(time);
+    }
+    setEditTimezone(timezone);
+    setEditCard(card);
+  };
+
+  const editDeliverAtIso =
+    editDate && editTime
+      ? zonedWallTimeToUtcISO(format(editDate, 'yyyy-MM-dd'), editTime, editTimezone)
+      : null;
+  const editInPast =
+    editDeliverAtIso !== null && new Date(editDeliverAtIso).getTime() <= Date.now();
+
+  const handleRescheduleSave = async () => {
+    if (!editCard || !editCard.deliverToEmail || !editDeliverAtIso || editInPast) return;
+    setSavingSchedule(true);
+    try {
+      const { data } = await deliverCard({
+        variables: {
+          input: {
+            cardId: editCard.externalId,
+            recipientEmail: editCard.deliverToEmail,
+            deliverAt: editDeliverAtIso,
+          },
+        },
+      });
+      if (data.deliverCard.errors.length === 0) {
+        toast.success(`Rescheduled for ${formatInTimezone(editDeliverAtIso, editTimezone)}`);
+        setEditCard(null);
+        await onRefetch();
+      } else {
+        toast.error(data.deliverCard.errors.join(', ') || 'Failed to reschedule');
+      }
+    } catch {
+      toast.error('Failed to reschedule the send');
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
+  const handleCancelSchedule = async (card: CardType) => {
+    try {
+      const { data } = await cancelScheduledDelivery({
+        variables: { input: { cardId: card.externalId } },
+      });
+      if (data.cancelScheduledDelivery.errors.length === 0) {
+        toast.success('Scheduled send cancelled');
+        await onRefetch();
+      } else {
+        toast.error(data.cancelScheduledDelivery.errors.join(', ') || 'Failed to cancel');
+      }
+    } catch {
+      toast.error('Failed to cancel the scheduled send');
     }
   };
 
@@ -372,12 +550,59 @@ export const CardsList: React.FC<CardsListProps> = ({
               // This will be handled by parent component
               window.dispatchEvent(new CustomEvent('deleteCard', { detail: { cardId: id } }));
             }}
+            onEditSchedule={openScheduleEditor}
+            onCancelSchedule={handleCancelSchedule}
             onOpenSheet={setOpenSheetCardId}
             openSheetCardId={openSheetCardId}
             navigate={navigate}
           />
         ))}
       </div>
+
+      <Dialog open={!!editCard} onOpenChange={open => !open && setEditCard(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit scheduled send</DialogTitle>
+            <DialogDescription>
+              {editCard?.deliverToEmail
+                ? `Change when this card is sent to ${editCard.deliverToEmail}.`
+                : 'Change when this card is sent.'}
+            </DialogDescription>
+          </DialogHeader>
+          <SchedulePicker
+            date={editDate}
+            time={editTime}
+            timezone={editTimezone}
+            onDateChange={setEditDate}
+            onTimeChange={setEditTime}
+            onTimezoneChange={setEditTimezone}
+            idPrefix="edit-schedule"
+          />
+          {editDeliverAtIso && (
+            <p className={`text-sm ${editInPast ? 'text-red-600' : 'text-gray-600'}`}>
+              {editInPast
+                ? 'Pick a time in the future.'
+                : `Sends ${formatInTimezone(editDeliverAtIso, editTimezone)}`}
+            </p>
+          )}
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              onClick={() => setEditCard(null)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRescheduleSave}
+              disabled={!editDeliverAtIso || editInPast || savingSchedule}
+              className="w-full sm:w-auto"
+            >
+              {savingSchedule ? 'Saving…' : 'Save schedule'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

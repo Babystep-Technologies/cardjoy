@@ -8,7 +8,11 @@ module Mutations
   #
   # An optional future `deliverAt` schedules the send for that time (write now,
   # deliver on the date) by enqueuing `DeliverCardJob`; a blank or past
-  # `deliverAt` delivers immediately.
+  # `deliverAt` delivers immediately. Scheduling stores the recipient on the
+  # card (`deliver_to_email`) so the dashboard can show, reschedule, or cancel
+  # the pending send. Sending immediately clears any prior schedule, so a
+  # send-now on a previously scheduled card can't be double-delivered by its
+  # stale job.
   class DeliverCard < BaseMutation
     argument :card_id, ID, required: true
     argument :recipient_email, String, required: true
@@ -26,10 +30,11 @@ module Mutations
       return { card: nil, errors: [ "Not authorized" ] } unless card.user_id == user.id
 
       if deliver_at.present? && deliver_at.future?
-        card.update!(deliver_at:)
+        card.update!(deliver_at:, deliver_to_email: recipient_email)
         DeliverCardJob.set(wait_until: deliver_at)
           .perform_later(card.external_id, recipient_email, deliver_at.iso8601)
       else
+        card.update!(deliver_at: nil, deliver_to_email: nil) if card.deliver_at.present?
         CardMailer.one_on_one_delivery(recipient_email, card).deliver_later
       end
 
