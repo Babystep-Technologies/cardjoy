@@ -328,4 +328,37 @@ RSpec.describe Mutations::CreateInvitation, type: :request do
     expect(data["invitation"]["eventTime"]).to eq("14:00")
     expect(data["invitation"]["eventTimezone"]).to be_nil
   end
+
+  describe "credit deduction" do
+    def create_invitation
+      post "/graphql",
+        params: {
+          query: query,
+          variables: { title: "Party", eventDate: "2025-10-01", eventTime: "14:00" }
+        }.to_json,
+        headers: headers.merge("Content-Type" => "application/json")
+      JSON.parse(response.body).dig("data", "createInvitation")
+    end
+
+    it "deducts exactly one credit on success" do
+      expect { create_invitation }.to change { user.reload.credit_balance }.by(-1)
+
+      debit = user.credits.order(:id).last
+      expect(debit.amount).to eq(-1)
+      expect(debit.events.first["event_kind"]).to eq("invitation_created")
+    end
+
+    it "blocks the create and charges nothing when the balance is empty" do
+      user.credits.destroy_all
+      invitation_count = Invitation.count
+      credit_count = Credit.count
+
+      result = create_invitation
+
+      expect(result["invitation"]).to be_nil
+      expect(result["errors"]).to include("Not enough credits")
+      expect(Invitation.count).to eq(invitation_count)
+      expect(Credit.count).to eq(credit_count)
+    end
+  end
 end

@@ -154,4 +154,39 @@ RSpec.describe Mutations::CreateOneOnOneCard, type: :request do
     expect(data["card"]).to be_nil
     expect(data["errors"]).to eq([ "Not authenticated" ])
   end
+
+  describe "credit deduction" do
+    def create_one_on_one_card
+      post "/graphql",
+        params: {
+          query: query,
+          variables: { title: "For You", recipient: "Sam", text: "Hi" }
+        }.to_json,
+        headers: headers.merge("Content-Type" => "application/json")
+      JSON.parse(response.body).dig("data", "createOneOnOneCard")
+    end
+
+    it "deducts exactly one credit on success" do
+      expect { create_one_on_one_card }.to change { user.reload.credit_balance }.by(-1)
+
+      debit = user.credits.order(:id).last
+      expect(debit.amount).to eq(-1)
+      expect(debit.events.first["event_kind"]).to eq("card_created")
+    end
+
+    it "blocks the create and charges nothing when the balance is empty" do
+      user.credits.destroy_all
+      card_count = Card.count
+      message_count = Message.count
+      credit_count = Credit.count
+
+      result = create_one_on_one_card
+
+      expect(result["card"]).to be_nil
+      expect(result["errors"]).to include("Not enough credits")
+      expect(Card.count).to eq(card_count)
+      expect(Message.count).to eq(message_count)
+      expect(Credit.count).to eq(credit_count)
+    end
+  end
 end

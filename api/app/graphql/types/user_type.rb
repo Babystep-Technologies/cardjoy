@@ -12,7 +12,7 @@ module Types
     field :invitations_count, Integer, null: false
 
     def credit_balance
-      object.credits.sum(:amount)
+      object.credit_balance
     end
 
     def cards_count

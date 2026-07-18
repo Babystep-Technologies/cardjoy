@@ -45,11 +45,20 @@ module Mutations
         external_id: SecureRandom.uuid
       )
 
-      if invitation.save
+      ApplicationRecord.transaction do
+        # Persisting the invitation costs a credit; debit inside the
+        # transaction so an insufficient balance blocks the create and a failed
+        # save never burns a credit.
+        user.spend_credit!(reason: "invitation_created", event_kind: "invitation_created")
+
+        invitation.save!
+
         { invitation: invitation, errors: [] }
-      else
-        { invitation: nil, errors: invitation.errors.full_messages }
       end
+    rescue User::InsufficientCreditsError
+      { invitation: nil, errors: [ INSUFFICIENT_CREDITS_ERROR ] }
+    rescue ActiveRecord::RecordInvalid => e
+      { invitation: nil, errors: e.record.errors.full_messages }
     rescue StandardError => e
       { invitation: nil, errors: [ e.message ] }
     end

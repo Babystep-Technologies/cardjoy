@@ -26,6 +26,11 @@ module Mutations
       return { card: nil, errors: [ "Not authenticated" ] } unless user
 
       ApplicationRecord.transaction do
+        # Debit first so an insufficient balance blocks the create before we do
+        # any image work; the whole transaction rolls back if anything is
+        # invalid, so a failed create never burns a credit.
+        user.spend_credit!(reason: "card_created", event_kind: "card_created")
+
         card = user.cards.build(title:, recipients: [ recipient ], kind: "one_on_one")
         styles = Style.where(id: style_ids)
         card.styles << styles if styles.any?
@@ -47,22 +52,24 @@ module Mutations
         message.save!
 
         { card:, errors: [] }
-      rescue ActiveRecord::RecordInvalid => e
-        # Extract and format validation errors for better user experience
-        errors = e.record.errors.full_messages.map do |msg|
-          # Make cover image size errors more user-friendly
-          if msg.include?("Cover image") && msg.include?("less than 10")
-            "Cover image file size is too large. Please choose an image smaller than 10MB."
-          elsif msg.include?("Cover image") && msg.include?("valid image format")
-            "Cover image must be in PNG, JPG, JPEG, or GIF format."
-          else
-            msg
-          end
-        end
-        { card: nil, errors: }
-      rescue OpenURI::HTTPError => e
-        { card: nil, errors: [ "Failed to download cover image: #{e.message}" ] }
       end
+    rescue User::InsufficientCreditsError
+      { card: nil, errors: [ INSUFFICIENT_CREDITS_ERROR ] }
+    rescue ActiveRecord::RecordInvalid => e
+      # Extract and format validation errors for better user experience
+      errors = e.record.errors.full_messages.map do |msg|
+        # Make cover image size errors more user-friendly
+        if msg.include?("Cover image") && msg.include?("less than 10")
+          "Cover image file size is too large. Please choose an image smaller than 10MB."
+        elsif msg.include?("Cover image") && msg.include?("valid image format")
+          "Cover image must be in PNG, JPG, JPEG, or GIF format."
+        else
+          msg
+        end
+      end
+      { card: nil, errors: }
+    rescue OpenURI::HTTPError => e
+      { card: nil, errors: [ "Failed to download cover image: #{e.message}" ] }
     end
   end
 end

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
+import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import { StyleType } from '@/types/app';
 import { cardTypeById } from '@/config/cardTypes';
 import { X, Sparkles, Upload, Users, Heart } from 'lucide-react';
@@ -155,6 +156,11 @@ const CardNew: React.FC = () => {
         });
         const json = await res.json();
         if (json.errors || json.data.createCard.errors.length > 0) {
+          const mutationErrors = json.data?.createCard?.errors ?? json.errors ?? [];
+          if (isInsufficientCreditsError(mutationErrors)) {
+            navigate(INSUFFICIENT_CREDITS_REDIRECT);
+            return;
+          }
           toast.error(
             'Upload failed: ' +
               (json.errors?.[0]?.message ?? json.data.createCard.errors.join(', '))
@@ -202,6 +208,10 @@ const CardNew: React.FC = () => {
             navigate(`/card/${data.createCard.card.externalId}/edit`);
           }, 500);
         } else {
+          if (isInsufficientCreditsError(data.createCard.errors)) {
+            navigate(INSUFFICIENT_CREDITS_REDIRECT);
+            return;
+          }
           toast.error(data.createCard.errors.join(', ') || 'Failed to create card');
           captureError('Card Creation Error', {
             errors: data.createCard.errors,

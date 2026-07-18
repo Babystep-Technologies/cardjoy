@@ -120,4 +120,34 @@ RSpec.describe Mutations::CreateCard, type: :request do
     expect(data["card"]).to be_present
     expect(Card.last.cover_image).not_to be_attached
   end
+
+  describe "credit deduction" do
+    def create_card
+      post "/graphql",
+        params: { query: query, variables: { title: "Charged", recipients: [ "Bob" ], styleIds: [] } }.to_json,
+        headers: headers.merge("Content-Type" => "application/json")
+      JSON.parse(response.body).dig("data", "createCard")
+    end
+
+    it "deducts exactly one credit on success" do
+      expect { create_card }.to change { user.reload.credit_balance }.by(-1)
+
+      debit = user.credits.order(:id).last
+      expect(debit.amount).to eq(-1)
+      expect(debit.events.first["event_kind"]).to eq("card_created")
+    end
+
+    it "blocks the create and charges nothing when the balance is empty" do
+      user.credits.destroy_all
+      card_count = Card.count
+      credit_count = Credit.count
+
+      result = create_card
+
+      expect(result["card"]).to be_nil
+      expect(result["errors"]).to include("Not enough credits")
+      expect(Card.count).to eq(card_count)
+      expect(Credit.count).to eq(credit_count)
+    end
+  end
 end

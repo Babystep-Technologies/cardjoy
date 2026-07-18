@@ -65,22 +65,30 @@ module Mutations
 
       return { invitation: nil, errors: invitation.errors.full_messages } unless invitation.valid?
 
-      # Handle cover image
-      if cover_image_file.present? && cover_image_file.respond_to?(:to_io)
-        invitation.cover_image.attach(io: cover_image_file.to_io, filename: cover_image_file.original_filename)
-      elsif cover_image_url.present?
-        # Handle URL-based cover images (from gallery selection)
-        downloaded_file = URI.open(cover_image_url)
-        uri = URI.parse(cover_image_url)
-        filename = File.basename(T.must(uri.path))
-        invitation.cover_image.attach(io: downloaded_file, filename: filename)
-      end
+      ApplicationRecord.transaction do
+        # Debit inside the transaction so an insufficient balance blocks the
+        # create and a failed save never burns a credit.
+        user.spend_credit!(reason: "invitation_created", event_kind: "invitation_created")
 
-      if invitation.save
+        # Handle cover image
+        if cover_image_file.present? && cover_image_file.respond_to?(:to_io)
+          invitation.cover_image.attach(io: cover_image_file.to_io, filename: cover_image_file.original_filename)
+        elsif cover_image_url.present?
+          # Handle URL-based cover images (from gallery selection)
+          downloaded_file = URI.open(cover_image_url)
+          uri = URI.parse(cover_image_url)
+          filename = File.basename(T.must(uri.path))
+          invitation.cover_image.attach(io: downloaded_file, filename: filename)
+        end
+
+        invitation.save!
+
         { invitation: invitation, errors: [] }
-      else
-        { invitation: nil, errors: invitation.errors.full_messages }
       end
+    rescue User::InsufficientCreditsError
+      { invitation: nil, errors: [ INSUFFICIENT_CREDITS_ERROR ] }
+    rescue ActiveRecord::RecordInvalid => e
+      { invitation: nil, errors: e.record.errors.full_messages }
     rescue OpenURI::HTTPError => e
       { invitation: nil, errors: [ "Failed to download cover image: #{e.message}" ] }
     rescue StandardError => e

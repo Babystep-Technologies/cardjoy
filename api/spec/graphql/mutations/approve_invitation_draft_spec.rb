@@ -191,4 +191,43 @@ RSpec.describe Mutations::ApproveInvitationDraft, type: :request do
       expect(invitation.user_id).to eq(user.id)
     end
   end
+
+  describe 'credit deduction' do
+    def approve_draft
+      post '/graphql',
+        params: {
+          query: mutation,
+          variables: {
+            input: {
+              previewTitle: 'Birthday Party',
+              previewEventDate: '2026-01-20',
+              previewEventTime: '19:00'
+            }
+          }
+        }.to_json,
+        headers: headers
+      JSON.parse(response.body).dig('data', 'approveInvitationDraft')
+    end
+
+    it 'deducts exactly one credit on success' do
+      expect { approve_draft }.to change { user.reload.credit_balance }.by(-1)
+
+      debit = user.credits.order(:id).last
+      expect(debit.amount).to eq(-1)
+      expect(debit.events.first['event_kind']).to eq('invitation_created')
+    end
+
+    it 'blocks the create and charges nothing when the balance is empty' do
+      user.credits.destroy_all
+      invitation_count = Invitation.count
+      credit_count = Credit.count
+
+      result = approve_draft
+
+      expect(result['invitation']).to be_nil
+      expect(result['errors']).to include('Not enough credits')
+      expect(Invitation.count).to eq(invitation_count)
+      expect(Credit.count).to eq(credit_count)
+    end
+  end
 end

@@ -68,6 +68,19 @@ RSpec.describe Mutations::UpdateCard, type: :request do
     expect(card.styles.map(&:id)).to match_array(styles.map(&:id))
   end
 
+  it "does not deduct a credit when editing a card" do
+    card # ensure the card exists before measuring
+
+    expect do
+      post "/graphql",
+        params: {
+          query: query,
+          variables: { cardId: card.external_id, title: "Edited" }
+        }.to_json,
+        headers: headers.merge("Content-Type" => "application/json")
+    end.not_to change { user.reload.credit_balance }
+  end
+
   it "updates the cover image via file upload" do
     file = fixture_file_upload("spec/fixtures/files/test_image.jpg", "image/jpeg")
 

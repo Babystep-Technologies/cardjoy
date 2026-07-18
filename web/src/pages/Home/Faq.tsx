@@ -10,12 +10,12 @@ const faqs = [
   {
     question: 'What is CardJoy?',
     answer:
-      'CardJoy is a 100% free, open-source platform for creating digital group cards and event invitations. Collect heartfelt messages on a shareable group card, or design an animated invitation with built-in RSVP tracking. No paywalls, no hidden fees!',
+      'CardJoy is an open-source platform for creating digital group cards and event invitations. Collect heartfelt messages on a shareable group card, or design an animated invitation with built-in RSVP tracking. No subscriptions, no hidden fees!',
   },
   {
     question: 'How much does it cost?',
     answer:
-      'Everything is completely FREE! There are no credits to buy, no subscriptions, and no paywalls. Create as many cards as you want, whenever you want.',
+      'You start with 5 free credits when you sign up, and creating a card or invitation costs 1 credit. When you run out, you can buy more credits — no subscriptions, no lock-in.',
   },
   {
     question: 'How do I create a group card?',
