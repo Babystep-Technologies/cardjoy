@@ -277,6 +277,11 @@ const Dashboard: React.FC = () => {
               )?.slug
         }
         type={selectedItemType}
+        isOneOnOne={
+          selectedItemType === 'card' &&
+          data?.userCards?.find((c: { externalId: string }) => c.externalId === selectedCardId)
+            ?.kind === 'one_on_one'
+        }
       />
 
       {/* QR Code Dialog */}

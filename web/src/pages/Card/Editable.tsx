@@ -31,6 +31,7 @@ const GET_CARD = gql`
     card(cardId: $cardId, showFlaggedMessages: $showFlaggedMessages) {
       title
       slug
+      kind
       locked
       flagged
       messageLimitReached
@@ -365,6 +366,7 @@ const CardEditable: React.FC = () => {
         cardId={cardExternalId || ''}
         slug={data?.card?.slug}
         type="card"
+        isOneOnOne={cardData?.kind === 'one_on_one'}
       />
     </div>
   );

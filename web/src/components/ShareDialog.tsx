@@ -41,6 +41,8 @@ interface ShareDialogProps {
   cardId: string;
   slug?: string | null;
   type?: 'card' | 'invitation';
+  /** 1-on-1 cards have no group-contribution flow, so they share via a single link only. */
+  isOneOnOne?: boolean;
 }
 
 const ShareDialog: React.FC<ShareDialogProps> = ({
@@ -49,6 +51,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   cardId,
   slug,
   type = 'card',
+  isOneOnOne = false,
 }) => {
   const [collaboratorEmails, setCollaboratorEmails] = useState<string[]>([]);
   const [viewerEmails, setViewerEmails] = useState<string[]>([]);
@@ -61,6 +64,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
   // Use slug if available, otherwise use cardId
   const identifier = slug || cardId;
   const isInvitation = type === 'invitation';
+  // Invitations and 1-on-1 cards share via a single link, with no "invite others to write" tab.
+  const simpleShare = isInvitation || isOneOnOne;
 
   // Generate URLs based on type
   const getEditableUrl = () => {
@@ -180,15 +185,21 @@ const ShareDialog: React.FC<ShareDialogProps> = ({
           <DialogTitle>Share This {isInvitation ? 'Invitation' : 'Card'}</DialogTitle>
         </DialogHeader>
 
-        {isInvitation ? (
-          // Simple share interface for invitations (no tabs)
+        {simpleShare ? (
+          // Simple share interface for invitations and 1-on-1 cards (no tabs)
           <div className="mt-4">
-            <p className="text-sm text-gray-600 mb-2">Share this invitation with your guests.</p>
+            <p className="text-sm text-gray-600 mb-2">
+              {isInvitation
+                ? 'Share this invitation with your guests.'
+                : 'Send this card to the recipient.'}
+            </p>
             <div className="text-sm text-gray-700 mt-2 font-medium">
               Share this link via text, email, Slack, or WhatsApp, etc.
             </div>
             <p className="text-xs text-gray-500 mb-1">
-              Anyone with the link can access the invitation.
+              {isInvitation
+                ? 'Anyone with the link can access the invitation.'
+                : 'Anyone with the link can view the card.'}
             </p>
             <div className="flex items-center mt-2 gap-2">
               <Input readOnly value={getViewableUrl()} />
