@@ -27,6 +27,15 @@ RSpec.describe 'Previews', type: :request do
       expect(response.body).to include('og:image')
       expect(response.body).to include('og:url')
     end
+
+    it 'redirects to an absolute frontend URL, not a bare path resolved against the API host' do
+      allow(AppConfig).to receive(:frontend_url).and_return('https://cardjoy.app')
+
+      get "/p/card/#{card.external_id}/viewable"
+
+      expect(response.body).to include('url=https://cardjoy.app/card/ABCDEFG/viewable')
+      expect(response.body).not_to include('url=/card/')
+    end
   end
 
   describe 'GET non-existent card' do
