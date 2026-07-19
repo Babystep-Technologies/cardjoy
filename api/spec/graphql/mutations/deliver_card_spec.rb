@@ -111,10 +111,10 @@ RSpec.describe Mutations::DeliverCard, type: :request do
         headers: { "Content-Type" => "application/json" } # no Authorization header
     }.not_to have_enqueued_mail(CardMailer, :one_on_one_delivery)
 
-    json = JSON.parse(response.body)
-    data = json.dig("data", "deliverCard")
-    expect(data["card"]).to be_nil
-    expect(data["errors"]).to eq([ "Not authenticated" ])
+    # Challenged at the controller gate before the resolver runs: DeliverCard is not
+    # a public operation, so it never reaches its own "Not authenticated" check.
+    expect(response).to have_http_status(:unauthorized)
+    expect(JSON.parse(response.body)["errors"]).to include("Unauthorized")
   end
 
   it "returns an error when the card does not exist" do
