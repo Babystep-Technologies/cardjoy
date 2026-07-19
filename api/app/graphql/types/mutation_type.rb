@@ -18,6 +18,8 @@ module Types
     field :cancel_scheduled_delivery, mutation: Mutations::CancelScheduledDelivery
     field :create_stripe_checkout_session, mutation: Mutations::CreateStripeCheckoutSession
     field :redeem_promo_code, mutation: Mutations::RedeemPromoCode
+    field :issue_user_promo_code, mutation: Mutations::IssueUserPromoCode
+    field :create_general_promo_code, mutation: Mutations::CreateGeneralPromoCode
     field :update_cover_style, mutation: Mutations::UpdateCoverStyle
     field :archive_cover_style, mutation: Mutations::ArchiveCoverStyle
     field :create_cover_style, mutation: Mutations::CreateCoverStyle

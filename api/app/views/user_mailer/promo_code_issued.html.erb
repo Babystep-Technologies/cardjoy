@@ -1,0 +1,21 @@
+<h2>Hi <%= @user.name %>,</h2>
+
+<p>Good news! You've been given a CardJoy promo code worth <strong><%= @promo_code.credit_amount %> credit<%= "s" unless @promo_code.credit_amount == 1 %></strong>. 🎉</p>
+
+<p>
+  Your code:<br>
+  <strong style="font-size: 20px; letter-spacing: 1px;"><%= @promo_code.code.upcase %></strong>
+</p>
+
+<% if @promo_code.expires_at.present? %>
+  <p>Redeem it before <strong><%= @promo_code.expires_at.strftime("%B %-d, %Y") %></strong>.</p>
+<% end %>
+
+<p>
+  <a href="<%= @redeem_url %>">Redeem your credits</a>
+</p>
+
+<p>Enjoy creating and sending beautiful cards to your loved ones!</p>
+
+<hr>
+<p style="font-size: 12px; color: #999;">Team CardJoy</p>
