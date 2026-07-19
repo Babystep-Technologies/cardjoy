@@ -25,7 +25,7 @@ class PreviewsController < ApplicationController
     @title = card_title_for(@card)
     @description = card_og_description_for(@card)
     @image_url = @card.cover_image_url || "https://cardjoy.app/og-image.png"
-    frontend_url = Rails.application.credentials.dig(:frontend_url)
+    frontend_url = AppConfig.frontend_url
     card_path = @card.slug.present? ? @card.slug : @card.external_id
     @url = editable ? "#{frontend_url}/card/#{card_path}/editable" : "#{frontend_url}/card/#{card_path}/viewable"
 
@@ -38,7 +38,7 @@ class PreviewsController < ApplicationController
     @title = invitation_title_for(@invitation)
     @description = invitation_og_description_for(@invitation)
     @image_url = @invitation.cover_image_url || "https://cardjoy.app/og-image.png"
-    frontend_url = Rails.application.credentials.dig(:frontend_url)
+    frontend_url = AppConfig.frontend_url
     @url = "#{frontend_url}/invitation/#{@invitation.external_id}"
 
     render "previews/show", layout: false
