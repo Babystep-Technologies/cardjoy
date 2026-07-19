@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowLeft, Mail, Pencil, Send } from 'lucide-react';
+import { Mail, Pencil, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CardEffect, isEffectSlug } from '@/components/effects';
@@ -69,50 +69,44 @@ const OneOnOneCardView: React.FC<OneOnOneCardViewProps> = ({
         <CardEffect effect={effect} scope="page" backgroundColor="#0d0b14" sectionCount={1} />
       )}
 
-      {/* Creator bar — same convention as the group view. */}
-      {isCreator && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 h-14 bg-[#0d0b14] border-b border-white/10">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium text-sm">Dashboard</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link to={`/card/${externalId}/edit`}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 bg-transparent text-white border-white/30 hover:bg-white/10 hover:text-white"
-              >
-                <Pencil className="w-4 h-4" />
-                Edit
-              </Button>
-            </Link>
-            <Button
-              size="sm"
-              onClick={onShareClick}
-              className="gap-2 bg-white text-black hover:bg-white/90"
-            >
-              <Send className="w-4 h-4" />
-              Share
-            </Button>
-          </div>
-        </div>
-      )}
-
       <div className="relative z-[1] flex min-h-screen flex-col items-center justify-center px-6 py-20">
-        {/* From — the sender leads, because a 1-on-1 card comes from one person. */}
-        <motion.div
-          layout
-          className="mb-6 flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/90 backdrop-blur"
-        >
-          <Mail className="h-4 w-4" />
-          <span>
-            From <span className="font-semibold">{senderName}</span>
-          </span>
-        </motion.div>
+        {/* From — the sender leads, because a 1-on-1 card comes from one person.
+            Creator controls sit alongside it rather than in a top bar, so the
+            immersive gradient stays unbroken and they don't clash with the app header. */}
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-2">
+          <motion.div
+            layout
+            className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm text-white/90 backdrop-blur"
+          >
+            <Mail className="h-4 w-4" />
+            <span>
+              From <span className="font-semibold">{senderName}</span>
+            </span>
+          </motion.div>
+
+          {isCreator && (
+            <>
+              <Link to={`/card/${externalId}/edit`}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur hover:bg-white/20 hover:text-white"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </Button>
+              </Link>
+              <Button
+                size="sm"
+                onClick={onShareClick}
+                className="gap-2 rounded-full bg-white text-black hover:bg-white/90"
+              >
+                <Send className="w-4 h-4" />
+                Share
+              </Button>
+            </>
+          )}
+        </div>
 
         {/* The card object on its stage. */}
         <motion.button
