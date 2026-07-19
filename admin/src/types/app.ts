@@ -26,6 +26,20 @@ export type User = {
   name: string;
 };
 
+export type PromoCode = {
+  id: string;
+  code: string;
+  creditAmount: number;
+  usageLimit: number | null;
+  timesRedeemed: number | null;
+  expiresAt: string | null;
+  createdAt: string;
+  user: {
+    id: string;
+    email: string;
+  } | null;
+};
+
 export type UserMessage = {
   id: string;
   title: string;

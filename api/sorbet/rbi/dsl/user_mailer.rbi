@@ -10,6 +10,9 @@ class UserMailer
     sig { params(user: T.untyped).returns(::ActionMailer::MessageDelivery) }
     def confirmation_code(user:); end
 
+    sig { params(user: T.untyped, promo_code: T.untyped).returns(::ActionMailer::MessageDelivery) }
+    def promo_code_issued(user:, promo_code:); end
+
     sig { params(user: T.untyped, amount: T.untyped).returns(::ActionMailer::MessageDelivery) }
     def purchase_confirmation_email(user, amount); end
   end

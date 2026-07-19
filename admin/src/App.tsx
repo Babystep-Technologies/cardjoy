@@ -3,6 +3,7 @@ import Dashboard from '@/pages/Dashboard';
 import ManageStyles from '@/pages/styles/ManageStyles';
 import ManageCards from '@/pages/cards/ManageCards';
 import ManageUsers from '@/pages/users/ManageUsers';
+import ManagePromos from '@/pages/promos/ManagePromos';
 import AdminCard from '@/pages/cards/AdminCard';
 import ManageInvitations from '@/pages/invitations/ManageInvitations';
 import AdminInvitation from '@/pages/invitations/AdminInvitation';
@@ -20,7 +21,7 @@ const App: React.FC = () => {
           <Route path="cards" element={<ManageCards />} />
           <Route path="invitations" element={<ManageInvitations />} />
           <Route path="users" element={<ManageUsers />} />
-          <Route path="credits" element={<div>Manage Credits & Promos</div>} />
+          <Route path="credits" element={<ManagePromos />} />
         </Route>
         <Route path="/card/:cardExternalId" element={<AdminCard />} />
         <Route path="/invitation/:externalId" element={<AdminInvitation />} />
