@@ -143,6 +143,7 @@ const CardViewable: React.FC = () => {
           cardId={cardExternalId || ''}
           slug={data?.card?.slug}
           type="card"
+          isOneOnOne
         />
       </>
     );
