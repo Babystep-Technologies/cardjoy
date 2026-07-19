@@ -150,6 +150,11 @@ export function createConfettiRenderer(config: ConfettiSceneConfig): ConfettiRen
 
     const mesh = new InstancedMesh(geometry, material, count);
     mesh.instanceMatrix.setUsage(DynamicDrawUsage);
+    // Particles start parked off-screen at z=-100, so the bounding sphere
+    // three.js computes once (and caches) sits far beyond the far plane and the
+    // whole mesh gets frustum-culled forever — even after particles spawn into
+    // view. Particles move every frame, so per-mesh culling buys nothing anyway.
+    mesh.frustumCulled = false;
 
     // Set colors and hide all particles initially
     for (let i = 0; i < count; i++) {

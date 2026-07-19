@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useReducedMotion } from 'motion/react';
 
 import ConfettiScene, { type ConfettiSceneHandle } from '@/components/ConfettiScene';
@@ -39,6 +39,23 @@ const CardEffect: React.FC<CardEffectProps> = ({
   const reducedMotion = useReducedMotion();
   const wantsPageConfetti = scope === 'page' && (effect === null || effect === 'confetti');
 
+  // magicui's <Confetti> re-fires whenever this options object's identity
+  // changes. Without memoizing, a fresh object every render (the parent
+  // re-renders on each keystroke of the creation form) would burst confetti on
+  // every keypress. Stable identity fires once; CardPreview's `key` remount
+  // replays it when the effect actually changes.
+  const previewConfettiOptions = useMemo(
+    () => ({
+      colors: getBrandColors(),
+      particleCount: 70,
+      spread: 80,
+      startVelocity: 28,
+      scalar: 0.7,
+      origin: { x: 0.5, y: 0.6 },
+    }),
+    []
+  );
+
   // Burst once the renderer finishes loading — it is imported lazily, so the
   // ref is not populated on mount.
   useEffect(() => {
@@ -75,14 +92,7 @@ const CardEffect: React.FC<CardEffectProps> = ({
     return (
       <Confetti
         className="pointer-events-none absolute inset-0 z-20 h-full w-full"
-        options={{
-          colors: getBrandColors(),
-          particleCount: 70,
-          spread: 80,
-          startVelocity: 28,
-          scalar: 0.7,
-          origin: { x: 0.5, y: 0.6 },
-        }}
+        options={previewConfettiOptions}
       />
     );
   }
