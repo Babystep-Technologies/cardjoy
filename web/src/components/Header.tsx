@@ -5,6 +5,16 @@ import * as motion from 'motion/react-client';
 import { useFeatureFlagEnabled } from 'posthog-js/react';
 import { OccasionMegaMenu } from './OccasionMegaMenu';
 import { ProductMenu } from './ProductMenu';
+import { BusinessMenu } from './BusinessMenu';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from '@/components/ui/accordion';
+import { cardTypes } from '@/config/cardTypes';
+import { businessLinks } from '@/config/businessLinks';
+import { slackInstallUrl } from '@/lib/slack';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
@@ -87,13 +97,8 @@ const Header: React.FC = () => {
             {!user && (
               <>
                 <ProductMenu />
+                <BusinessMenu />
                 <OccasionMegaMenu />
-                <Link
-                  to="/for-teams"
-                  className="text-gray-600 hover:text-gray-900 transition font-medium text-base"
-                >
-                  For Teams
-                </Link>
               </>
             )}
             {user ? (
@@ -167,33 +172,63 @@ const Header: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Link
-                    to="/group-card/new"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
-                  >
-                    Group Cards
-                  </Link>
-                  <Link
-                    to="/invitation/new"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
-                  >
-                    Invitations
-                  </Link>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="personal">
+                      <AccordionTrigger className="text-gray-800">Personal</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-3 pl-2">
+                          {cardTypes
+                            .filter(type => type.route)
+                            .map(type => (
+                              <Link
+                                key={type.id}
+                                to={type.route}
+                                onClick={() => setMenuOpen(false)}
+                                className="text-gray-600 hover:text-gray-900"
+                              >
+                                {type.label}
+                              </Link>
+                            ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    <AccordionItem value="business">
+                      <AccordionTrigger className="text-gray-800">Business</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="flex flex-col gap-3 pl-2">
+                          {businessLinks.map(link => (
+                            <Link
+                              key={link.id}
+                              to={link.route}
+                              onClick={() => setMenuOpen(false)}
+                              className="text-gray-600 hover:text-gray-900"
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
+                          <a
+                            href={slackInstallUrl()}
+                            className="mt-1"
+                            aria-label="Add CardJoy to Slack"
+                          >
+                            <img
+                              alt="Add to Slack"
+                              height="40"
+                              width="139"
+                              src="https://platform.slack-edge.com/img/add_to_slack.png"
+                              srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
+                            />
+                          </a>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                   <Link
                     to="/occasions"
                     onClick={() => setMenuOpen(false)}
                     className="text-gray-600 hover:text-gray-900 text-center"
                   >
                     Occasions
-                  </Link>
-                  <Link
-                    to="/for-teams"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
-                  >
-                    For Teams
                   </Link>
                   <Link
                     to="/sign_in"

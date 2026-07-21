@@ -26,6 +26,7 @@ import Maintenance from '@/pages/Maintenance';
 import Careers from '@/pages/Careers';
 import ForTeams from '@/pages/ForTeams';
 import ConnectSlack from '@/pages/ConnectSlack';
+import Slack from '@/pages/Slack';
 import Occasions from '@/pages/Occasions';
 import Contacts from '@/pages/Contacts/Index';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -110,6 +111,7 @@ const App: React.FC = () => {
             element={<EventLandingPage config={jobFarewellConfig} />}
           />
 
+          <Route path="/slack" element={<Slack />} />
           <Route path="/connect-slack" element={<ConnectSlack />} />
           <Route path="/occasions" element={<Occasions />} />
           <Route path="/for-teams" element={<ForTeams />} />

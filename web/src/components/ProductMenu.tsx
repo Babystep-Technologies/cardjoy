@@ -13,7 +13,7 @@ export const ProductMenu: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition font-medium text-base outline-none">
-        Products
+        Personal
         <ChevronDown className="w-4 h-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[360px] p-3" align="start">
