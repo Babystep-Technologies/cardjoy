@@ -6,6 +6,7 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import { Card, CardTitle, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CREDIT_PLANS } from '@/lib/constants';
+import { slackInstallUrl } from '@/lib/slack';
 import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
 import { LoaderCircle } from 'lucide-react';
@@ -214,9 +215,7 @@ function Profile() {
                   Install the Cardjoy Slack app to create cards directly from Slack using{' '}
                   <code className="bg-gray-100 px-1 rounded">/cardjoy create for &lt;name&gt;</code>
                 </p>
-                <a
-                  href={`https://slack.com/oauth/v2/authorize?client_id=${import.meta.env.VITE_SLACK_CLIENT_ID}&scope=commands,users:read&redirect_uri=${import.meta.env.VITE_API_URL}/oauth/slack/callback`}
-                >
+                <a href={slackInstallUrl()}>
                   <img
                     alt="Add to Slack"
                     height="40"
