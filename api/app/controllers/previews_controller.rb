@@ -56,8 +56,51 @@ class PreviewsController < ApplicationController
 
   def card_title_for(card)
     recipients_name = card.recipients.join(", ")
-    base = "Card for #{recipients_name}"
-    card.occasion.present? ? "#{base} for #{card.occasion}" : base
+
+    case card.occasion
+    when "Birthday"
+      "Write a message to make #{recipients_name}'s birthday unforgettable 🎂"
+    when "Wedding"
+      "Share a note to celebrate #{recipients_name}'s wedding day 💍"
+    when "Baby Shower", "New Baby"
+      "Welcome #{recipients_name}'s little one with a message 👶"
+    when "Retirement"
+      "Send #{recipients_name} into retirement with a message 🎉"
+    when "Graduation"
+      "Cheer on #{recipients_name}'s graduation with a message 🎓"
+    when "Anniversary"
+      "Celebrate #{recipients_name}'s anniversary with a message 💕"
+    when "Engagement"
+      "Toast #{recipients_name}'s engagement with a message 💍"
+    when "Congratulations"
+      "Congratulate #{recipients_name} with a heartfelt message 🎉"
+    when "Thank You"
+      "Say thank you to #{recipients_name} with a message 🙏"
+    when "Sympathy"
+      "Share a few comforting words with #{recipients_name} 🤍"
+    when "Get Well Soon"
+      "Send #{recipients_name} get-well wishes with a message 💐"
+    when "New Job"
+      "Cheer on #{recipients_name}'s new job with a message 🎉"
+    when "Farewell"
+      "Wish #{recipients_name} a heartfelt farewell 👋"
+    when "Holiday"
+      "Share some holiday cheer with #{recipients_name} 🎄"
+    when "Mother's Day"
+      "Celebrate #{recipients_name} this Mother's Day with a message 💐"
+    when "Father's Day"
+      "Celebrate #{recipients_name} this Father's Day with a message 🎉"
+    when "Valentine's Day"
+      "Share the love with #{recipients_name} this Valentine's Day 💌"
+    when "Friendship"
+      "Celebrate your friendship with #{recipients_name} 💛"
+    when "Just Because"
+      "Brighten #{recipients_name}'s day with a message, just because ✨"
+    when nil, ""
+      "Write a message for #{recipients_name} 💌"
+    else
+      "Write #{recipients_name} a message for their #{card.occasion} ✨"
+    end
   end
 
   def invitation_title_for(invitation)
