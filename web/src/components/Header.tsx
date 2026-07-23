@@ -7,6 +7,7 @@ import { OccasionMegaMenu } from './OccasionMegaMenu';
 import { ProductMenu } from './ProductMenu';
 import { BusinessMenu } from './BusinessMenu';
 import { UserMenu } from './UserMenu';
+import { IntentPickerDialog } from './IntentPickerDialog';
 import {
   Accordion,
   AccordionItem,
@@ -109,9 +110,11 @@ const Header: React.FC = () => {
             {/* Account cluster — the only part that swaps with auth state */}
             {user ? (
               <div className="flex items-center gap-4">
-                <Link to="/group-card/new" className={primaryButtonClass}>
-                  Create card
-                </Link>
+                <IntentPickerDialog>
+                  <button type="button" className={primaryButtonClass}>
+                    Create card
+                  </button>
+                </IntentPickerDialog>
                 <UserMenu />
               </div>
             ) : (
@@ -223,13 +226,11 @@ const Header: React.FC = () => {
                       {user.email && <p className="truncate text-xs text-gray-500">{user.email}</p>}
                     </div>
                   </div>
-                  <Link
-                    to="/group-card/new"
-                    onClick={() => setMenuOpen(false)}
-                    className={`${primaryButtonClass} text-center`}
-                  >
-                    Create card
-                  </Link>
+                  <IntentPickerDialog>
+                    <button type="button" className={`${primaryButtonClass} text-center`}>
+                      Create card
+                    </button>
+                  </IntentPickerDialog>
                   <Link
                     to="/dashboard"
                     onClick={() => setMenuOpen(false)}
