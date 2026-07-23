@@ -6,6 +6,7 @@ import { useFeatureFlagEnabled } from 'posthog-js/react';
 import { OccasionMegaMenu } from './OccasionMegaMenu';
 import { ProductMenu } from './ProductMenu';
 import { BusinessMenu } from './BusinessMenu';
+import { UserMenu } from './UserMenu';
 import {
   Accordion,
   AccordionItem,
@@ -15,9 +16,15 @@ import {
 import { cardTypes } from '@/config/cardTypes';
 import { businessLinks } from '@/config/businessLinks';
 import { slackInstallUrl } from '@/lib/slack';
+import { getInitials } from '@/lib/utils';
+
+// Shared nav-link + CTA styling used across auth states and desktop/mobile.
+const navLinkClass = 'text-gray-600 hover:text-gray-900 transition font-medium';
+const primaryButtonClass =
+  'bg-black text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-800 transition';
 
 const Header: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const isStaging = import.meta.env.VITE_ENV === 'staging';
   const isMaintenance = useFeatureFlagEnabled(import.meta.env.VITE_MAINTENANCE_MODE_FEATURE_FLAG);
@@ -94,34 +101,25 @@ const Header: React.FC = () => {
 
           {/* Desktop Nav */}
           <div className="hidden sm:flex items-center gap-6 text-base">
-            {!user && (
-              <>
-                <ProductMenu />
-                <BusinessMenu />
-                <OccasionMegaMenu />
-              </>
-            )}
+            {/* Shared marketing nav — identical across auth states */}
+            <ProductMenu />
+            <BusinessMenu />
+            <OccasionMegaMenu />
+
+            {/* Account cluster — the only part that swaps with auth state */}
             {user ? (
               <div className="flex items-center gap-4">
-                <Link to="/dashboard" className="text-black text-bold text-xl transition">
-                  Dashboard
+                <Link to="/group-card/new" className={primaryButtonClass}>
+                  Create card
                 </Link>
-                <Link to="/contacts" className="text-black text-bold text-xl transition">
-                  Contacts
-                </Link>
-                <Link to="/profile" className="text-black text-bold text-xl transition">
-                  Profile
-                </Link>
+                <UserMenu />
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <Link to="/sign_in" className="text-gray-600 hover:text-gray-900 transition">
+                <Link to="/sign_in" className={navLinkClass}>
                   Sign In
                 </Link>
-                <Link
-                  to="/sign_up"
-                  className="bg-black text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-800 transition"
-                >
+                <Link to="/sign_up" className={primaryButtonClass}>
                   Sign Up Free
                 </Link>
               </div>
@@ -146,101 +144,137 @@ const Header: React.FC = () => {
             className="sm:hidden w-full px-4 pb-4 bg-white shadow-inner overflow-hidden"
           >
             <div className="flex flex-col gap-3 mt-4 text-base">
+              {/* Shared marketing nav — identical across auth states */}
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="personal">
+                  <AccordionTrigger className="text-gray-800">Personal</AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-3 pl-2">
+                      {cardTypes
+                        .filter(type => type.route)
+                        .map(type => (
+                          <Link
+                            key={type.id}
+                            to={type.route}
+                            onClick={() => setMenuOpen(false)}
+                            className={navLinkClass}
+                          >
+                            {type.label}
+                          </Link>
+                        ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="business">
+                  <AccordionTrigger className="text-gray-800">Business</AccordionTrigger>
+                  <AccordionContent>
+                    <div className="flex flex-col gap-3 pl-2">
+                      {businessLinks.map(link => (
+                        <Link
+                          key={link.id}
+                          to={link.route}
+                          onClick={() => setMenuOpen(false)}
+                          className={navLinkClass}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                      <a
+                        href={slackInstallUrl()}
+                        className="mt-1"
+                        aria-label="Add CardJoy to Slack"
+                      >
+                        <img
+                          alt="Add to Slack"
+                          height="40"
+                          width="139"
+                          src="https://platform.slack-edge.com/img/add_to_slack.png"
+                          srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
+                        />
+                      </a>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+              <Link
+                to="/occasions"
+                onClick={() => setMenuOpen(false)}
+                className={`${navLinkClass} text-center`}
+              >
+                Occasions
+              </Link>
+
+              <hr className="my-1" />
+
+              {/* Account section — the only part that swaps with auth state */}
               {user ? (
                 <>
+                  <div className="flex items-center gap-3 px-1 py-1">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-sm font-semibold text-white"
+                    >
+                      {getInitials(user.name, user.email)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-gray-900">
+                        {user.name || 'Your account'}
+                      </p>
+                      {user.email && <p className="truncate text-xs text-gray-500">{user.email}</p>}
+                    </div>
+                  </div>
+                  <Link
+                    to="/group-card/new"
+                    onClick={() => setMenuOpen(false)}
+                    className={`${primaryButtonClass} text-center`}
+                  >
+                    Create card
+                  </Link>
                   <Link
                     to="/dashboard"
                     onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
+                    className={`${navLinkClass} text-center`}
                   >
                     Dashboard
                   </Link>
                   <Link
                     to="/contacts"
                     onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
+                    className={`${navLinkClass} text-center`}
                   >
                     Contacts
                   </Link>
                   <Link
                     to="/profile"
                     onClick={() => setMenuOpen(false)}
-                    className="bg-black text-white px-4 py-2 rounded-md font-semibold text-center hover:bg-gray-800 transition"
+                    className={`${navLinkClass} text-center`}
                   >
                     Profile
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      logout();
+                    }}
+                    className="text-red-600 hover:text-red-700 font-medium text-center transition"
+                  >
+                    Sign Out
+                  </button>
                 </>
               ) : (
                 <>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="personal">
-                      <AccordionTrigger className="text-gray-800">Personal</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex flex-col gap-3 pl-2">
-                          {cardTypes
-                            .filter(type => type.route)
-                            .map(type => (
-                              <Link
-                                key={type.id}
-                                to={type.route}
-                                onClick={() => setMenuOpen(false)}
-                                className="text-gray-600 hover:text-gray-900"
-                              >
-                                {type.label}
-                              </Link>
-                            ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                    <AccordionItem value="business">
-                      <AccordionTrigger className="text-gray-800">Business</AccordionTrigger>
-                      <AccordionContent>
-                        <div className="flex flex-col gap-3 pl-2">
-                          {businessLinks.map(link => (
-                            <Link
-                              key={link.id}
-                              to={link.route}
-                              onClick={() => setMenuOpen(false)}
-                              className="text-gray-600 hover:text-gray-900"
-                            >
-                              {link.label}
-                            </Link>
-                          ))}
-                          <a
-                            href={slackInstallUrl()}
-                            className="mt-1"
-                            aria-label="Add CardJoy to Slack"
-                          >
-                            <img
-                              alt="Add to Slack"
-                              height="40"
-                              width="139"
-                              src="https://platform.slack-edge.com/img/add_to_slack.png"
-                              srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
-                            />
-                          </a>
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                  <Link
-                    to="/occasions"
-                    onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
-                  >
-                    Occasions
-                  </Link>
                   <Link
                     to="/sign_in"
                     onClick={() => setMenuOpen(false)}
-                    className="text-gray-600 hover:text-gray-900 text-center"
+                    className={`${navLinkClass} text-center`}
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/sign_up"
                     onClick={() => setMenuOpen(false)}
-                    className="bg-black text-white px-4 py-2 rounded-md font-semibold text-center hover:bg-gray-800 transition"
+                    className={`${primaryButtonClass} text-center`}
                   >
                     Sign Up Free
                   </Link>
