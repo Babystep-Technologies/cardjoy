@@ -350,6 +350,46 @@ RSpec.describe "SlackWebhooks", type: :request do
         expect(Card.last.cover_image).not_to be_attached
       end
     end
+
+    describe "credit deduction" do
+      it "deducts exactly one credit and records a card_created event" do
+        stub_slack_users_info(recipient_slack_id, "Mike Smith")
+
+        expect {
+          post_modal_submission(submission_payload)
+        }.to change { user.reload.credit_balance }.by(-1)
+
+        debit = user.credits.order(:id).last
+        expect(debit.amount).to eq(-1)
+        expect(debit.events.first["event_kind"]).to eq("card_created")
+      end
+
+      it "blocks the create and charges nothing when the balance is empty" do
+        stub_slack_users_info(recipient_slack_id, "Mike Smith")
+        user.credits.destroy_all
+        card_count = Card.count
+        credit_count = Credit.count
+
+        post_modal_submission(submission_payload)
+
+        json = JSON.parse(response.body)
+        expect(json["response_action"]).to eq("errors")
+        expect(json["errors"].values.join).to include("out of CardJoy credits")
+        expect(Card.count).to eq(card_count)
+        expect(Credit.count).to eq(credit_count)
+      end
+
+      it "does not post a follow-up message when the balance is empty" do
+        stub_slack_users_info(recipient_slack_id, "Mike Smith")
+        user.credits.destroy_all
+        response_stub = stub_request(:post, "https://hooks.slack.com/test_response")
+          .to_return(status: 200, body: '{"ok":true}')
+
+        post_modal_submission(submission_payload(response_url: "https://hooks.slack.com/test_response"))
+
+        expect(response_stub).not_to have_been_requested
+      end
+    end
   end
 
   # ------------------------------------------------------------------
