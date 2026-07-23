@@ -122,14 +122,25 @@ class SlackWebhooksController < ApplicationController
     installation = SlackInstallation.find_by(team_id: slack_team_id)
     recipient_name = fetch_slack_user_name(recipient_slack_id, installation&.access_token) if recipient_slack_id
 
-    user = T.must(connection).user
-    card = Card.create!(
-      user: user,
-      title: card_title_for(occasion, recipient_name),
-      recipients: [ recipient_name ],
-      occasion: occasion
-    )
-    attach_default_cover_image(card, occasion)
+    user = T.must(T.must(connection).user)
+
+    card = T.let(nil, T.nilable(Card))
+    ApplicationRecord.transaction do
+      # Debit first so an insufficient balance blocks creation before we do any
+      # image work; the whole transaction rolls back if anything fails, so a
+      # failed create never burns a credit. Mirrors Mutations::CreateCard so the
+      # Slack flow keeps the credit ledger consistent with the web app.
+      user.spend_credit!(reason: "card_created", event_kind: "card_created")
+
+      card = Card.create!(
+        user: user,
+        title: card_title_for(occasion, recipient_name),
+        recipients: [ recipient_name ],
+        occasion: occasion
+      )
+      attach_default_cover_image(card, occasion)
+    end
+    card = T.must(card)
 
     card_path = card.slug.presence || card.external_id
     token = generate_auth_token(user)
@@ -143,6 +154,11 @@ class SlackWebhooksController < ApplicationController
     end
 
     render json: { response_action: "clear" }
+  rescue User::InsufficientCreditsError
+    render json: {
+      response_action: "errors",
+      errors: { recipient_block: "You're out of CardJoy credits. Visit cardjoy.app to add more, then try again." }
+    }
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("[SlackWebhook] Card creation failed: #{e.message}")
     render json: { response_action: "errors", errors: { recipient_block: "Failed to create card. Please try again." } }
