@@ -266,21 +266,20 @@ const CardViewable: React.FC = () => {
             <div className="mt-12">
               <EmptyCardState
                 recipientName={recipientName}
-                isCreator={!!isCardCreator}
                 textColor={textColor}
                 cta={
-                  isCardCreator ? undefined : requiresLoginToContribute ? (
+                  requiresLoginToContribute ? (
                     <a href={`/sign_in?redirect=/card/${cardExternalId}/edit`}>
                       <Button className="px-8 py-6 text-lg font-extrabold h-[64px] bg-blue-600 hover:bg-blue-700 text-white">
                         <Pencil className="w-5 h-5 mr-2" />
-                        Write the first message
+                        Add message
                       </Button>
                     </a>
                   ) : (
                     <Link to={`/card/${cardExternalId}/edit`}>
                       <Button className="px-8 py-6 text-lg font-extrabold h-[64px] bg-blue-600 hover:bg-blue-700 text-white">
                         <Pencil className="w-5 h-5 mr-2" />
-                        Write the first message
+                        Add message
                       </Button>
                     </Link>
                   )

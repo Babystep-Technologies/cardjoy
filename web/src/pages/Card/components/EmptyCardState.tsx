@@ -3,11 +3,9 @@ import React from 'react';
 interface EmptyCardStateProps {
   /** The recipient(s) this card is for, already joined (e.g. "Sarah" or "Sarah & Tom"). */
   recipientName?: string;
-  /** The creator sees a gentle "share it" nudge; everyone else sees a "write the first note" prompt. */
-  isCreator: boolean;
   /** The card's text color, so the illustration and copy sit on any background. */
   textColor: string;
-  /** Call to action (e.g. a link to the contribute flow). Rendered below the copy. */
+  /** Add-message button, rendered below the copy. Same action for the creator and contributors. */
   cta?: React.ReactNode;
 }
 
@@ -15,23 +13,10 @@ interface EmptyCardStateProps {
  * Friendly placeholder shown on a group card that has no messages yet, so it never
  * renders as a blank card. The recipient's name is woven into the copy when available.
  */
-const EmptyCardState: React.FC<EmptyCardStateProps> = ({
-  recipientName,
-  isCreator,
-  textColor,
-  cta,
-}) => {
-  const heading = isCreator
-    ? 'No messages yet'
-    : recipientName
-      ? `Be the first to write a message for ${recipientName}!`
-      : 'Be the first to write a message!';
-
-  const subtext = isCreator
-    ? recipientName
-      ? `Share your card so friends can write the first note for ${recipientName}.`
-      : 'Share your card so friends can write the first note.'
-    : 'This card is waiting for its very first note — yours will get it started.';
+const EmptyCardState: React.FC<EmptyCardStateProps> = ({ recipientName, textColor, cta }) => {
+  const heading = recipientName
+    ? `Be the first to write a message for ${recipientName}!`
+    : 'Be the first to write a message!';
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-6 px-4 text-center">
@@ -106,20 +91,12 @@ const EmptyCardState: React.FC<EmptyCardStateProps> = ({
         />
       </svg>
 
-      <div className="space-y-3">
-        <h2
-          className="text-2xl sm:text-3xl font-bold text-balance leading-tight"
-          style={{ color: textColor }}
-        >
-          {heading}
-        </h2>
-        <p
-          className="text-base sm:text-lg leading-relaxed text-balance"
-          style={{ color: textColor, opacity: 0.7 }}
-        >
-          {subtext}
-        </p>
-      </div>
+      <h2
+        className="text-2xl sm:text-3xl font-bold text-balance leading-tight"
+        style={{ color: textColor }}
+      >
+        {heading}
+      </h2>
 
       {cta}
     </div>
