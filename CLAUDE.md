@@ -46,6 +46,16 @@ docker compose exec web yarn format-check  # Prettier check (yarn format to fix)
 docker compose exec web yarn build         # tsc type-check + build
 ```
 
+## Creating GitHub issues
+
+- **Always ask which product an issue is for** before creating it. Every new issue must be
+  categorized into exactly one of our four products and given the matching label:
+  - `product: group card`
+  - `product: 1-on-1 card`
+  - `product: invitation card`
+  - `product: holiday card`
+- If the answer isn't already clear from the request, ask the user before opening the issue.
+
 ## Conventions & gotchas
 
 - **Do NOT push to `main`.** Branch + open a PR. `main` is protected; app CI (`api-ci`,
