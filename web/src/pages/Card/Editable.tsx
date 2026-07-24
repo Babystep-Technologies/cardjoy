@@ -9,7 +9,7 @@ import CardMessage from './components/CardMessage';
 import CardNotFound from './components/CardNotFound';
 import EmptyCardState from './components/EmptyCardState';
 import { Button } from '@/components/ui/button';
-import { Lock, Send, Eye, Pencil } from 'lucide-react';
+import { Lock, Send, Eye } from 'lucide-react';
 import { ScrollProgress } from '@/components/magicui/scroll-progress';
 import { SparklesText } from '@/components/magicui/sparkles-text';
 import { UserMessageType, GuestMessageType, StyleType, JWTPayload } from '@/types/app';
@@ -378,17 +378,11 @@ const CardEditable: React.FC = () => {
                 !user &&
                 !isOwner ? (
                 <a href={`/sign_in?redirect=/card/${cardExternalId}/edit`}>
-                  <Button className="px-8 py-6 text-lg font-extrabold h-[64px]">
-                    <Pencil className="w-5 h-5 mr-2" />
-                    Add message
-                  </Button>
+                  <Button className="px-8 py-6 text-lg font-extrabold h-[64px]">Add Message</Button>
                 </a>
               ) : (
                 <Link to={`/card/${cardExternalId}/edit`}>
-                  <Button className="px-8 py-6 text-lg font-extrabold h-[64px]">
-                    <Pencil className="w-5 h-5 mr-2" />
-                    Add message
-                  </Button>
+                  <Button className="px-8 py-6 text-lg font-extrabold h-[64px]">Add Message</Button>
                 </Link>
               )
             }
