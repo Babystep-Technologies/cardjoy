@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { gql, useMutation } from '@apollo/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,12 @@ const SIGN_UP_MUTATION = gql`
 
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectParam = new URLSearchParams(location.search).get('redirect');
+  const redirectUrl = redirectParam || '/';
+  const signInLink = redirectParam
+    ? `/sign_in?redirect=${encodeURIComponent(redirectParam)}`
+    : '/sign_in';
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -60,7 +66,7 @@ const SignUpPage: React.FC = () => {
 
     if (result?.token) {
       localStorage.setItem(APP_TOKEN_KEY, result.token);
-      navigate('/');
+      navigate(redirectUrl);
       return;
     }
 
@@ -124,7 +130,7 @@ const SignUpPage: React.FC = () => {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center mt-4">
-          <Link to="/sign_in" className="font-body text-blue-500 hover:underline">
+          <Link to={signInLink} className="font-body text-blue-500 hover:underline">
             Already have an account? Log In
           </Link>
         </CardFooter>
