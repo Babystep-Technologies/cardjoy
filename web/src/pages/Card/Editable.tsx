@@ -36,6 +36,7 @@ const GET_CARD = gql`
       flagged
       messageLimitReached
       requireLoginToContribute
+      contributorPrompt
       user {
         id
       }
@@ -140,6 +141,8 @@ const CardEditable: React.FC = () => {
     (style: StyleType) => style.kind === 'background_color'
   );
   const textColorStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'text_color');
+  const textColor = textColorStyle?.value || 'black';
+  const contributorPrompt = cardData?.contributorPrompt?.trim();
 
   const isOwner = user?.user_id && String(user.user_id) === String(cardData?.user?.id);
   const isContributor = !!userMessage || !!guestMessage;
@@ -283,13 +286,29 @@ const CardEditable: React.FC = () => {
         </div>
       )}
 
-      <div className="relative mb-10 mt-6 px-4 max-w-full">
+      <div className="relative mb-6 mt-6 px-4 max-w-full">
         <SparklesText
           className="w-full text-center font-bold text-balance break-words text-wrap text-[clamp(1.75rem,5vw,2.75rem)]"
-          style={{ color: textColorStyle?.value || 'black' }}
+          style={{ color: textColor }}
           text={cardTitle}
         />
       </div>
+
+      {/* Contributor context from the creator */}
+      {contributorPrompt && (
+        <div
+          className="mb-8 max-w-2xl rounded-2xl border px-6 py-4 text-center backdrop-blur-sm mx-4 sm:mx-auto"
+          style={{
+            color: textColor,
+            borderColor: `${textColor}26`,
+            backgroundColor: `${textColor}0d`,
+          }}
+        >
+          <p className="text-base sm:text-lg leading-relaxed whitespace-pre-line text-balance">
+            {contributorPrompt}
+          </p>
+        </div>
+      )}
 
       <div className="mb-6 px-4 sm:px-6 max-w-7xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
