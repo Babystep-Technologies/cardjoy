@@ -38,6 +38,7 @@ const VerifyEmail: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const email = searchParams.get('email');
+  const redirect = searchParams.get('redirect');
 
   const { setUser } = useAuth();
 
@@ -66,7 +67,7 @@ const VerifyEmail: React.FC = () => {
       localStorage.setItem(APP_TOKEN_KEY, result.token);
       const decoded: JWTPayload = jwtDecode(result.token);
       setUser(decoded);
-      navigate('/dashboard');
+      navigate(redirect || '/dashboard');
     } else {
       setMessage(result?.errors?.[0] || 'Failed to confirm email.');
       setMessageType('error');
