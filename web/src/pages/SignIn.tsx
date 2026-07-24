@@ -30,7 +30,11 @@ const SigninPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const redirectUrl = searchParams.get('redirect') || '/';
+  const redirectParam = searchParams.get('redirect');
+  const redirectUrl = redirectParam || '/';
+  const signUpLink = redirectParam
+    ? `/sign_up?redirect=${encodeURIComponent(redirectParam)}`
+    : '/sign_up';
 
   const { setUser } = useAuth();
 
@@ -105,7 +109,7 @@ const SigninPage: React.FC = () => {
           </form>
         </CardContent>
         <CardFooter className="flex justify-between mt-4">
-          <Link to="/sign_up" className="font-body text-blue-500 hover:underline">
+          <Link to={signUpLink} className="font-body text-blue-500 hover:underline">
             Sign Up
           </Link>
           <Link to="/forgot_password" className="font-body text-blue-500 hover:underline">
