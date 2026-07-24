@@ -5,6 +5,7 @@ import { gql, useQuery } from '@apollo/client';
 import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
 import CardNotFound from './components/CardNotFound';
+import EmptyCardState from './components/EmptyCardState';
 import OneOnOneCardView from './components/OneOnOneCardView';
 import ScrollStorySection from './components/ScrollStorySection';
 import { ScrollProgress } from '@/components/magicui/scroll-progress';
@@ -26,6 +27,7 @@ const GET_CARD = gql`
       locked
       flagged
       messageLimitReached
+      requireLoginToContribute
       contributorPrompt
       user {
         id
@@ -93,6 +95,10 @@ const CardViewable: React.FC = () => {
   const textColor = textColorStyle?.value || '#1a1a1a';
   const coverImageUrl = cardData?.coverImageUrl;
   const contributorPrompt = cardData?.contributorPrompt?.trim();
+  const recipientName = (cardData?.recipients || []).filter(Boolean).join(', ');
+  const hasMessages = visibleMessages.length > 0;
+  // A logged-out visitor must sign in first when the creator requires it to contribute.
+  const requiresLoginToContribute = cardData?.requireLoginToContribute && !user && !isCardCreator;
 
   // Cards with no effect style — every group card — fall back to confetti.
   const effectStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'effect');
@@ -252,6 +258,34 @@ const CardViewable: React.FC = () => {
                 <Send className="w-5 h-5 mr-2" />
                 Share Card
               </Button>
+            </div>
+          )}
+
+          {/* Friendly empty state so a card with no messages never looks blank */}
+          {!hasMessages && (
+            <div className="mt-12">
+              <EmptyCardState
+                recipientName={recipientName}
+                isCreator={!!isCardCreator}
+                textColor={textColor}
+                cta={
+                  isCardCreator ? undefined : requiresLoginToContribute ? (
+                    <a href={`/sign_in?redirect=/card/${cardExternalId}/edit`}>
+                      <Button className="px-8 py-6 text-lg font-extrabold h-[64px] bg-blue-600 hover:bg-blue-700 text-white">
+                        <Pencil className="w-5 h-5 mr-2" />
+                        Write the first message
+                      </Button>
+                    </a>
+                  ) : (
+                    <Link to={`/card/${cardExternalId}/edit`}>
+                      <Button className="px-8 py-6 text-lg font-extrabold h-[64px] bg-blue-600 hover:bg-blue-700 text-white">
+                        <Pencil className="w-5 h-5 mr-2" />
+                        Write the first message
+                      </Button>
+                    </Link>
+                  )
+                }
+              />
             </div>
           )}
         </div>
