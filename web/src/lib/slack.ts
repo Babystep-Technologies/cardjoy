@@ -2,15 +2,19 @@
  * Slack OAuth install helpers.
  *
  * Bot scopes are kept to the minimum the CardJoy flow actually uses:
- *   - `commands`   — register and receive the `/cardjoy` slash command, open modals
- *                    (`views.open`), and post the follow-up message via `response_url`.
- *   - `users:read` — resolve the recipient's display name/email via `users.info`.
+ *   - `commands`         — register and receive the `/cardjoy` slash command, open
+ *                          modals (`views.open`), and post the follow-up message via
+ *                          `response_url`.
+ *   - `users:read`       — resolve the recipient's display name via `users.info`.
+ *   - `users:read.email` — read the member's profile email via `users.info`, so
+ *                          `/cardjoy` users resolve to a real, billable account
+ *                          instead of a synthetic `slack+…@cardjoy.app` address.
  *
- * Keep this list in sync with the scopes configured on the Slack app and with
- * `docs/SLACK_APP.md`. It is the single source of truth for the "Add to Slack"
- * button across the app.
+ * Keep this list in sync with the scopes configured on the Slack app manifest.
+ * It is the single source of truth for the "Add to Slack" button across the app,
+ * so a scope missing here is a scope new installs never consent to.
  */
-export const SLACK_BOT_SCOPES = ['commands', 'users:read'] as const;
+export const SLACK_BOT_SCOPES = ['commands', 'users:read', 'users:read.email'] as const;
 
 /**
  * Embed URL for the Slack demo video shown on the `/slack` landing page (`#demo`).
