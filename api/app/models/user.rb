@@ -82,7 +82,13 @@ class User < ApplicationRecord
   # OAuth: Slack (auto-provision)
   # ---------------------
   def self.from_slack(slack_user_id:, slack_team_id:, email: nil, name: nil)
-    effective_email = (email.presence || "slack+#{slack_user_id}+#{slack_team_id}@cardjoy.app").downcase
+    # No email means we can't create a real, reachable, billable account
+    # (mainly Slack Connect / external guests). Don't synthesize a shadow
+    # account — return nil so the caller routes the user through the connect
+    # flow instead. See issue #81.
+    return nil if email.blank?
+
+    effective_email = email.downcase
     effective_name = name.presence || "Slack User"
     uid = "#{slack_team_id}:#{slack_user_id}"
 

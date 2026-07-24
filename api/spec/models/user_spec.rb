@@ -12,7 +12,7 @@ RSpec.describe User, type: :model do
     end
 
     it "grants the bonus regardless of creation path (OAuth)" do
-      user = User.from_slack(slack_user_id: "U1", slack_team_id: "T1", name: "Alice")
+      user = User.from_slack(slack_user_id: "U1", slack_team_id: "T1", email: "alice@example.com", name: "Alice")
 
       expect(user.credit_balance).to eq(User::SIGNUP_CREDIT_GRANT)
     end
@@ -126,19 +126,33 @@ RSpec.describe User, type: :model do
       expect(User.count).to eq(1)
     end
 
-    it "generates a placeholder email when none is provided" do
-      user = User.from_slack(
-        slack_user_id: slack_user_id,
-        slack_team_id: slack_team_id
-      )
+    it "returns nil and creates no account when no email is provided" do
+      expect {
+        @result = User.from_slack(
+          slack_user_id: slack_user_id,
+          slack_team_id: slack_team_id
+        )
+      }.not_to change { User.count }
 
-      expect(user.email).to eq("slack+#{slack_user_id}+#{slack_team_id}@cardjoy.app".downcase)
+      expect(@result).to be_nil
     end
 
-    it "uses 'Slack User' as the default name when none is provided" do
+    it "returns nil when the email is blank" do
       user = User.from_slack(
         slack_user_id: slack_user_id,
-        slack_team_id: slack_team_id
+        slack_team_id: slack_team_id,
+        email: "  ",
+        name: "Alice"
+      )
+
+      expect(user).to be_nil
+    end
+
+    it "uses 'Slack User' as the default name when a name is not provided" do
+      user = User.from_slack(
+        slack_user_id: slack_user_id,
+        slack_team_id: slack_team_id,
+        email: "noname@example.com"
       )
 
       expect(user.name).to eq("Slack User")
@@ -148,12 +162,14 @@ RSpec.describe User, type: :model do
       first = User.from_slack(
         slack_user_id: slack_user_id,
         slack_team_id: slack_team_id,
+        email: "alice@example.com",
         name: "Alice"
       )
 
       second = User.from_slack(
         slack_user_id: slack_user_id,
         slack_team_id: slack_team_id,
+        email: "alice@example.com",
         name: "Alice"
       )
 
