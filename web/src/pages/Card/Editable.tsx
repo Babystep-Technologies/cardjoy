@@ -313,7 +313,7 @@ const CardEditable: React.FC = () => {
       )}
 
       <div className="mb-6 px-4 sm:px-6 max-w-7xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:justify-center">
           {shouldDisableButton ? (
             <Button
               variant="outline"
