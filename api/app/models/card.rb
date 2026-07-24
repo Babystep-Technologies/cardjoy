@@ -17,6 +17,7 @@ class Card < ApplicationRecord
   validates :max_messages, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 500 }
   validates :require_login_to_contribute, inclusion: { in: [ true, false ] }
   validates :kind, inclusion: { in: KINDS }
+  validates :contributor_prompt, length: { maximum: 500 }, allow_blank: true
   validates :slug, uniqueness: true, allow_nil: true,
     format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/, message: "must be lowercase letters, numbers, and hyphens only" },
     length: { minimum: 3, maximum: 100 },

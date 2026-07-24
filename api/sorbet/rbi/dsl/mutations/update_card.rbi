@@ -12,6 +12,7 @@ class Mutations::UpdateCard
       title: T.nilable(::String),
       recipients: T.nilable(T::Array[::String]),
       occasion: T.nilable(::String),
+      contributor_prompt: T.nilable(::String),
       style_ids: T.nilable(T::Array[::String]),
       cover_image_url: T.nilable(::String),
       cover_image_file: T.untyped,
@@ -20,5 +21,5 @@ class Mutations::UpdateCard
       slug: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(card_id:, title: T.unsafe(nil), recipients: T.unsafe(nil), occasion: T.unsafe(nil), style_ids: T.unsafe(nil), cover_image_url: T.unsafe(nil), cover_image_file: T.unsafe(nil), max_messages: T.unsafe(nil), require_login_to_contribute: T.unsafe(nil), slug: T.unsafe(nil)); end
+  def resolve(card_id:, title: T.unsafe(nil), recipients: T.unsafe(nil), occasion: T.unsafe(nil), contributor_prompt: T.unsafe(nil), style_ids: T.unsafe(nil), cover_image_url: T.unsafe(nil), cover_image_file: T.unsafe(nil), max_messages: T.unsafe(nil), require_login_to_contribute: T.unsafe(nil), slug: T.unsafe(nil)); end
 end

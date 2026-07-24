@@ -12,6 +12,7 @@ module Types
     field :flagged, Boolean, null: false
     field :deleted, Boolean, null: false
     field :description, String, null: true
+    field :contributor_prompt, String, null: true
     field :occasion, String, null: true
     field :styles, [ Types::StyleType ], null: false
     field :user, Types::UserType, null: false

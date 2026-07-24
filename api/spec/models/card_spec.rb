@@ -27,4 +27,21 @@ RSpec.describe Card, type: :model do
       expect(card.require_login_to_contribute).to be(true)
     end
   end
+
+  describe "contributor_prompt" do
+    it "is optional" do
+      expect(build(:card, contributor_prompt: nil)).to be_valid
+      expect(build(:card, contributor_prompt: "")).to be_valid
+    end
+
+    it "accepts a prompt within the length limit" do
+      expect(build(:card, contributor_prompt: "Share a favorite memory of working with Tom.")).to be_valid
+    end
+
+    it "rejects a prompt longer than 500 characters" do
+      card = build(:card, contributor_prompt: "a" * 501)
+      expect(card).not_to be_valid
+      expect(card.errors[:contributor_prompt]).to be_present
+    end
+  end
 end

@@ -26,6 +26,7 @@ const GET_CARD = gql`
       locked
       flagged
       messageLimitReached
+      contributorPrompt
       user {
         id
       }
@@ -91,6 +92,7 @@ const CardViewable: React.FC = () => {
   const textColorStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'text_color');
   const textColor = textColorStyle?.value || '#1a1a1a';
   const coverImageUrl = cardData?.coverImageUrl;
+  const contributorPrompt = cardData?.contributorPrompt?.trim();
 
   // Cards with no effect style — every group card — fall back to confetti.
   const effectStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'effect');
@@ -214,6 +216,22 @@ const CardViewable: React.FC = () => {
             }}
             text={cardTitle}
           />
+
+          {/* Contributor context from the creator */}
+          {contributorPrompt && (
+            <div
+              className="mx-auto mt-6 max-w-xl rounded-2xl border px-6 py-4 backdrop-blur-sm"
+              style={{
+                color: textColor,
+                borderColor: `${textColor}26`,
+                backgroundColor: `${textColor}0d`,
+              }}
+            >
+              <p className="text-base sm:text-lg leading-relaxed whitespace-pre-line text-balance">
+                {contributorPrompt}
+              </p>
+            </div>
+          )}
 
           {/* Creator actions */}
           {isCardCreator && (

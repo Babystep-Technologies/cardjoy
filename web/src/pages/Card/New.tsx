@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Toaster, toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
@@ -81,6 +82,7 @@ const CardNew: React.FC = () => {
   // Card settings
   const [maxMessages, setMaxMessages] = useState<number>(20);
   const [requireLoginToContribute, setRequireLoginToContribute] = useState<boolean>(false);
+  const [contributorPrompt, setContributorPrompt] = useState<string>('');
 
   const [createCard] = useMutation(CREATE_CARD);
 
@@ -136,6 +138,7 @@ const CardNew: React.FC = () => {
                 recipients: newCard.recipients,
                 styleIds,
                 occasion,
+                contributorPrompt: contributorPrompt.trim() || null,
                 maxMessages,
                 requireLoginToContribute,
                 coverImageFile: null,
@@ -171,6 +174,7 @@ const CardNew: React.FC = () => {
         } else {
           setNewCard({ title: '', recipients: [''] });
           setCoverImage(null);
+          setContributorPrompt('');
           toast.success('Card created successfully!');
           captureInfo('Card Created', {
             cardTitle: json.data.createCard.card.title,
@@ -187,6 +191,7 @@ const CardNew: React.FC = () => {
           recipients: newCard.recipients,
           styleIds,
           occasion,
+          contributorPrompt: contributorPrompt.trim() || null,
           maxMessages,
           requireLoginToContribute,
         };
@@ -199,6 +204,7 @@ const CardNew: React.FC = () => {
         if (data.createCard.errors.length === 0) {
           setNewCard({ title: '', recipients: [''] });
           setCoverImage(null);
+          setContributorPrompt('');
           toast.success('Card created successfully!');
           captureInfo('Card Created', {
             cardTitle: data.createCard.card.title,
@@ -392,6 +398,26 @@ const CardNew: React.FC = () => {
                   checked={requireLoginToContribute}
                   onCheckedChange={setRequireLoginToContribute}
                 />
+              </div>
+
+              {/* Contributor Prompt */}
+              <div className="space-y-2 bg-white/70 p-4 rounded-xl">
+                <Label htmlFor="contributorPrompt" className="text-base font-semibold">
+                  Message Prompt for Contributors (Optional)
+                </Label>
+                <p className="text-sm text-gray-600 mb-2">
+                  Give contributors a bit of context or a question to guide what they write. Shown
+                  above the message box while they type.
+                </p>
+                <Textarea
+                  id="contributorPrompt"
+                  value={contributorPrompt}
+                  onChange={e => setContributorPrompt(e.target.value.slice(0, 500))}
+                  placeholder="e.g., It's Sarah's first day at her first job — what career advice would you give her?"
+                  className="border-2 focus:border-purple-400 resize-none"
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500 text-right">{contributorPrompt.length}/500</p>
               </div>
             </div>
 
