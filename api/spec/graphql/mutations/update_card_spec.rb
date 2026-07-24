@@ -23,6 +23,7 @@ RSpec.describe Mutations::UpdateCard, type: :request do
         $title: String
         $recipients: [String!]
         $occasion: String
+        $contributorPrompt: String
         $styleIds: [ID!]
         $coverImageUrl: String
         $coverImageFile: Upload
@@ -33,6 +34,7 @@ RSpec.describe Mutations::UpdateCard, type: :request do
             title: $title
             recipients: $recipients
             occasion: $occasion
+            contributorPrompt: $contributorPrompt
             styleIds: $styleIds
             coverImageUrl: $coverImageUrl
             coverImageFile: $coverImageFile
@@ -66,6 +68,31 @@ RSpec.describe Mutations::UpdateCard, type: :request do
     expect(card.reload.title).to eq("Updated Title")
     expect(card.recipients).to eq([ "Alice", "Bob" ])
     expect(card.styles.map(&:id)).to match_array(styles.map(&:id))
+  end
+
+  it "sets and clears the contributor prompt" do
+    post "/graphql",
+      params: {
+        query: query,
+        variables: {
+          cardId: card.external_id,
+          contributorPrompt: "Share a favorite memory of working with Tom."
+        }
+      }.to_json,
+      headers: headers.merge("Content-Type" => "application/json")
+
+    expect(JSON.parse(response.body).dig("data", "updateCard", "success")).to be true
+    expect(card.reload.contributor_prompt).to eq("Share a favorite memory of working with Tom.")
+
+    post "/graphql",
+      params: {
+        query: query,
+        variables: { cardId: card.external_id, contributorPrompt: "" }
+      }.to_json,
+      headers: headers.merge("Content-Type" => "application/json")
+
+    expect(JSON.parse(response.body).dig("data", "updateCard", "success")).to be true
+    expect(card.reload.contributor_prompt).to eq("")
   end
 
   it "does not deduct a credit when editing a card" do

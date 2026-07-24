@@ -18,6 +18,7 @@ RSpec.describe Mutations::CreateCard, type: :request do
       mutation CreateCard(
         $title: String!
         $occasion: String
+        $contributorPrompt: String
         $recipients: [String!]!
         $styleIds: [ID!]
         $coverImageUrl: String
@@ -28,6 +29,7 @@ RSpec.describe Mutations::CreateCard, type: :request do
             title: $title
             recipients: $recipients
             occasion: $occasion
+            contributorPrompt: $contributorPrompt
             styleIds: $styleIds
             coverImageUrl: $coverImageUrl
             coverImageFile: $coverImageFile
@@ -37,6 +39,7 @@ RSpec.describe Mutations::CreateCard, type: :request do
             id
             title
             occasion
+            contributorPrompt
             recipients
             styles { id name }
           }
@@ -119,6 +122,28 @@ RSpec.describe Mutations::CreateCard, type: :request do
     expect(data["errors"]).to be_empty
     expect(data["card"]).to be_present
     expect(Card.last.cover_image).not_to be_attached
+  end
+
+  it "creates a card with a contributor prompt" do
+    post "/graphql",
+      params: {
+        query: query,
+        variables: {
+          title: "With Prompt",
+          recipients: [ "Sarah" ],
+          occasion: "New Job",
+          styleIds: [],
+          contributorPrompt: "It's Sarah's first day — what career advice would you give her?"
+        }
+      }.to_json,
+      headers: headers.merge("Content-Type" => "application/json")
+
+    json = JSON.parse(response.body)
+    expect(json["errors"]).to be_nil
+    data = json.dig("data", "createCard")
+    expect(data["errors"]).to be_empty
+    expect(data["card"]["contributorPrompt"]).to eq("It's Sarah's first day — what career advice would you give her?")
+    expect(Card.last.contributor_prompt).to eq("It's Sarah's first day — what career advice would you give her?")
   end
 
   describe "credit deduction" do

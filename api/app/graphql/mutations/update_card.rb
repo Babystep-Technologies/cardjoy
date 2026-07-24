@@ -10,6 +10,7 @@ module Mutations
     argument :style_ids, [ ID ], required: false
     argument :cover_image_url, String, required: false
     argument :occasion, String, required: false
+    argument :contributor_prompt, String, required: false
     argument :cover_image_file, ApolloUploadServer::Upload, required: false
     argument :max_messages, Integer, required: false
     argument :require_login_to_contribute, Boolean, required: false
@@ -18,7 +19,7 @@ module Mutations
     field :success, Boolean, null: false
     field :errors, [ String ], null: false
 
-    def resolve(card_id:, title: nil, recipients: nil, occasion: nil, style_ids: [], cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil)
+    def resolve(card_id:, title: nil, recipients: nil, occasion: nil, contributor_prompt: nil, style_ids: [], cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil)
       user = context[:current_user]
       return { success: false, errors: [ "Not authenticated" ] } unless user
 
@@ -28,6 +29,7 @@ module Mutations
       card.title = title if title.present?
       card.recipients = recipients if recipients.present?
       card.occasion = occasion if occasion.present?
+      card.contributor_prompt = contributor_prompt unless contributor_prompt.nil?
       card.max_messages = max_messages if max_messages.present?
       card.require_login_to_contribute = require_login_to_contribute unless require_login_to_contribute.nil?
       card.slug = slug unless slug.nil?

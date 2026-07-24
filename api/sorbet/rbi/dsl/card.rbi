@@ -661,6 +661,51 @@ class Card
   end
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(::String)) }
+    def contributor_prompt; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def contributor_prompt=(value); end
+
+    sig { returns(T::Boolean) }
+    def contributor_prompt?; end
+
+    sig { returns(T.nilable(::String)) }
+    def contributor_prompt_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def contributor_prompt_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def contributor_prompt_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def contributor_prompt_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def contributor_prompt_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def contributor_prompt_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def contributor_prompt_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def contributor_prompt_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def contributor_prompt_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def contributor_prompt_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def contributor_prompt_was; end
+
+    sig { void }
+    def contributor_prompt_will_change!; end
+
     sig { returns(::ActiveSupport::TimeWithZone) }
     def created_at; end
 
@@ -815,6 +860,51 @@ class Card
 
     sig { void }
     def deliver_at_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def deliver_to_email; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def deliver_to_email=(value); end
+
+    sig { returns(T::Boolean) }
+    def deliver_to_email?; end
+
+    sig { returns(T.nilable(::String)) }
+    def deliver_to_email_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def deliver_to_email_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def deliver_to_email_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def deliver_to_email_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def deliver_to_email_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def deliver_to_email_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def deliver_to_email_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def deliver_to_email_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def deliver_to_email_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def deliver_to_email_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def deliver_to_email_was; end
+
+    sig { void }
+    def deliver_to_email_will_change!; end
 
     sig { returns(::String) }
     def external_id; end
@@ -1287,6 +1377,9 @@ class Card
     def require_login_to_contribute_will_change!; end
 
     sig { void }
+    def restore_contributor_prompt!; end
+
+    sig { void }
     def restore_created_at!; end
 
     sig { void }
@@ -1294,6 +1387,9 @@ class Card
 
     sig { void }
     def restore_deliver_at!; end
+
+    sig { void }
+    def restore_deliver_to_email!; end
 
     sig { void }
     def restore_external_id!; end
@@ -1337,6 +1433,12 @@ class Card
     sig { void }
     def restore_user_id!; end
 
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_contributor_prompt; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_contributor_prompt?; end
+
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_created_at; end
 
@@ -1354,6 +1456,12 @@ class Card
 
     sig { returns(T::Boolean) }
     def saved_change_to_deliver_at?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_deliver_to_email; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_deliver_to_email?; end
 
     sig { returns(T.nilable([::String, ::String])) }
     def saved_change_to_external_id; end
@@ -1620,6 +1728,9 @@ class Card
     def user_id_will_change!; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_contributor_prompt?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_created_at?; end
 
     sig { returns(T::Boolean) }
@@ -1627,6 +1738,9 @@ class Card
 
     sig { returns(T::Boolean) }
     def will_save_change_to_deliver_at?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_deliver_to_email?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_external_id?; end

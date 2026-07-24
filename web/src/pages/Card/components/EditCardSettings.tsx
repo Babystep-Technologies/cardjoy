@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Toaster, toast } from 'sonner';
@@ -31,6 +32,8 @@ interface EditCardSettingsViewProps {
   occasion: string | undefined;
   occasions: string[];
   setOccasion: (val: string) => void;
+  contributorPrompt: string;
+  setContributorPrompt: (val: string) => void;
   recipients: string[];
   handleRecipientChange: (index: number, value: string) => void;
   handleRemoveRecipient: (index: number) => void;
@@ -76,6 +79,8 @@ const EditCardSettings: React.FC<EditCardSettingsViewProps & { cardId: string }>
   occasion,
   occasions,
   setOccasion,
+  contributorPrompt,
+  setContributorPrompt,
   recipients,
   handleRecipientChange,
   handleRemoveRecipient,
@@ -312,6 +317,26 @@ const EditCardSettings: React.FC<EditCardSettingsViewProps & { cardId: string }>
             checked={requireLoginToContribute}
             onCheckedChange={setRequireLoginToContribute}
           />
+        </div>
+
+        {/* Contributor Prompt */}
+        <div className="space-y-2 bg-white/70 p-4 rounded-xl">
+          <Label htmlFor="contributorPrompt" className="text-base font-semibold">
+            Message Prompt for Contributors (Optional)
+          </Label>
+          <p className="text-sm text-gray-600 mb-2">
+            Give contributors a bit of context or a question to guide what they write. Shown above
+            the message box while they type.
+          </p>
+          <Textarea
+            id="contributorPrompt"
+            value={contributorPrompt}
+            onChange={e => setContributorPrompt(e.target.value.slice(0, 500))}
+            placeholder="e.g., It's Sarah's first day at her first job — what career advice would you give her?"
+            className="border-2 focus:border-purple-400 resize-none"
+            rows={3}
+          />
+          <p className="text-xs text-gray-500 text-right">{contributorPrompt.length}/500</p>
         </div>
 
         {/* Custom URL Slug */}

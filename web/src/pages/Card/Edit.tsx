@@ -42,6 +42,7 @@ const GET_CARD = gql`
         id
       }
       occasion
+      contributorPrompt
       recipients
       maxMessages
       requireLoginToContribute
@@ -126,7 +127,10 @@ function PageEdit() {
     refetch,
   } = useQuery(GET_CARD, {
     variables: { cardId: cardExternalId },
-    skip: !user && !guestMessageId,
+    // Load card context (title, styles, contributor prompt) once we know who is
+    // writing — a logged-in user, a returning guest, or a guest who just entered
+    // their name — so the creator's prompt can guide first-time contributors too.
+    skip: !user && !guestMessageId && !guestName,
   });
 
   const { data: occasionsData } = useQuery(GET_OCCASIONS);
@@ -144,6 +148,7 @@ function PageEdit() {
   const [cardTitle, setCardTitle] = useState('');
   const [recipients, setRecipients] = useState<string[]>([]);
   const [occasion, setOccasion] = useState<string | undefined>(undefined);
+  const [contributorPrompt, setContributorPrompt] = useState('');
   const [messageTitle, setMessageTitle] = useState('');
   const [titleError, setTitleError] = useState<string | null>(null);
   const [text, setText] = useState('');
@@ -224,6 +229,7 @@ function PageEdit() {
       setSelectedTextColorId(textColorStyle?.id || null);
       setCardTitle(cardData.title);
       setRecipients(cardData.recipients);
+      setContributorPrompt(cardData.contributorPrompt || '');
       setMaxMessages(cardData.maxMessages || 20);
       setRequireLoginToContribute(cardData.requireLoginToContribute || false);
       setSlug(cardData.slug || '');
@@ -308,6 +314,7 @@ function PageEdit() {
               recipients,
               styleIds: selectedStyleIds,
               occasion,
+              contributorPrompt: contributorPrompt.trim(),
               maxMessages,
               requireLoginToContribute,
               slug: slug.trim() || null,
@@ -342,6 +349,7 @@ function PageEdit() {
         recipients,
         styleIds: selectedStyleIds,
         occasion,
+        contributorPrompt: contributorPrompt.trim(),
         maxMessages,
         requireLoginToContribute,
         slug: slug.trim() || null,
@@ -518,6 +526,8 @@ function PageEdit() {
                 occasion={occasion}
                 occasions={occasions}
                 setOccasion={setOccasion}
+                contributorPrompt={contributorPrompt}
+                setContributorPrompt={setContributorPrompt}
                 setCardTitle={setCardTitle}
                 recipients={recipients}
                 handleRecipientChange={handleRecipientChange}
@@ -644,6 +654,16 @@ function PageEdit() {
                     <Label htmlFor="message" className="text-base font-semibold">
                       Your Message
                     </Label>
+                    {!isCreator && contributorPrompt.trim() && (
+                      <div className="rounded-lg border-l-4 border-purple-400 bg-purple-50 px-4 py-3">
+                        <p className="text-sm font-semibold text-purple-700">
+                          A note from the card creator
+                        </p>
+                        <p className="mt-1 text-sm text-purple-900 whitespace-pre-line">
+                          {contributorPrompt}
+                        </p>
+                      </div>
+                    )}
                     <Textarea
                       id="message"
                       value={text}
