@@ -91,6 +91,18 @@ class SlackWebhooksController < ApplicationController
         email: profile[:email],
         name: profile[:name]
       )
+
+      # No email on the Slack profile (mainly Slack Connect / external guests):
+      # we no longer synthesize a shadow account. Prompt the user to connect a
+      # real CardJoy account and stop here — the modal opens once they're
+      # connected and re-run /cardjoy. See issue #81.
+      unless user
+        render json: {
+          response_type: "ephemeral",
+          text: connect_prompt_text(slack_user_id, slack_team_id)
+        } and return
+      end
+
       connection = SlackUserConnection.create!(
         slack_user_id: slack_user_id,
         slack_team_id: slack_team_id,
@@ -325,6 +337,27 @@ class SlackWebhooksController < ApplicationController
     expected = "v0=" + OpenSSL::HMAC.hexdigest("SHA256", signing_secret, base)
 
     ActiveSupport::SecurityUtils.secure_compare(expected, slack_sig.to_s)
+  end
+
+  # Message shown when a Slack user has no profile email and can't be
+  # auto-provisioned. Links to the connect flow with a short-lived signed state
+  # token that ConnectSlackAccount decodes to link their real CardJoy account.
+  def connect_prompt_text(slack_user_id, slack_team_id)
+    connect_url = "#{frontend_url}/connect-slack?state=#{connect_state_token(slack_user_id, slack_team_id)}"
+    "Before you can create a card, connect your CardJoy account: " \
+      "<#{connect_url}|Connect CardJoy>. Once connected, run `/cardjoy` again."
+  end
+
+  def connect_state_token(slack_user_id, slack_team_id)
+    JWT.encode(
+      {
+        slack_user_id: slack_user_id,
+        slack_team_id: slack_team_id,
+        exp: 1.hour.from_now.to_i
+      },
+      Rails.configuration.x.jwt_secret,
+      "HS256"
+    )
   end
 
   def generate_auth_token(user)

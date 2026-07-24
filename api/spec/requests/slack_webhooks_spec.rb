@@ -151,13 +151,23 @@ RSpec.describe "SlackWebhooks", type: :request do
         expect(connection.user).to eq(User.last)
       end
 
-      it "uses a placeholder email when Slack profile has no email" do
+      it "does not create a shadow account when the Slack profile has no email" do
+        stub_slack_users_info(slack_user_id, "No Email User")
+
+        expect {
+          post_slash_command(user_id: slack_user_id, team_id: team_id, trigger_id: "trigger.123")
+        }.to change { User.count }.by(0).and change { SlackUserConnection.count }.by(0)
+      end
+
+      it "prompts the user to connect a real account when there is no email" do
         stub_slack_users_info(slack_user_id, "No Email User")
 
         post_slash_command(user_id: slack_user_id, team_id: team_id, trigger_id: "trigger.123")
 
-        user = User.last
-        expect(user.email).to eq("slack+#{slack_user_id}+#{team_id}@cardjoy.app".downcase)
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json["response_type"]).to eq("ephemeral")
+        expect(json["text"]).to include("#{frontend_url}/connect-slack?state=")
       end
 
       it "links to an existing user when the email matches" do
