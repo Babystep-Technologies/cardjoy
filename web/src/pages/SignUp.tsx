@@ -60,7 +60,9 @@ const SignUpPage: React.FC = () => {
     const result = data?.signUp;
 
     if (result?.emailConfirmationRequired) {
-      navigate(`/verify_email?email=${encodeURIComponent(email)}`);
+      const verifyParams = new URLSearchParams({ email });
+      if (redirectParam) verifyParams.set('redirect', redirectParam);
+      navigate(`/verify_email?${verifyParams.toString()}`);
       return;
     }
 
