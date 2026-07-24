@@ -7,6 +7,7 @@ import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
 import CardMessage from './components/CardMessage';
 import CardNotFound from './components/CardNotFound';
+import EmptyCardState from './components/EmptyCardState';
 import { Button } from '@/components/ui/button';
 import { Lock, Send, Eye } from 'lucide-react';
 import { ScrollProgress } from '@/components/magicui/scroll-progress';
@@ -143,6 +144,7 @@ const CardEditable: React.FC = () => {
   const textColorStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'text_color');
   const textColor = textColorStyle?.value || 'black';
   const contributorPrompt = cardData?.contributorPrompt?.trim();
+  const recipientName = (cardData?.recipients || []).filter(Boolean).join(', ');
 
   const isOwner = user?.user_id && String(user.user_id) === String(cardData?.user?.id);
   const isContributor = !!userMessage || !!guestMessage;
@@ -366,17 +368,39 @@ const CardEditable: React.FC = () => {
         </div>
       </div>
 
-      <div className="columns-1 sm:columns-2 md:columns-3 gap-4 px-4 sm:px-6 max-w-7xl mx-auto w-full">
-        {filteredMessages.map((message, index) => (
-          <div key={index} className="break-inside-avoid w-full">
-            <CardMessage
-              message={message}
-              showFlagAction={!!isOwner}
-              onFlagToggle={() => setPendingFlagMessage(message)}
-            />
-          </div>
-        ))}
-      </div>
+      {filteredMessages.length === 0 ? (
+        <div className="py-10">
+          <EmptyCardState
+            recipientName={recipientName}
+            textColor={textColor}
+            cta={
+              shouldDisableButton ? undefined : cardData?.requireLoginToContribute &&
+                !user &&
+                !isOwner ? (
+                <a href={`/sign_in?redirect=/card/${cardExternalId}/edit`}>
+                  <Button className="px-8 py-6 text-lg font-extrabold h-[64px]">Add Message</Button>
+                </a>
+              ) : (
+                <Link to={`/card/${cardExternalId}/edit`}>
+                  <Button className="px-8 py-6 text-lg font-extrabold h-[64px]">Add Message</Button>
+                </Link>
+              )
+            }
+          />
+        </div>
+      ) : (
+        <div className="columns-1 sm:columns-2 md:columns-3 gap-4 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+          {filteredMessages.map((message, index) => (
+            <div key={index} className="break-inside-avoid w-full">
+              <CardMessage
+                message={message}
+                showFlagAction={!!isOwner}
+                onFlagToggle={() => setPendingFlagMessage(message)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Share Dialog */}
       <ShareDialog
