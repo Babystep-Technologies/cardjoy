@@ -17,14 +17,16 @@
 export const SLACK_BOT_SCOPES = ['commands', 'users:read', 'users:read.email'] as const;
 
 /**
- * Embed URL for the Slack demo video shown on the `/slack` landing page (`#demo`).
+ * Self-hosted Slack demo video shown on the `/slack` landing page (`#demo`).
  *
- * Leave as `null` until the video exists — the section renders a placeholder poster.
- * When ready, set this to the embed URL (YouTube/Vimeo/Loom `<iframe>` src). If the
- * video is a self-hosted MP4 instead, swap the embed markup in `Slack.tsx` for a
- * `<video>` tag; this constant is the only wiring the placeholder path depends on.
+ * This is the same recording as the "How to Create a Group Card on Slack" tutorial post
+ * on the blog, so re-export both places when the flow changes. Set back to `null` and the
+ * section falls back to the "demo coming soon" placeholder in `Slack.tsx`.
  */
-export const DEMO_VIDEO_URL: string | null = null;
+export const DEMO_VIDEO_URL: string | null = '/demos/create-a-group-card-on-slack.mp4';
+
+/** Poster frame shown until someone clicks play on {@link DEMO_VIDEO_URL}. */
+export const DEMO_VIDEO_POSTER = '/demos/create-a-group-card-on-slack.png';
 
 /** Builds the Slack OAuth v2 authorize URL that the "Add to Slack" button links to. */
 export function slackInstallUrl(): string {

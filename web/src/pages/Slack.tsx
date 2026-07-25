@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import * as motion from 'motion/react-client';
 import Reveal from '@/components/Reveal';
-import { slackInstallUrl, DEMO_VIDEO_URL } from '@/lib/slack';
+import { slackInstallUrl, DEMO_VIDEO_URL, DEMO_VIDEO_POSTER } from '@/lib/slack';
 import {
   Slack as SlackIcon,
   Zap,
@@ -68,6 +68,64 @@ const steps = [
   },
 ];
 
+/**
+ * Self-hosted demo, poster-first: nothing downloads until someone clicks, and that first
+ * click starts playback and hands off to the native controls — same behaviour as the
+ * inline demos on the blog.
+ */
+const DemoVideo: React.FC<{ src: string }> = ({ src }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const start = () => {
+    if (playing) return;
+    setPlaying(true);
+    void videoRef.current?.play();
+  };
+
+  return (
+    <div
+      className="relative aspect-[1728/1080] w-full rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-gray-900"
+      onClick={start}
+    >
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full"
+        src={src}
+        poster={DEMO_VIDEO_POSTER}
+        controls={playing}
+        playsInline
+        preload="none"
+        aria-label="CardJoy for Slack demo"
+      />
+      {!playing && (
+        <button
+          type="button"
+          onClick={start}
+          aria-label="Play the CardJoy for Slack demo"
+          className="absolute inset-0 flex items-center justify-center group cursor-pointer"
+        >
+          <span className="flex items-center justify-center w-20 h-20 rounded-full bg-black/55 border border-white/30 backdrop-blur-sm transition-transform group-hover:scale-110">
+            <Play className="w-9 h-9 text-white fill-white translate-x-0.5" />
+          </span>
+        </button>
+      )}
+    </div>
+  );
+};
+
+const DemoPlaceholder: React.FC = () => (
+  <div className="relative aspect-video w-full rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-gray-900">
+    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-center px-4">
+      <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/15 border border-white/30 backdrop-blur-sm mb-5">
+        <Play className="w-9 h-9 text-white translate-x-0.5" />
+      </div>
+      <p className="text-white text-lg font-semibold">Demo coming soon</p>
+      <p className="text-white/70 text-sm mt-1">We’re putting the finishing touches on it.</p>
+    </div>
+  </div>
+);
+
 const DemoSection: React.FC = () => (
   <section id="demo" className="bg-gray-50 py-24 px-4 scroll-mt-20">
     <div className="max-w-4xl mx-auto">
@@ -81,28 +139,7 @@ const DemoSection: React.FC = () => (
         </p>
       </Reveal>
       <Reveal>
-        <div className="relative aspect-video w-full rounded-3xl overflow-hidden shadow-xl border border-gray-200 bg-gray-900">
-          {DEMO_VIDEO_URL ? (
-            <iframe
-              className="absolute inset-0 w-full h-full"
-              src={DEMO_VIDEO_URL}
-              title="CardJoy for Slack demo"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-center px-4">
-              <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/15 border border-white/30 backdrop-blur-sm mb-5">
-                <Play className="w-9 h-9 text-white translate-x-0.5" />
-              </div>
-              <p className="text-white text-lg font-semibold">Demo coming soon</p>
-              <p className="text-white/70 text-sm mt-1">
-                We’re putting the finishing touches on it.
-              </p>
-            </div>
-          )}
-        </div>
+        {DEMO_VIDEO_URL ? <DemoVideo src={DEMO_VIDEO_URL} /> : <DemoPlaceholder />}
       </Reveal>
     </div>
   </section>
