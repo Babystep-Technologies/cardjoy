@@ -38,6 +38,7 @@
     "date-fns": "^4.1.0",
     "graphql": "^16.10.0",
     "jwt-decode": "^4.0.0",
+    "libphonenumber-js": "^1.13.9",
     "lucide-react": "^0.487.0",
     "motion": "^12.18.1",
     "posthog-js": "^1.240.0",

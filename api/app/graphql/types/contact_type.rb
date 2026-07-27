@@ -6,6 +6,8 @@ module Types
     field :name, String, null: false
     field :email, String, null: true
     field :relationship, String, null: true
+    field :phone, String, null: true
+    field :notes, String, null: true
     field :occasions, [ Types::OccasionType ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
   end

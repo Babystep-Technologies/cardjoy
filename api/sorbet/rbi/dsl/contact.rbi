@@ -743,6 +743,96 @@ class Contact
     def name_will_change!; end
 
     sig { returns(T.nilable(::String)) }
+    def notes; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def notes=(value); end
+
+    sig { returns(T::Boolean) }
+    def notes?; end
+
+    sig { returns(T.nilable(::String)) }
+    def notes_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def notes_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def notes_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def notes_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def notes_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def notes_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def notes_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def notes_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def notes_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def notes_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def notes_was; end
+
+    sig { void }
+    def notes_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def phone; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def phone=(value); end
+
+    sig { returns(T::Boolean) }
+    def phone?; end
+
+    sig { returns(T.nilable(::String)) }
+    def phone_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def phone_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def phone_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def phone_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def phone_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def phone_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def phone_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def phone_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def phone_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def phone_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def phone_was; end
+
+    sig { void }
+    def phone_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
     def relationship; end
 
     sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
@@ -803,6 +893,12 @@ class Contact
     def restore_name!; end
 
     sig { void }
+    def restore_notes!; end
+
+    sig { void }
+    def restore_phone!; end
+
+    sig { void }
     def restore_relationship!; end
 
     sig { void }
@@ -840,6 +936,18 @@ class Contact
 
     sig { returns(T::Boolean) }
     def saved_change_to_name?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_notes; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_notes?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_phone; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_phone?; end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_relationship; end
@@ -963,6 +1071,12 @@ class Contact
 
     sig { returns(T::Boolean) }
     def will_save_change_to_name?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_notes?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_phone?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_relationship?; end

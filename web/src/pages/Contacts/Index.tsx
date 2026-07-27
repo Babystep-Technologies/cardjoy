@@ -10,6 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { PhoneInput } from '@/components/PhoneInput';
+import {
+  DEFAULT_PHONE_COUNTRY,
+  formatPhoneForDisplay,
+  fromE164,
+  toE164,
+  type CountryCode,
+} from '@/lib/phone';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +48,8 @@ type Contact = {
   name: string;
   email: string | null;
   relationship: string | null;
+  phone: string | null;
+  notes: string | null;
   occasions: Occasion[];
 };
 
@@ -52,6 +63,8 @@ const CONTACT_FIELDS = gql`
     name
     email
     relationship
+    phone
+    notes
     occasions {
       id
       kind
@@ -184,7 +197,18 @@ function relativeLabel(iso: string): string {
   return `in ${days} days`;
 }
 
-type ContactDraft = { name: string; email: string; relationship: string };
+// `phone` holds the number as typed (national format); it's converted to E.164 on save.
+type ContactDraft = {
+  name: string;
+  email: string;
+  relationship: string;
+  phone: string;
+  phoneCountry: CountryCode;
+  notes: string;
+};
+
+const INVALID_PHONE_MESSAGE = "That doesn't look like a valid phone number";
+
 type OccasionDraft = { kind: string; occursOn: string; recurring: boolean };
 
 const Contacts: React.FC = () => {
@@ -227,23 +251,43 @@ const Contacts: React.FC = () => {
     draft: OccasionDraft;
   } | null>(null);
   const [saving, setSaving] = useState(false);
+  // Shown under the phone field once the user leaves it (or tries to save) with a bad number.
+  const [phoneError, setPhoneError] = useState<string | null>(null);
 
   const refetchAll = async () => {
     await Promise.all([refetchContacts(), refetchUpcoming()]);
   };
 
-  const openAddContact = () =>
-    setContactDialog({ id: null, draft: { name: '', email: '', relationship: '' } });
+  const openAddContact = () => {
+    setPhoneError(null);
+    setContactDialog({
+      id: null,
+      draft: {
+        name: '',
+        email: '',
+        relationship: '',
+        phone: '',
+        phoneCountry: DEFAULT_PHONE_COUNTRY,
+        notes: '',
+      },
+    });
+  };
 
-  const openEditContact = (contact: Contact) =>
+  const openEditContact = (contact: Contact) => {
+    const { country, national } = fromE164(contact.phone);
+    setPhoneError(null);
     setContactDialog({
       id: contact.id,
       draft: {
         name: contact.name,
         email: contact.email ?? '',
         relationship: contact.relationship ?? '',
+        phone: national,
+        phoneCountry: country,
+        notes: contact.notes ?? '',
       },
     });
+  };
 
   const openAddOccasion = (contactId: string) =>
     setOccasionDialog({
@@ -266,6 +310,15 @@ const Contacts: React.FC = () => {
       toast.error('Please enter a name');
       return;
     }
+    // An empty field clears the stored number; anything else has to parse to E.164.
+    const typedPhone = draft.phone.trim();
+    const phone = typedPhone ? toE164(typedPhone, draft.phoneCountry) : '';
+    if (phone === null) {
+      setPhoneError(INVALID_PHONE_MESSAGE);
+      toast.error(INVALID_PHONE_MESSAGE);
+      return;
+    }
+    setPhoneError(null);
     setSaving(true);
     try {
       const variables = {
@@ -274,6 +327,8 @@ const Contacts: React.FC = () => {
           name: draft.name.trim(),
           email: draft.email.trim(),
           relationship: draft.relationship.trim(),
+          phone,
+          notes: draft.notes.trim(),
         },
       };
       const { data } = id ? await updateContact({ variables }) : await createContact({ variables });
@@ -441,9 +496,13 @@ const Contacts: React.FC = () => {
                     <div className="min-w-0">
                       <p className="truncate text-lg font-semibold text-gray-900">{contact.name}</p>
                       <p className="text-sm text-gray-500">
-                        {[contact.relationship, contact.email].filter(Boolean).join(' · ') ||
-                          'No details'}
+                        {[contact.relationship, contact.email, formatPhoneForDisplay(contact.phone)]
+                          .filter(Boolean)
+                          .join(' · ') || 'No details'}
                       </p>
+                      {contact.notes && (
+                        <p className="mt-1 line-clamp-2 text-sm text-gray-600">{contact.notes}</p>
+                      )}
                     </div>
                     <div className="flex shrink-0 gap-1">
                       <Button
@@ -573,6 +632,54 @@ const Contacts: React.FC = () => {
                     })
                   }
                   placeholder="jane@example.com"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="contact-phone">Phone</Label>
+                <PhoneInput
+                  id="contact-phone"
+                  country={contactDialog.draft.phoneCountry}
+                  // Changing the country also re-formats the number, so these two setters
+                  // fire back to back — they have to update from the latest state rather
+                  // than from the snapshot this render closed over.
+                  onCountryChange={country =>
+                    setContactDialog(
+                      prev => prev && { ...prev, draft: { ...prev.draft, phoneCountry: country } }
+                    )
+                  }
+                  value={contactDialog.draft.phone}
+                  onValueChange={value => {
+                    setPhoneError(null);
+                    setContactDialog(
+                      prev => prev && { ...prev, draft: { ...prev.draft, phone: value } }
+                    );
+                  }}
+                  onBlur={() => {
+                    const typed = contactDialog.draft.phone.trim();
+                    setPhoneError(
+                      typed && !toE164(typed, contactDialog.draft.phoneCountry)
+                        ? INVALID_PHONE_MESSAGE
+                        : null
+                    );
+                  }}
+                  invalid={!!phoneError}
+                  placeholder="(415) 555-0123"
+                />
+                {phoneError && <p className="text-sm text-red-600">{phoneError}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="contact-notes">Notes</Label>
+                <Textarea
+                  id="contact-notes"
+                  value={contactDialog.draft.notes}
+                  onChange={e =>
+                    setContactDialog({
+                      ...contactDialog,
+                      draft: { ...contactDialog.draft, notes: e.target.value },
+                    })
+                  }
+                  placeholder="Met at the Dec conference — lead client, follow up in Q3"
+                  rows={3}
                 />
               </div>
             </div>

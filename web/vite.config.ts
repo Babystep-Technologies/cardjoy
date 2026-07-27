@@ -44,4 +44,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // libphonenumber-js carries a few hundred KB of country metadata. Keeping it out of
+          // the main chunk lets it cache separately and keeps that chunk under the 2 MiB
+          // per-file limit the PWA plugin will precache.
+          phone: ['libphonenumber-js'],
+        },
+      },
+    },
+  },
 });
