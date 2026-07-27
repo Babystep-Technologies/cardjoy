@@ -2,16 +2,20 @@ require "rails_helper"
 
 RSpec.describe Mutations::UpdateContact, type: :request do
   let(:user) { create(:user) }
-  let(:contact) { create(:contact, user:, name: "Old Name", relationship: "Friend") }
+  let(:contact) do
+    create(:contact, user:, name: "Old Name", relationship: "Friend", phone: "+14155550123", notes: "Old notes")
+  end
   let(:secret) { Rails.application.credentials.dig(:jwt, :secret) }
   let(:token) { JWT.encode({ user_id: user.id }, secret, "HS256") }
   let(:headers) { { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" } }
 
   let(:query) do
     <<~GRAPHQL
-      mutation UpdateContact($contactId: ID!, $name: String, $relationship: String) {
-        updateContact(input: { contactId: $contactId, name: $name, relationship: $relationship }) {
-          contact { id name relationship }
+      mutation UpdateContact($contactId: ID!, $name: String, $relationship: String, $phone: String, $notes: String) {
+        updateContact(
+          input: { contactId: $contactId, name: $name, relationship: $relationship, phone: $phone, notes: $notes }
+        ) {
+          contact { id name relationship phone notes }
           errors
         }
       }
@@ -28,6 +32,24 @@ RSpec.describe Mutations::UpdateContact, type: :request do
     expect(data["errors"]).to be_empty
     expect(data["contact"]).to include("name" => "New Name", "relationship" => "Friend")
     expect(contact.reload.name).to eq("New Name")
+  end
+
+  it "leaves phone and notes alone when they are omitted" do
+    data = exec(contactId: contact.id, name: "New Name")
+    expect(data["contact"]).to include("phone" => "+14155550123", "notes" => "Old notes")
+  end
+
+  it "clears phone and notes when given an explicit empty string" do
+    data = exec(contactId: contact.id, phone: "", notes: "")
+    expect(data["errors"]).to be_empty
+    expect(data["contact"]).to include("phone" => "", "notes" => "")
+  end
+
+  it "returns an error rather than a 500 for an invalid phone" do
+    data = exec(contactId: contact.id, phone: "555-0123")
+    expect(data["contact"]).to be_nil
+    expect(data["errors"]).to include("Phone is not a valid phone number")
+    expect(contact.reload.phone).to eq("+14155550123")
   end
 
   it "does not update another user's contact" do

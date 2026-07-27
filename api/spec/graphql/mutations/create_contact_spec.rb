@@ -8,9 +8,9 @@ RSpec.describe Mutations::CreateContact, type: :request do
 
   let(:query) do
     <<~GRAPHQL
-      mutation CreateContact($name: String!, $email: String, $relationship: String) {
-        createContact(input: { name: $name, email: $email, relationship: $relationship }) {
-          contact { id name email relationship }
+      mutation CreateContact($name: String!, $email: String, $relationship: String, $phone: String, $notes: String) {
+        createContact(input: { name: $name, email: $email, relationship: $relationship, phone: $phone, notes: $notes }) {
+          contact { id name email relationship phone notes }
           errors
         }
       }
@@ -29,6 +29,18 @@ RSpec.describe Mutations::CreateContact, type: :request do
     data = JSON.parse(response.body).dig("data", "createContact")
     expect(data["errors"]).to be_empty
     expect(data["contact"]).to include("name" => "Mom", "email" => "mom@example.com", "relationship" => "Family")
+  end
+
+  it "stores phone and notes when given" do
+    data = exec({ name: "Mom", phone: "+1 (415) 555-0123", notes: "Met at the Dec conference" })
+    expect(data["errors"]).to be_empty
+    expect(data["contact"]).to include("phone" => "+14155550123", "notes" => "Met at the Dec conference")
+  end
+
+  it "returns an error rather than a 500 for an invalid phone" do
+    data = exec({ name: "Mom", phone: "555-0123" })
+    expect(data["contact"]).to be_nil
+    expect(data["errors"]).to include("Phone is not a valid phone number")
   end
 
   it "returns validation errors for a missing name" do

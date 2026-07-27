@@ -138,9 +138,7 @@ const DemoSection: React.FC = () => (
           sent — without anyone leaving Slack.
         </p>
       </Reveal>
-      <Reveal>
-        {DEMO_VIDEO_URL ? <DemoVideo src={DEMO_VIDEO_URL} /> : <DemoPlaceholder />}
-      </Reveal>
+      <Reveal>{DEMO_VIDEO_URL ? <DemoVideo src={DEMO_VIDEO_URL} /> : <DemoPlaceholder />}</Reveal>
     </div>
   </section>
 );
