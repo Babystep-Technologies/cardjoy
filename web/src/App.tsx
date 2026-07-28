@@ -1,6 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useFeatureFlagEnabled } from 'posthog-js/react';
+import { useAuth } from '@/contexts/AuthContext';
+import LoadingScreen from '@/components/Loading';
 import Home from '@/pages/Home';
 import SignIn from '@/pages/SignIn';
 import SignUp from '@/pages/SignUp';
@@ -61,12 +63,24 @@ const LegacyRedirect: React.FC<{ to: string }> = ({ to }) => {
   return <Navigate to={`${to}${search}`} replace />;
 };
 
+/**
+ * The root path is the dashboard for authenticated users and the marketing home page for everyone
+ * else. Wait for the session to resolve before deciding so we don't flash the wrong page.
+ */
+const RootRoute: React.FC = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <LoadingScreen />;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return <Home />;
+};
+
 const App: React.FC = () => {
   return (
     <RootLayout>
       <MaintenanceGate>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<RootRoute />} />
           <Route path="/maintenance" element={<Maintenance />} />
           <Route path="/sign_in" element={<SignIn />} />
           <Route path="/sign_up" element={<SignUp />} />
