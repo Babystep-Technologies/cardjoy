@@ -26,7 +26,8 @@ import InvitationView from '@/pages/Invitation/View';
 import InvitationEdit from '@/pages/Invitation/Edit';
 import Maintenance from '@/pages/Maintenance';
 import Careers from '@/pages/Careers';
-import ForTeams from '@/pages/ForTeams';
+import ForBusiness from '@/pages/ForBusiness';
+import ClientOccasions from '@/pages/ClientOccasions';
 import ConnectSlack from '@/pages/ConnectSlack';
 import Slack from '@/pages/Slack';
 import Occasions from '@/pages/Occasions';
@@ -128,7 +129,10 @@ const App: React.FC = () => {
           <Route path="/slack" element={<Slack />} />
           <Route path="/connect-slack" element={<ConnectSlack />} />
           <Route path="/occasions" element={<Occasions />} />
-          <Route path="/for-teams" element={<ForTeams />} />
+          <Route path="/for-business" element={<ForBusiness />} />
+          <Route path="/client-occasions" element={<ClientOccasions />} />
+          {/* `/for-teams` was the business page before it covered both use cases. */}
+          <Route path="/for-teams" element={<LegacyRedirect to="/for-business" />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />

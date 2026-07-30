@@ -329,7 +329,7 @@ const Home: React.FC = () => {
         </Reveal>
       </section>
 
-      {/* For Teams handoff band */}
+      {/* Business handoff band */}
       <section className="bg-gray-900 py-12 px-4 w-full">
         <Reveal>
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
@@ -338,19 +338,18 @@ const Home: React.FC = () => {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-white text-xl font-bold">
-                  Running celebrations for a whole team?
-                </h3>
+                <h3 className="text-white text-xl font-bold">Using CardJoy for your business?</h3>
                 <p className="text-white/70">
-                  Automate every birthday, work anniversary, and farewell across your company.
+                  Group cards your team signs in Slack, and reminders before your clients&apos; big
+                  days.
                 </p>
               </div>
             </div>
             <Link
-              to="/for-teams"
+              to="/for-business"
               className="group inline-flex items-center gap-2 bg-white text-gray-900 rounded-2xl px-7 py-4 font-bold hover:scale-105 transition-all shadow-lg whitespace-nowrap"
             >
-              CardJoy for Teams
+              CardJoy for Business
               <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>

@@ -69,4 +69,21 @@
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
+
+  <!-- Business Use Cases -->
+  <url>
+    <loc>https://cardjoy.app/for-business</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://cardjoy.app/slack</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+  <url>
+    <loc>https://cardjoy.app/client-occasions</loc>
+    <priority>0.8</priority>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>
