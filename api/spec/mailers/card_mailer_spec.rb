@@ -30,8 +30,13 @@ RSpec.describe CardMailer, type: :mailer do
       expect(mail.subject).to eq("You've received a CardJoy card!")
     end
 
-    it 'includes the viewable link in the body' do
-      expect(mail.body.encoded).to include("#{frontend_url}/card/#{card.external_id}/viewable")
+    it 'links to the preview endpoint so the link unfurls when forwarded' do
+      expect(mail.body.encoded).to include("/p/card/#{card.external_id}/viewable")
+      expect(mail.body.encoded).not_to include("#{frontend_url}/card/#{card.external_id}/viewable")
+    end
+
+    it 'links to an absolute URL on the API host' do
+      expect(mail.body.encoded).to include("http://localhost:3000/p/card/#{card.external_id}/viewable")
     end
   end
 
@@ -43,8 +48,9 @@ RSpec.describe CardMailer, type: :mailer do
       expect(mail.subject).to eq("Someone sent you a CardJoy card!")
     end
 
-    it 'includes the viewable reveal link in the body' do
-      expect(mail.body.encoded).to include("#{frontend_url}/card/#{card.external_id}/viewable")
+    it 'links to the preview endpoint so the link unfurls when forwarded' do
+      expect(mail.body.encoded).to include("http://localhost:3000/p/card/#{card.external_id}/viewable")
+      expect(mail.body.encoded).not_to include("#{frontend_url}/card/#{card.external_id}/viewable")
     end
   end
 end
