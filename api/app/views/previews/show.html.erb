@@ -4,16 +4,26 @@
   <meta charset="utf-8" />
   <title><%= @title %> | CardJoy</title>
 
+  <meta property="og:site_name" content="CardJoy" />
   <meta property="og:title" content="<%= @title %>" />
   <meta property="og:description" content="<%= @description %>" />
   <meta property="og:image" content="<%= @image_url %>" />
+  <meta property="og:image:alt" content="<%= @image_alt %>" />
+  <% if @image_width.present? && @image_height.present? %>
+    <meta property="og:image:width" content="<%= @image_width %>" />
+    <meta property="og:image:height" content="<%= @image_height %>" />
+  <% end %>
   <meta property="og:url" content="<%= @url %>" />
   <meta property="og:type" content="website" />
 
-  <meta name="twitter:card" content="summary_large_image" />
+  <%# Cover images keep whatever aspect ratio the user uploaded. A portrait image in a
+      large summary card gets center-cropped to an unrecognisable strip, so only ask for
+      the large card when we know the image is landscape-ish. %>
+  <meta name="twitter:card" content="<%= @image_width.to_i >= @image_height.to_i ? "summary_large_image" : "summary" %>" />
   <meta name="twitter:title" content="<%= @title %>" />
   <meta name="twitter:description" content="<%= @description %>" />
   <meta name="twitter:image" content="<%= @image_url %>" />
+  <meta name="twitter:image:alt" content="<%= @image_alt %>" />
 
   <meta http-equiv="refresh" content="0; url=<%= @url %>">
   <link rel="canonical" href="<%= @url %>">
