@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { CalendarHeart, Pencil, Plus, Send, Trash2, UserPlus } from 'lucide-react';
+import { Bell, CalendarHeart, Pencil, Plus, Send, Trash2, UserPlus } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
@@ -41,6 +41,8 @@ type Occasion = {
   occursOn: string;
   recurring: boolean;
   nextOccurrence: string;
+  // Days before the occasion that its reminder email goes out; null means off.
+  reminderLeadDays: number | null;
 };
 
 type Contact = {
@@ -71,6 +73,7 @@ const CONTACT_FIELDS = gql`
       occursOn
       recurring
       nextOccurrence
+      reminderLeadDays
     }
   }
 `;
@@ -92,6 +95,7 @@ const UPCOMING_OCCASIONS = gql`
       occursOn
       recurring
       nextOccurrence
+      reminderLeadDays
       contact {
         id
         name
@@ -104,6 +108,14 @@ const UPCOMING_OCCASIONS = gql`
 const CARD_OCCASIONS = gql`
   query CardOccasions {
     cardOccasions
+  }
+`;
+
+// The reminder lead times the API accepts, so the picker can't drift from the
+// model's validation.
+const REMINDER_LEAD_DAY_OPTIONS = gql`
+  query OccasionReminderLeadDayOptions {
+    occasionReminderLeadDayOptions
   }
 `;
 
@@ -209,7 +221,25 @@ type ContactDraft = {
 
 const INVALID_PHONE_MESSAGE = "That doesn't look like a valid phone number";
 
-type OccasionDraft = { kind: string; occursOn: string; recurring: boolean };
+// A week ahead — enough time to write something and still schedule it to land on the day.
+const DEFAULT_REMINDER_LEAD_DAYS = 7;
+
+// Radix's Select can't hold an empty value, so "reminders off" needs a sentinel.
+const REMINDER_OFF = 'off';
+
+// Round lead times read better as weeks or months than as a day count.
+function reminderLeadLabel(days: number): string {
+  if (days % 30 === 0) return days === 30 ? '1 month before' : `${days / 30} months before`;
+  if (days % 7 === 0) return days === 7 ? '1 week before' : `${days / 7} weeks before`;
+  return days === 1 ? '1 day before' : `${days} days before`;
+}
+
+type OccasionDraft = {
+  kind: string;
+  occursOn: string;
+  recurring: boolean;
+  reminderLeadDays: number | null;
+};
 
 const Contacts: React.FC = () => {
   const {
@@ -224,6 +254,7 @@ const Contacts: React.FC = () => {
   });
 
   const { data: occasionKindsData } = useQuery(CARD_OCCASIONS);
+  const { data: reminderOptionsData } = useQuery(REMINDER_LEAD_DAY_OPTIONS);
 
   const contacts: Contact[] = useMemo(() => contactsData?.myContacts ?? [], [contactsData]);
   const upcoming: UpcomingOccasion[] = useMemo(
@@ -231,6 +262,7 @@ const Contacts: React.FC = () => {
     [upcomingData]
   );
   const occasionKinds: string[] = occasionKindsData?.cardOccasions ?? [];
+  const reminderLeadOptions: number[] = reminderOptionsData?.occasionReminderLeadDayOptions ?? [];
 
   const [createContact] = useMutation(CREATE_CONTACT);
   const [updateContact] = useMutation(UPDATE_CONTACT);
@@ -293,14 +325,24 @@ const Contacts: React.FC = () => {
     setOccasionDialog({
       contactId,
       occasionId: null,
-      draft: { kind: occasionKinds[0] ?? '', occursOn: '', recurring: true },
+      draft: {
+        kind: occasionKinds[0] ?? '',
+        occursOn: '',
+        recurring: true,
+        reminderLeadDays: DEFAULT_REMINDER_LEAD_DAYS,
+      },
     });
 
   const openEditOccasion = (contactId: string, occasion: Occasion) =>
     setOccasionDialog({
       contactId,
       occasionId: occasion.id,
-      draft: { kind: occasion.kind, occursOn: occasion.occursOn, recurring: occasion.recurring },
+      draft: {
+        kind: occasion.kind,
+        occursOn: occasion.occursOn,
+        recurring: occasion.recurring,
+        reminderLeadDays: occasion.reminderLeadDays,
+      },
     });
 
   const handleSaveContact = async () => {
@@ -376,10 +418,16 @@ const Contacts: React.FC = () => {
     }
     setSaving(true);
     try {
+      // `reminderLeadDays` is always sent, so an explicit null reaches the API as
+      // "reminders off" rather than reading as an omitted argument.
+      const occasionFields = {
+        kind: draft.kind,
+        occursOn: draft.occursOn,
+        recurring: draft.recurring,
+        reminderLeadDays: draft.reminderLeadDays,
+      };
       const variables = {
-        input: occasionId
-          ? { occasionId, kind: draft.kind, occursOn: draft.occursOn, recurring: draft.recurring }
-          : { contactId, kind: draft.kind, occursOn: draft.occursOn, recurring: draft.recurring },
+        input: occasionId ? { occasionId, ...occasionFields } : { contactId, ...occasionFields },
       };
       const { data } = occasionId
         ? await updateOccasion({ variables })
@@ -534,11 +582,17 @@ const Contacts: React.FC = () => {
                             key={occasion.id}
                             className="flex items-center justify-between gap-2 text-sm"
                           >
-                            <span className="text-gray-700">
+                            <span className="min-w-0 text-gray-700">
                               <span className="font-medium">{occasion.kind}</span>{' '}
                               <span className="text-gray-500">
                                 — {formatDate(occasion.occursOn)}
                                 {occasion.recurring && ' (yearly)'}
+                              </span>
+                              <span className="flex items-center gap-1 text-xs text-gray-400">
+                                <Bell className="h-3 w-3 shrink-0" />
+                                {occasion.reminderLeadDays === null
+                                  ? 'No reminder'
+                                  : `Reminder ${reminderLeadLabel(occasion.reminderLeadDays)}`}
                               </span>
                             </span>
                             <span className="flex shrink-0 gap-1">
@@ -759,6 +813,42 @@ const Contacts: React.FC = () => {
                     })
                   }
                 />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="occasion-reminder">Remind me</Label>
+                <Select
+                  value={
+                    occasionDialog.draft.reminderLeadDays === null
+                      ? REMINDER_OFF
+                      : String(occasionDialog.draft.reminderLeadDays)
+                  }
+                  onValueChange={value =>
+                    setOccasionDialog({
+                      ...occasionDialog,
+                      draft: {
+                        ...occasionDialog.draft,
+                        reminderLeadDays: value === REMINDER_OFF ? null : Number(value),
+                      },
+                    })
+                  }
+                >
+                  <SelectTrigger id="occasion-reminder">
+                    <SelectValue placeholder="Pick a reminder" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reminderLeadOptions.map(days => (
+                      <SelectItem key={days} value={String(days)}>
+                        {reminderLeadLabel(days)}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={REMINDER_OFF}>Don&apos;t remind me</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  We&apos;ll email you ahead of the day
+                  {occasionDialog.draft.recurring ? ', every year' : ''}, so you have time to send a
+                  card.
+                </p>
               </div>
             </div>
           )}

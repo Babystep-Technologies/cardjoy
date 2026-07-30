@@ -8,6 +8,16 @@ RSpec.describe Occasion, type: :model do
       expect(build(:occasion, kind: "Not A Real Occasion")).not_to be_valid
       expect(build(:occasion, kind: "Birthday")).to be_valid
     end
+
+    it "accepts only the offered reminder lead times, or nil for reminders off" do
+      expect(build(:occasion, reminder_lead_days: 7)).to be_valid
+      expect(build(:occasion, reminder_lead_days: nil)).to be_valid
+      expect(build(:occasion, reminder_lead_days: 5)).not_to be_valid
+    end
+
+    it "defaults to a one-week reminder" do
+      expect(create(:occasion).reminder_lead_days).to eq(7)
+    end
   end
 
   describe "#next_occurrence" do
@@ -86,6 +96,27 @@ RSpec.describe Occasion, type: :model do
         last_reminded_at: 1.year.ago)
       expect(described_class.due_for_reminder).to include(occasion)
     end
+
+    it "excludes occasions with reminders turned off" do
+      occasion = create(:occasion, :non_recurring, occurs_on: Date.current + 2.days,
+        reminder_lead_days: nil)
+      expect(described_class.due_for_reminder).not_to include(occasion)
+    end
+
+    it "honours each occasion's own lead time" do
+      # 10 days out: due under a 14-day lead, not yet under the 7-day default.
+      early = create(:occasion, :non_recurring, occurs_on: Date.current + 10.days,
+        reminder_lead_days: 14)
+      default_lead = create(:occasion, :non_recurring, occurs_on: Date.current + 10.days,
+        reminder_lead_days: 7)
+      # 2 days out with a 1-day lead: still too early.
+      late = create(:occasion, :non_recurring, occurs_on: Date.current + 2.days,
+        reminder_lead_days: 1)
+
+      due = described_class.due_for_reminder
+      expect(due).to include(early)
+      expect(due).not_to include(default_lead, late)
+    end
   end
 
   describe "#reminded_for? / #record_reminder!" do
@@ -104,6 +135,14 @@ RSpec.describe Occasion, type: :model do
     it "treats a reminder before the current occurrence's window as not yet reminded" do
       occasion.update!(last_reminded_at: (occurrence - 30.days).to_time)
       expect(occasion.reminded_for?(occurrence)).to be(false)
+    end
+
+    it "measures the window with the occasion's own lead time" do
+      occasion.update!(last_reminded_at: (occurrence - 10.days).to_time)
+      # Outside a 7-day window, inside a 14-day one.
+      expect(occasion.reminded_for?(occurrence)).to be(false)
+      occasion.update!(reminder_lead_days: 14)
+      expect(occasion.reminded_for?(occurrence)).to be(true)
     end
   end
 end
