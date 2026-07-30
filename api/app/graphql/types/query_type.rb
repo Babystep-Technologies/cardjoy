@@ -14,6 +14,9 @@ module Types
     field :user_by_email, resolver: Queries::UserByEmail
     field :tags, resolver: Queries::Tags
     field :card_occasions, [ String ], null: false
+    # Lead times the occasion reminder picker offers, so the client can't drift
+    # from the model's validation.
+    field :occasion_reminder_lead_day_options, [ Integer ], null: false
     field :collections, resolver: Queries::Collections
     field :user_promo_code, resolver: Queries::GetUserPromoCode
     field :business_metrics, resolver: Queries::BusinessMetrics
@@ -27,6 +30,10 @@ module Types
 
     def card_occasions
       ::Card::OCCASIONS
+    end
+
+    def occasion_reminder_lead_day_options
+      ::Occasion::REMINDER_LEAD_DAY_OPTIONS
     end
   end
 end

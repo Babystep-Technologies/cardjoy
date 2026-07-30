@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_27_205256) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_30_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -274,6 +274,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_27_205256) do
     t.datetime "last_reminded_at"
     t.date "occurs_on", null: false
     t.boolean "recurring", default: true, null: false
+    t.integer "reminder_lead_days", default: 7
     t.datetime "updated_at", null: false
     t.index ["contact_id"], name: "index_occasions_on_contact_id"
     t.index ["occurs_on"], name: "index_occasions_on_occurs_on"
