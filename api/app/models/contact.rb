@@ -13,11 +13,22 @@ class Contact < ApplicationRecord
   belongs_to :user
   has_many :occasions, dependent: :destroy
 
+  DUPLICATE_MESSAGE = "is already used by another contact"
+
   before_validation :normalize_phone
 
   validates :name, presence: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
-  validates :phone, format: { with: E164_FORMAT, message: "is not a valid phone number" }, allow_blank: true
+  # Email and phone are each optional, but when given they identify the person: a user
+  # shouldn't be able to save the same person twice and then get two of every reminder.
+  # Scoped to the owner, so two users may of course both know the same person.
+  validates :email,
+            format: { with: URI::MailTo::EMAIL_REGEXP },
+            uniqueness: { scope: :user_id, case_sensitive: false, message: DUPLICATE_MESSAGE },
+            allow_blank: true
+  validates :phone,
+            format: { with: E164_FORMAT, message: "is not a valid phone number" },
+            uniqueness: { scope: :user_id, message: DUPLICATE_MESSAGE },
+            allow_blank: true
   validates :notes, length: { maximum: NOTES_MAX_LENGTH }
 
   private

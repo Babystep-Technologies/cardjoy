@@ -43,6 +43,30 @@ RSpec.describe Mutations::CreateContact, type: :request do
     expect(data["errors"]).to include("Phone is not a valid phone number")
   end
 
+  it "returns an error when the email duplicates an existing contact" do
+    create(:contact, user:, email: "mom@example.com")
+
+    data = exec({ name: "Mother", email: "MOM@example.com" })
+    expect(data["contact"]).to be_nil
+    expect(data["errors"]).to include("Email #{Contact::DUPLICATE_MESSAGE}")
+  end
+
+  it "returns an error when the phone duplicates an existing contact" do
+    create(:contact, user:, phone: "+14155550123")
+
+    data = exec({ name: "Mother", phone: "+1 (415) 555-0123" })
+    expect(data["contact"]).to be_nil
+    expect(data["errors"]).to include("Phone #{Contact::DUPLICATE_MESSAGE}")
+  end
+
+  it "lets a user save a contact another user already has" do
+    create(:contact, email: "mom@example.com")
+
+    data = exec({ name: "Mom", email: "mom@example.com" })
+    expect(data["errors"]).to be_empty
+    expect(data["contact"]).to include("email" => "mom@example.com")
+  end
+
   it "returns validation errors for a missing name" do
     data = exec({ name: "" })
     expect(data["contact"]).to be_nil

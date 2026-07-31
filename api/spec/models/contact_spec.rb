@@ -26,6 +26,51 @@ RSpec.describe Contact, type: :model do
     expect(contact.phone).to eq("+14155550123")
   end
 
+  describe "duplicate prevention" do
+    let(:user) { create(:user) }
+
+    it "rejects a second contact with an email the user already has" do
+      create(:contact, user:, email: "mom@example.com")
+      duplicate = build(:contact, user:, name: "Mother", email: "mom@example.com")
+
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:email]).to include(Contact::DUPLICATE_MESSAGE)
+    end
+
+    it "rejects a second contact with a phone the user already has" do
+      create(:contact, user:, phone: "+14155550123")
+      duplicate = build(:contact, user:, phone: "+1 (415) 555-0123")
+
+      expect(duplicate).not_to be_valid
+      expect(duplicate.errors[:phone]).to include(Contact::DUPLICATE_MESSAGE)
+    end
+
+    it "matches emails case-insensitively" do
+      create(:contact, user:, email: "mom@example.com")
+      expect(build(:contact, user:, email: "Mom@Example.COM")).not_to be_valid
+    end
+
+    it "allows any number of contacts without an email or phone" do
+      create(:contact, user:, email: nil, phone: nil)
+      expect(build(:contact, user:, email: nil, phone: nil)).to be_valid
+      expect(build(:contact, user:, email: "", phone: "")).to be_valid
+    end
+
+    it "lets a different user save the same person" do
+      create(:contact, user:, email: "mom@example.com", phone: "+14155550123")
+      other = build(:contact, email: "mom@example.com", phone: "+14155550123")
+
+      expect(other).to be_valid
+    end
+
+    it "still saves an existing contact whose email and phone are unchanged" do
+      contact = create(:contact, user:, email: "mom@example.com", phone: "+14155550123")
+
+      contact.name = "Mother"
+      expect(contact.save).to be(true)
+    end
+  end
+
   it "rejects notes longer than the maximum" do
     expect(build(:contact, notes: "a" * Contact::NOTES_MAX_LENGTH)).to be_valid
     expect(build(:contact, notes: "a" * (Contact::NOTES_MAX_LENGTH + 1))).not_to be_valid
