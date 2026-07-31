@@ -11,11 +11,16 @@ RSpec.describe Mutations::UpdateContact, type: :request do
 
   let(:query) do
     <<~GRAPHQL
-      mutation UpdateContact($contactId: ID!, $name: String, $relationship: String, $phone: String, $notes: String) {
+      mutation UpdateContact(
+        $contactId: ID!, $name: String, $email: String, $relationship: String, $phone: String, $notes: String
+      ) {
         updateContact(
-          input: { contactId: $contactId, name: $name, relationship: $relationship, phone: $phone, notes: $notes }
+          input: {
+            contactId: $contactId, name: $name, email: $email,
+            relationship: $relationship, phone: $phone, notes: $notes
+          }
         ) {
-          contact { id name relationship phone notes }
+          contact { id name email relationship phone notes }
           errors
         }
       }
@@ -50,6 +55,23 @@ RSpec.describe Mutations::UpdateContact, type: :request do
     expect(data["contact"]).to be_nil
     expect(data["errors"]).to include("Phone is not a valid phone number")
     expect(contact.reload.phone).to eq("+14155550123")
+  end
+
+  it "saves an unchanged email and phone without colliding with itself" do
+    contact.update!(email: "mom@example.com")
+
+    data = exec(contactId: contact.id, name: "New Name", email: "mom@example.com", phone: "+14155550123")
+    expect(data["errors"]).to be_empty
+    expect(data["contact"]).to include("name" => "New Name")
+  end
+
+  it "returns an error when the edit duplicates another of the user's contacts" do
+    create(:contact, user:, email: "mom@example.com")
+
+    data = exec(contactId: contact.id, email: "mom@example.com")
+    expect(data["contact"]).to be_nil
+    expect(data["errors"]).to include("Email #{Contact::DUPLICATE_MESSAGE}")
+    expect(contact.reload.email).not_to eq("mom@example.com")
   end
 
   it "does not update another user's contact" do
