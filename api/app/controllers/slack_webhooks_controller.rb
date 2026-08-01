@@ -167,9 +167,13 @@ class SlackWebhooksController < ApplicationController
 
     render json: { response_action: "clear" }
   rescue User::InsufficientCreditsError
+    # The modal can only show plain text, so the actual purchase link goes out as
+    # a follow-up message with a "Buy credits" button. See issue #83.
+    post_buy_credits_prompt(payload.dig("view", "private_metadata"), user)
+
     render json: {
       response_action: "errors",
-      errors: { recipient_block: "You're out of CardJoy credits. Visit cardjoy.app to add more, then try again." }
+      errors: { recipient_block: "You're out of CardJoy credits. Check the message from CardJoy in Slack to buy more, then try again." }
     }
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("[SlackWebhook] Card creation failed: #{e.message}")
@@ -303,11 +307,13 @@ class SlackWebhooksController < ApplicationController
     { name: name, email: email }
   end
 
-  def post_response_url(url, text)
+  def post_response_url(url, text, response_type: "in_channel", blocks: nil)
     uri = URI(url)
     req = Net::HTTP::Post.new(uri)
     req["Content-Type"] = "application/json"
-    req.body = { response_type: "in_channel", text: text, mrkdwn: true }.to_json
+    body = { response_type: response_type, text: text, mrkdwn: true }
+    body[:blocks] = blocks if blocks
+    req.body = body.to_json
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
     http.request(req)
@@ -346,6 +352,44 @@ class SlackWebhooksController < ApplicationController
     connect_url = "#{frontend_url}/connect-slack?state=#{connect_state_token(slack_user_id, slack_team_id)}"
     "Before you can create a card, connect your CardJoy account: " \
       "<#{connect_url}|Connect CardJoy>. Once connected, run `/cardjoy` again."
+  end
+
+  # Follow-up message shown when a card creation is blocked for insufficient
+  # credits. The button carries the same 24h auth token we use for the editable
+  # card link, so the user lands on /buy_credits already signed in and the normal
+  # Stripe checkout flow credits their account. Always ephemeral — the token
+  # authenticates as this user and must not be visible to the rest of the channel.
+  def post_buy_credits_prompt(response_url, user)
+    return if response_url.blank?
+
+    buy_credits_url =
+      "#{frontend_url}/buy_credits?reason=insufficient_balance&token=#{generate_auth_token(user)}"
+    text = "You're out of CardJoy credits, so that card wasn't created. " \
+           "Buy more credits and run `/cardjoy` again."
+
+    post_response_url(
+      response_url,
+      text,
+      response_type: "ephemeral",
+      blocks: [
+        { type: "section", text: { type: "mrkdwn", text: text } },
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              action_id: "buy_credits",
+              style: "primary",
+              text: { type: "plain_text", text: "Buy credits" },
+              url: buy_credits_url
+            }
+          ]
+        }
+      ]
+    )
+  rescue StandardError => e
+    # Never let a failed follow-up swallow the in-modal error the user needs.
+    Rails.logger.error("[SlackWebhook] Buy credits prompt failed: #{e.message}")
   end
 
   def connect_state_token(slack_user_id, slack_team_id)

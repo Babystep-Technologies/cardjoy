@@ -12,11 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Lock, Send, Eye } from 'lucide-react';
 import { ScrollProgress } from '@/components/magicui/scroll-progress';
 import { SparklesText } from '@/components/magicui/sparkles-text';
-import { UserMessageType, GuestMessageType, StyleType, JWTPayload } from '@/types/app';
+import { UserMessageType, GuestMessageType, StyleType } from '@/types/app';
 import { useAuth } from '@/contexts/AuthContext';
 import { getGuestMessageIdKey } from '@/lib/utils';
 import { APP_TOKEN_KEY } from '@/lib/constants';
-import { jwtDecode } from 'jwt-decode';
+import { decodeValidToken } from '@/lib/auth-token';
 import {
   Dialog,
   DialogContent,
@@ -100,14 +100,12 @@ const CardEditable: React.FC = () => {
   useEffect(() => {
     const token = searchParams.get('token');
     if (token) {
-      try {
-        const decoded = jwtDecode<JWTPayload>(token);
-        if (decoded.exp * 1000 > Date.now()) {
-          localStorage.setItem(APP_TOKEN_KEY, token);
-          setUser(decoded);
-        }
-      } catch (e) {
-        console.error('Invalid token in URL:', e);
+      const decoded = decodeValidToken(token);
+      if (decoded) {
+        localStorage.setItem(APP_TOKEN_KEY, token);
+        setUser(decoded);
+      } else {
+        console.error('Invalid or expired token in URL');
       }
       // Remove token from URL to keep it clean
       searchParams.delete('token');
