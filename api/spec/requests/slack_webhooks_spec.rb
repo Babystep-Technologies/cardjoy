@@ -389,15 +389,76 @@ RSpec.describe "SlackWebhooks", type: :request do
         expect(Credit.count).to eq(credit_count)
       end
 
-      it "does not post a follow-up message when the balance is empty" do
+      it "does not announce a card in the channel when the balance is empty" do
         stub_slack_users_info(recipient_slack_id, "Mike Smith")
         user.credits.destroy_all
-        response_stub = stub_request(:post, "https://hooks.slack.com/test_response")
+        stub_request(:post, "https://hooks.slack.com/test_response")
           .to_return(status: 200, body: '{"ok":true}')
 
         post_modal_submission(submission_payload(response_url: "https://hooks.slack.com/test_response"))
 
-        expect(response_stub).not_to have_been_requested
+        expect(a_request(:post, "https://hooks.slack.com/test_response").with { |req|
+          JSON.parse(req.body)["text"].include?("See card")
+        }).not_to have_been_made
+      end
+    end
+
+    describe "buy credits CTA when out of credits" do
+      let(:response_url) { "https://hooks.slack.com/test_response" }
+
+      before do
+        stub_slack_users_info(recipient_slack_id, "Mike Smith")
+        user.credits.destroy_all
+        stub_request(:post, response_url).to_return(status: 200, body: '{"ok":true}')
+      end
+
+      def cta_body
+        body = nil
+        expect(a_request(:post, response_url).with { |req| body = req.body }).to have_been_made
+        JSON.parse(body)
+      end
+
+      def cta_button
+        cta_body["blocks"].find { |b| b["type"] == "actions" }["elements"].first
+      end
+
+      it "posts a Buy credits button linking to /buy_credits with an auth token" do
+        post_modal_submission(submission_payload(response_url: response_url))
+
+        button = cta_button
+        expect(button["text"]["text"]).to eq("Buy credits")
+        expect(button["url"]).to start_with("#{frontend_url}/buy_credits?")
+        expect(button["url"]).to include("reason=insufficient_balance")
+        expect(button["url"]).to include("token=")
+      end
+
+      it "signs the link with a token for the user who ran out of credits" do
+        post_modal_submission(submission_payload(response_url: response_url))
+
+        token = URI.decode_www_form(URI(cta_button["url"]).query).to_h["token"]
+        payload, = JWT.decode(token, Rails.configuration.x.jwt_secret, true, algorithm: "HS256")
+        expect(payload["user_id"]).to eq(user.id)
+      end
+
+      it "keeps the CTA ephemeral so the auth token stays private to the user" do
+        post_modal_submission(submission_payload(response_url: response_url))
+
+        expect(cta_body["response_type"]).to eq("ephemeral")
+      end
+
+      it "points the modal error at the follow-up message" do
+        post_modal_submission(submission_payload(response_url: response_url))
+
+        errors = JSON.parse(response.body)["errors"].values.join
+        expect(errors).to include("out of CardJoy credits")
+        expect(errors).to include("buy more")
+      end
+
+      it "does not blow up when the modal has no response_url" do
+        post_modal_submission(submission_payload(response_url: ""))
+
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["response_action"]).to eq("errors")
       end
     end
   end
