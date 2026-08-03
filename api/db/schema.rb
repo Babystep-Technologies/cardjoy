@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_30_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_03_212048) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -382,6 +382,47 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_120000) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "wish_list_contributions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "handle", null: false
+    t.string "kind", null: false
+    t.string "label"
+    t.text "note"
+    t.integer "position", default: 0, null: false
+    t.string "suggested_amount"
+    t.datetime "updated_at", null: false
+    t.bigint "wish_list_id", null: false
+    t.index ["wish_list_id", "position"], name: "index_wish_list_contributions_on_wish_list_id_and_position"
+    t.index ["wish_list_id"], name: "index_wish_list_contributions_on_wish_list_id"
+  end
+
+  create_table "wish_list_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "image_url"
+    t.text "note"
+    t.integer "position", default: 0, null: false
+    t.string "price"
+    t.integer "quantity", default: 1, null: false
+    t.string "store"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.bigint "wish_list_id", null: false
+    t.index ["wish_list_id", "position"], name: "index_wish_list_items_on_wish_list_id_and_position"
+    t.index ["wish_list_id"], name: "index_wish_list_items_on_wish_list_id"
+  end
+
+  create_table "wish_lists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "intro"
+    t.bigint "invitation_id", null: false
+    t.boolean "surprise_mode", default: true, null: false
+    t.string "title", default: "Wish List", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "visible", default: true, null: false
+    t.index ["invitation_id"], name: "index_wish_lists_on_invitation_id", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "card_styles", "cards"
@@ -402,4 +443,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_30_120000) do
   add_foreign_key "slack_user_connections", "users"
   add_foreign_key "style_tags", "styles"
   add_foreign_key "style_tags", "tags"
+  add_foreign_key "wish_list_contributions", "wish_lists"
+  add_foreign_key "wish_list_items", "wish_lists"
+  add_foreign_key "wish_lists", "invitations"
 end

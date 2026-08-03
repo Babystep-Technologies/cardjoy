@@ -37,6 +37,7 @@ module Types
     field :create_invitation_draft, mutation: Mutations::CreateInvitationDraft
     field :update_invitation, mutation: Mutations::UpdateInvitation
     field :approve_invitation_draft, mutation: Mutations::ApproveInvitationDraft
+    field :upsert_wish_list, mutation: Mutations::UpsertWishList
     field :create_rsvp, mutation: Mutations::CreateRsvp
     field :connect_slack_account, mutation: Mutations::ConnectSlackAccount
     field :create_contact, mutation: Mutations::CreateContact

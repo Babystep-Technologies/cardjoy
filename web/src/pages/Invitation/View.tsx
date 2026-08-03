@@ -18,7 +18,9 @@ import RSVPForm from './components/RSVPForm';
 import RSVPGuestEntry from './components/RSVPGuestEntry';
 import OpeningScreen from './components/OpeningScreen';
 import { OpeningMessagePlayer } from './components/OpeningMessagePlayer';
+import WishListCallout from './components/WishListCallout';
 import LoadingScreen from '@/components/Loading';
+import { WISH_LIST_FIELDS } from '@/lib/wishList';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
@@ -99,6 +101,9 @@ const GET_INVITATION = gql`
         notGoing
         total
         totalAttendees
+      }
+      wishList {
+        ${WISH_LIST_FIELDS}
       }
     }
   }
@@ -566,6 +571,11 @@ const InvitationView: React.FC = () => {
               </div>
             </Card>
 
+            {/* Wish List entry point — sits right above the RSVP call to action */}
+            {invitation.wishList && id && (
+              <WishListCallout invitationId={id} wishList={invitation.wishList} />
+            )}
+
             {/* RSVP Form */}
             {(!hasRSVPd || isUpdatingRsvp) && !isRSVPClosed ? (
               // Show guest entry choice if not logged in and not in guest mode
@@ -656,6 +666,15 @@ const InvitationView: React.FC = () => {
                       </button>
                     </div>
                   </div>
+                )}
+
+                {/* Wish list reminder in the post-RSVP confirmation */}
+                {invitation.wishList && id && (
+                  <WishListCallout
+                    invitationId={id}
+                    wishList={invitation.wishList}
+                    variant="onDark"
+                  />
                 )}
 
                 {/* Update Response Button */}
