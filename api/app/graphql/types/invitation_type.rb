@@ -24,6 +24,17 @@ module Types
     field :user, Types::UserType, null: false
     field :rsvps, [ Types::RsvpType ], null: false
     field :rsvp_counts, Types::RsvpCountsType, null: false
+    field :wish_list, Types::WishListType, null: true
+
+    # A hidden wish list stays visible to the host so they can build it before publishing.
+    def wish_list
+      list = object.wish_list
+      return nil if list.nil?
+      return list if list.visible
+
+      viewer = context[:current_user]
+      viewer && viewer.id == object.user_id ? list : nil
+    end
 
     def rsvp_counts
       rsvps = object.rsvps

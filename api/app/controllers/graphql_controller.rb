@@ -10,7 +10,7 @@ class GraphqlController < ApiController
   PUBLIC_OPERATIONS = %w[
     SignIn SignUp GoogleOauthSignIn SendPasswordReset GoogleAdminSignIn
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
-    GetOccasions GetStyles CreateRsvp GetInvitation
+    GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
   ].freeze
 
   use ApolloUploadServer::Middleware

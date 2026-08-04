@@ -3,6 +3,7 @@
 class Invitation < ApplicationRecord
   belongs_to :user
   has_many :rsvps, dependent: :destroy
+  has_one :wish_list, dependent: :destroy
 
   has_one_attached :cover_image
 
