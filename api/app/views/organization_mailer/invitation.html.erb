@@ -1,0 +1,27 @@
+<h2>You've been invited to <%= @organization.name %></h2>
+
+<p>
+  <strong><%= @inviter.name %></strong> invited you to join
+  <strong><%= @organization.name %></strong> on CardJoy as
+  <%= @invitation.role == OrganizationMembership::ADMIN ? "an admin" : "a member" %>.
+</p>
+
+<% if @organization.description.present? %>
+  <p><%= @organization.description %></p>
+<% end %>
+
+<p>Members share credits, cards, and branding, so you can create and send together.</p>
+
+<p>
+  <a class="primary-button" href="<%= @join_url %>">Join <%= @organization.name %></a>
+</p>
+
+<p style="font-size: 13px;">
+  This invitation expires on <strong><%= @invitation.expires_at.strftime("%B %-d, %Y") %></strong>.
+  You'll be asked to sign in or create a CardJoy account with this email address first.
+</p>
+
+<hr>
+<p style="font-size: 12px; color: #999;">
+  Didn't expect this? You can ignore this email — nothing happens until you accept.
+</p>

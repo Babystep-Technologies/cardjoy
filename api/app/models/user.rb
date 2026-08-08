@@ -30,6 +30,14 @@ class User < ApplicationRecord
   has_many :organization_memberships, dependent: :destroy
   has_many :organizations, through: :organization_memberships
 
+  # Invitations this user sent, not ones addressed to them: an invitation is
+  # addressed to an email, which may not belong to any user yet.
+  has_many :sent_organization_invitations,
+           class_name: "OrganizationInvitation",
+           foreign_key: :invited_by_id,
+           inverse_of: :invited_by,
+           dependent: :destroy
+
   # The organization the user is currently acting in; nil means Personal. See
   # Mutations::SwitchOrganization. Reads nil for an archived organization too,
   # because Organization is default-scoped to `deleted_at: nil` — an archived

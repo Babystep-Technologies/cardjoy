@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_08_230827) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_08_232949) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -280,6 +280,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_230827) do
     t.index ["occurs_on"], name: "index_occasions_on_occurs_on"
   end
 
+  create_table "organization_invitations", force: :cascade do |t|
+    t.datetime "accepted_at"
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.datetime "expires_at", null: false
+    t.bigint "invited_by_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "role", default: "member", null: false
+    t.string "status", default: "pending", null: false
+    t.string "token", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_organization_invitations_on_email"
+    t.index ["invited_by_id"], name: "index_organization_invitations_on_invited_by_id"
+    t.index ["organization_id", "email"], name: "index_organization_invitations_on_org_and_pending_email", unique: true, where: "((status)::text = 'pending'::text)"
+    t.index ["organization_id"], name: "index_organization_invitations_on_organization_id"
+    t.index ["token"], name: "index_organization_invitations_on_token", unique: true
+  end
+
   create_table "organization_memberships", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "organization_id", null: false
@@ -462,6 +480,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_230827) do
   add_foreign_key "messages", "cards"
   add_foreign_key "messages", "users"
   add_foreign_key "occasions", "contacts"
+  add_foreign_key "organization_invitations", "organizations"
+  add_foreign_key "organization_invitations", "users", column: "invited_by_id"
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
   add_foreign_key "organizations", "users", column: "created_by_id"

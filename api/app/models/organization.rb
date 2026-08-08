@@ -16,6 +16,7 @@ class Organization < ApplicationRecord
 
   has_many :organization_memberships, dependent: :destroy
   has_many :users, through: :organization_memberships
+  has_many :organization_invitations, dependent: :destroy
   has_many :admin_memberships,
            -> { where(role: OrganizationMembership::ADMIN) },
            class_name: "OrganizationMembership",

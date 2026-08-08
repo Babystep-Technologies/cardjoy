@@ -28,6 +28,7 @@ module Types
     field :viewer, resolver: Queries::Viewer
     field :my_contacts, resolver: Queries::MyContacts
     field :upcoming_occasions, resolver: Queries::UpcomingOccasions
+    field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
 
     def card_occasions
       ::Card::OCCASIONS

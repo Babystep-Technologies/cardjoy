@@ -501,6 +501,20 @@ class User
 
     sig { params(value: T::Enumerable[::Rsvp]).void }
     def rsvps=(value); end
+
+    sig { returns(T::Array[T.untyped]) }
+    def sent_organization_invitation_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def sent_organization_invitation_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :sent_organization_invitations`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::OrganizationInvitation::PrivateCollectionProxy) }
+    def sent_organization_invitations; end
+
+    sig { params(value: T::Enumerable[::OrganizationInvitation]).void }
+    def sent_organization_invitations=(value); end
   end
 
   module GeneratedAssociationRelationMethods
