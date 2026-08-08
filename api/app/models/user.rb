@@ -30,8 +30,17 @@ class User < ApplicationRecord
   has_many :organization_memberships, dependent: :destroy
   has_many :organizations, through: :organization_memberships
 
+  # The organization the user is currently acting in; nil means Personal. See
+  # Mutations::SwitchOrganization. Reads nil for an archived organization too,
+  # because Organization is default-scoped to `deleted_at: nil` — an archived
+  # context degrades to Personal rather than to a dangling reference.
+  belongs_to :active_organization, class_name: "Organization", optional: true
+
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true
+
+  # You can only be "in" an organization you actually belong to.
+  validate :active_organization_must_be_a_membership
 
   after_create :grant_signup_credits
 
@@ -140,6 +149,18 @@ class User < ApplicationRecord
   end
 
   private
+
+  # Checked against the raw column rather than the `active_organization`
+  # association: the association is nil for an archived organization, which
+  # would make every later save of an otherwise valid user fail. Archiving is
+  # not the member's doing, and the membership row survives it.
+  sig { void }
+  def active_organization_must_be_a_membership
+    return if active_organization_id.nil?
+    return if organization_memberships.exists?(organization_id: active_organization_id)
+
+    errors.add(:active_organization, "is not an organization you belong to")
+  end
 
   # Grant the one-time signup bonus. Guarded on the presence of an existing
   # signup_bonus row so re-running the callback (or a backfill) can't

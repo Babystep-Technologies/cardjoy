@@ -10,6 +10,16 @@ module Types
     field :credit_balance, Integer, null: false
     field :cards_count, Integer, null: false
     field :invitations_count, Integer, null: false
+    # Null means Personal — a valid context, not a missing organization.
+    field :active_organization, Types::OrganizationType, null: true
+    field :organization_memberships, [ Types::OrganizationMembershipType ], null: false
+
+    # Archived organizations keep their membership rows (deleteOrganization is a
+    # soft delete), so filter them out here rather than handing the org switcher
+    # entries whose `organization` is null.
+    def organization_memberships
+      object.organization_memberships.where(organization_id: Organization.select(:id))
+    end
 
     def credit_balance
       object.credit_balance

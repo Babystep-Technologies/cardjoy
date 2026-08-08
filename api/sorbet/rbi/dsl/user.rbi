@@ -335,6 +335,21 @@ class User
   end
 
   module GeneratedAssociationMethods
+    sig { returns(T.nilable(::Organization)) }
+    def active_organization; end
+
+    sig { params(value: T.nilable(::Organization)).void }
+    def active_organization=(value); end
+
+    sig { returns(T::Boolean) }
+    def active_organization_changed?; end
+
+    sig { returns(T::Boolean) }
+    def active_organization_previously_changed?; end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
+    def build_active_organization(*args, &blk); end
+
     sig { returns(T::Array[T.untyped]) }
     def card_ids; end
 
@@ -362,6 +377,12 @@ class User
 
     sig { params(value: T::Enumerable[::Contact]).void }
     def contacts=(value); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
+    def create_active_organization(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
+    def create_active_organization!(*args, &blk); end
 
     sig { returns(T::Array[T.untyped]) }
     def credit_ids; end
@@ -460,6 +481,12 @@ class User
 
     sig { params(value: T::Enumerable[::PromoCode]).void }
     def promo_codes=(value); end
+
+    sig { returns(T.nilable(::Organization)) }
+    def reload_active_organization; end
+
+    sig { void }
+    def reset_active_organization; end
 
     sig { returns(T::Array[T.untyped]) }
     def rsvp_ids; end
@@ -622,6 +649,51 @@ class User
   end
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(::Integer)) }
+    def active_organization_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def active_organization_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def active_organization_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def active_organization_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def active_organization_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def active_organization_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def active_organization_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def active_organization_id_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def active_organization_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def active_organization_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def active_organization_id_previous_change; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def active_organization_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def active_organization_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def active_organization_id_was; end
+
+    sig { void }
+    def active_organization_id_will_change!; end
+
     sig { returns(T.nilable(::String)) }
     def confirmation_code; end
 
@@ -1238,6 +1310,9 @@ class User
     def reset_password_token_will_change!; end
 
     sig { void }
+    def restore_active_organization_id!; end
+
+    sig { void }
     def restore_confirmation_code!; end
 
     sig { void }
@@ -1284,6 +1359,12 @@ class User
 
     sig { void }
     def restore_updated_at!; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_active_organization_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_active_organization_id?; end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_confirmation_code; end
@@ -1515,6 +1596,9 @@ class User
 
     sig { void }
     def updated_at_will_change!; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_active_organization_id?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_confirmation_code?; end

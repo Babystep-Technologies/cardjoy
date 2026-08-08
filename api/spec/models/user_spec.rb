@@ -177,4 +177,54 @@ RSpec.describe User, type: :model do
       expect(User.count).to eq(1)
     end
   end
+
+  describe "active organization" do
+    let(:user) { create(:user) }
+    let(:organization) { create(:organization) }
+
+    it "defaults to nil, meaning Personal" do
+      expect(user.active_organization).to be_nil
+      expect(user).to be_valid
+    end
+
+    it "accepts an organization the user belongs to" do
+      create(:organization_membership, organization:, user:)
+
+      expect(user.update(active_organization: organization)).to be(true)
+      expect(user.reload.active_organization).to eq(organization)
+    end
+
+    it "rejects an organization the user does not belong to" do
+      user.active_organization = organization
+
+      expect(user).not_to be_valid
+      expect(user.errors.full_messages)
+        .to include("Active organization is not an organization you belong to")
+    end
+
+    it "rejects an organization another user belongs to" do
+      create(:organization_membership, organization:, user: create(:user))
+      user.active_organization = organization
+
+      expect(user).not_to be_valid
+    end
+
+    it "reads as Personal once the active organization is archived" do
+      create(:organization_membership, :admin, organization:, user:)
+      user.update!(active_organization: organization)
+      organization.archive!
+
+      expect(user.reload.active_organization).to be_nil
+    end
+
+    it "stays saveable after its active organization is archived" do
+      create(:organization_membership, :admin, organization:, user:)
+      user.update!(active_organization: organization)
+      organization.archive!
+
+      # The membership row survives archiving, so the validation must read the
+      # raw column rather than the default-scoped association.
+      expect(user.reload.update(name: "Renamed")).to be(true)
+    end
+  end
 end
