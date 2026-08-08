@@ -98,6 +98,55 @@ RSpec.describe OrganizationMembership, type: :model do
     end
   end
 
+  describe "clearing the departing member's active organization" do
+    it "drops the user back to Personal when they were acting in this organization" do
+      create(:organization_membership, :admin, organization:)
+      user = create(:user)
+      membership = create(:organization_membership, organization:, user:)
+      user.update!(active_organization: organization)
+
+      membership.destroy!
+
+      expect(user.reload.active_organization_id).to be_nil
+    end
+
+    it "leaves an active organization pointing somewhere else alone" do
+      create(:organization_membership, :admin, organization:)
+      other = create(:organization)
+      user = create(:user)
+      membership = create(:organization_membership, organization:, user:)
+      create(:organization_membership, organization: other, user:)
+      user.update!(active_organization: other)
+
+      membership.destroy!
+
+      expect(user.reload.active_organization_id).to eq(other.id)
+    end
+
+    it "does not touch other members of the same organization" do
+      create(:organization_membership, :admin, organization:)
+      leaver = create(:user)
+      stayer = create(:user)
+      membership = create(:organization_membership, organization:, user: leaver)
+      create(:organization_membership, organization:, user: stayer)
+      leaver.update!(active_organization: organization)
+      stayer.update!(active_organization: organization)
+
+      membership.destroy!
+
+      expect(leaver.reload.active_organization_id).to be_nil
+      expect(stayer.reload.active_organization_id).to eq(organization.id)
+    end
+
+    it "does not run when the destroy is blocked by the last-admin guard" do
+      admin = create(:organization_membership, :admin, organization:)
+      admin.user.update!(active_organization: organization)
+
+      expect(admin.destroy).to be(false)
+      expect(admin.user.reload.active_organization_id).to eq(organization.id)
+    end
+  end
+
   describe "#admin?" do
     it "is true only for the admin role" do
       expect(build(:organization_membership, :admin)).to be_admin

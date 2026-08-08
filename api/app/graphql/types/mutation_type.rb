@@ -49,5 +49,6 @@ module Types
     field :create_organization, mutation: Mutations::CreateOrganization
     field :update_organization, mutation: Mutations::UpdateOrganization
     field :delete_organization, mutation: Mutations::DeleteOrganization
+    field :switch_organization, mutation: Mutations::SwitchOrganization
   end
 end

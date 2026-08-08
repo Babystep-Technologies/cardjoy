@@ -22,6 +22,7 @@ class OrganizationMembership < ApplicationRecord
   # before_destroy because there is nothing to validate against.
   validate :organization_retains_an_admin, on: :update, if: :demoting_an_admin?
   before_destroy :ensure_organization_retains_an_admin
+  after_destroy :clear_active_organization
 
   sig { returns(T::Boolean) }
   def admin?
@@ -51,6 +52,16 @@ class OrganizationMembership < ApplicationRecord
   sig { void }
   def organization_retains_an_admin
     errors.add(:base, LAST_ADMIN_ERROR) if last_admin?
+  end
+
+  # A removed member must not be left sitting in a context they can no longer
+  # read, so drop them back to Personal. Written with update_all so it neither
+  # re-runs User's validations (which would now reject the stale value) nor
+  # depends on the user being loaded in memory.
+  sig { void }
+  def clear_active_organization
+    User.where(id: user_id, active_organization_id: organization_id)
+        .update_all(active_organization_id: nil)
   end
 
   sig { void }
