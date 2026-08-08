@@ -11,13 +11,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Toaster, toast } from 'sonner';
-import { X, Calendar, Clock, MapPin, Sparkles, Upload, Wand2 } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Sparkles, Upload, Wand2, Gift } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { detectTimezone } from '@/lib/timezone';
 import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import CoverImageDialog from '../Card/components/CoverImageDialog';
+import WishListFields from './components/WishListFields';
+import {
+  emptyWishListDraft,
+  isWishListDraftEmpty,
+  UPSERT_WISH_LIST_MUTATION,
+  validateWishListDraft,
+  wishListDraftToInput,
+  type WishListDraft,
+} from '@/lib/wishList';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
 import { cardTypeById } from '@/config/cardTypes';
@@ -41,6 +50,8 @@ const CREATE_INVITATION = gql`
     }
   }
 `;
+
+const UPSERT_WISH_LIST = gql(UPSERT_WISH_LIST_MUTATION);
 
 const InvitationNew: React.FC = () => {
   const navigate = useNavigate();
@@ -68,14 +79,51 @@ const InvitationNew: React.FC = () => {
   );
   const [openingEditorOpen, setOpeningEditorOpen] = useState(false);
 
+  // Wish list (optional) — saved after the invitation exists, since it needs the invitation's id
+  const [wishListEnabled, setWishListEnabled] = useState(false);
+  const [wishListDraft, setWishListDraft] = useState<WishListDraft>(emptyWishListDraft);
+
   const [createInvitation] = useMutation(CREATE_INVITATION);
+  const [upsertWishList] = useMutation(UPSERT_WISH_LIST);
 
   const isFormValid = title.trim() !== '' && eventDate !== undefined && eventTime !== '';
+
+  // By the time this runs the invitation exists and a credit is spent, so a wish list failure
+  // warns and leaves the host to retry from the edit page rather than losing the invitation.
+  const saveWishList = async (externalId: string) => {
+    if (!wishListEnabled || isWishListDraftEmpty(wishListDraft)) return;
+
+    const fallback = "Invitation created, but the wish list didn't save. You can add it from Edit.";
+    try {
+      const { data } = await upsertWishList({
+        variables: {
+          input: { invitationExternalId: externalId, ...wishListDraftToInput(wishListDraft) },
+        },
+      });
+
+      const errors: string[] = data?.upsertWishList?.errors ?? [];
+      if (errors.length > 0) {
+        toast.error(`${fallback} (${errors.join(', ')})`);
+      }
+    } catch (error) {
+      console.error('Failed to save wish list', error);
+      toast.error(fallback);
+    }
+  };
 
   const handleCreateInvitation = async () => {
     if (!isFormValid) {
       toast.error('Please fill in all required fields');
       return;
+    }
+
+    // Check the wish list before spending a credit on the invitation.
+    if (wishListEnabled) {
+      const problem = validateWishListDraft(wishListDraft);
+      if (problem) {
+        toast.error(problem);
+        return;
+      }
     }
 
     // Check if user is logged in
@@ -171,9 +219,11 @@ const InvitationNew: React.FC = () => {
               (json.errors?.[0]?.message ?? json.data.createInvitation.errors.join(', '))
           );
         } else {
+          const externalId = json.data.createInvitation.invitation.externalId;
           toast.success('Invitation created!');
+          await saveWishList(externalId);
           setTimeout(() => {
-            navigate(`/invitation/${json.data.createInvitation.invitation.externalId}`);
+            navigate(`/invitation/${externalId}`);
           }, 500);
         }
       } else {
@@ -225,9 +275,11 @@ const InvitationNew: React.FC = () => {
         });
 
         if (data.createInvitation.errors.length === 0) {
+          const externalId = data.createInvitation.invitation.externalId;
           toast.success('Invitation created!');
+          await saveWishList(externalId);
           setTimeout(() => {
-            navigate(`/invitation/${data.createInvitation.invitation.externalId}`);
+            navigate(`/invitation/${externalId}`);
           }, 500);
         } else if (isInsufficientCreditsError(data.createInvitation.errors)) {
           navigate(INSUFFICIENT_CREDITS_REDIRECT);
@@ -587,6 +639,53 @@ const InvitationNew: React.FC = () => {
                   className="bg-white/70 border-2 resize-none"
                 />
               </div>
+            </div>
+
+            {/* Wish List (optional) */}
+            <div className="space-y-4 border-t-2 border-dashed border-gray-200 pt-6">
+              {!wishListEnabled ? (
+                <div className="text-center space-y-3">
+                  <Gift className="w-8 h-8 mx-auto text-pink-500" />
+                  <h3 className="text-lg font-bold">Add a wish list (optional)</h3>
+                  <p className="text-gray-600 max-w-md mx-auto text-sm">
+                    Let guests know what to bring — gift ideas, cash gifts, or both. You can always
+                    add one later.
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="border-2"
+                    onClick={() => setWishListEnabled(true)}
+                  >
+                    <Gift className="w-4 h-4 mr-2" />
+                    Add wish list
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-pink-500" />
+                      Wish List
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setWishListEnabled(false);
+                        setWishListDraft(emptyWishListDraft());
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                  <WishListFields
+                    value={wishListDraft}
+                    onChange={setWishListDraft}
+                    showVisibilityToggle={false}
+                    idPrefix="newWishList"
+                  />
+                </>
+              )}
             </div>
 
             {/* Action Buttons */}

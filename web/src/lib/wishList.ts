@@ -90,6 +90,105 @@ export interface WishList {
   contributions: WishListContribution[];
 }
 
+/** The editable shape of a wish list, shared by the create and edit flows. */
+export interface WishListDraft {
+  title: string;
+  intro: string;
+  visible: boolean;
+  surpriseMode: boolean;
+  items: WishListItem[];
+  contributions: WishListContribution[];
+}
+
+export const emptyWishListDraft = (): WishListDraft => ({
+  title: 'Wish List',
+  intro: '',
+  visible: true,
+  surpriseMode: true,
+  items: [],
+  contributions: [],
+});
+
+export const emptyWishListItem = (): WishListItem => ({
+  title: '',
+  url: '',
+  price: '',
+  note: '',
+  quantity: 1,
+});
+
+export const emptyWishListContribution = (): WishListContribution => ({
+  kind: 'venmo',
+  handle: '',
+  label: '',
+  suggestedAmount: '',
+});
+
+export const wishListToDraft = (wishList: WishList): WishListDraft => ({
+  title: wishList.title || 'Wish List',
+  intro: wishList.intro || '',
+  visible: wishList.visible,
+  surpriseMode: wishList.surpriseMode,
+  items: wishList.items.map(item => ({
+    title: item.title,
+    url: item.url || '',
+    price: item.price || '',
+    note: item.note || '',
+    quantity: item.quantity ?? 1,
+  })),
+  contributions: wishList.contributions.map(contribution => ({
+    kind: contribution.kind,
+    handle: contribution.handle,
+    label: contribution.label || '',
+    suggestedAmount: contribution.suggestedAmount || '',
+  })),
+});
+
+export const isWishListDraftEmpty = (draft: WishListDraft): boolean =>
+  draft.items.length === 0 && draft.contributions.length === 0;
+
+/** Returns a message to show the host, or null when the draft is good to save. */
+export const validateWishListDraft = (draft: WishListDraft): string | null => {
+  if (draft.items.some(item => !item.title.trim())) {
+    return 'Every gift idea needs a name';
+  }
+  if (draft.contributions.some(contribution => !contribution.handle.trim())) {
+    return 'Every cash option needs a handle or instructions';
+  }
+  return null;
+};
+
+export const wishListDraftToInput = (draft: WishListDraft) => ({
+  title: draft.title.trim() || 'Wish List',
+  intro: draft.intro.trim() || null,
+  visible: draft.visible,
+  surpriseMode: draft.surpriseMode,
+  items: draft.items.map(item => ({
+    title: item.title.trim(),
+    url: item.url?.trim() || null,
+    price: item.price?.trim() || null,
+    note: item.note?.trim() || null,
+    quantity: item.quantity || 1,
+  })),
+  contributions: draft.contributions.map(contribution => ({
+    kind: contribution.kind,
+    handle: contribution.handle.trim(),
+    label: contribution.label?.trim() || null,
+    suggestedAmount: contribution.suggestedAmount?.trim() || null,
+  })),
+});
+
+export const UPSERT_WISH_LIST_MUTATION = `
+  mutation UpsertWishList($input: UpsertWishListInput!) {
+    upsertWishList(input: $input) {
+      wishList {
+        id
+      }
+      errors
+    }
+  }
+`;
+
 export const WISH_LIST_FIELDS = `
   id
   title
