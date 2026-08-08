@@ -27,6 +27,8 @@ class User < ApplicationRecord
   has_many :rsvps, dependent: :destroy
   has_many :contacts, dependent: :destroy
   has_many :occasions, through: :contacts
+  has_many :organization_memberships, dependent: :destroy
+  has_many :organizations, through: :organization_memberships
 
   validates :email, presence: true, uniqueness: true
   validates :name, presence: true

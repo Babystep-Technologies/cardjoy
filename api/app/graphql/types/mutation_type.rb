@@ -46,5 +46,8 @@ module Types
     field :create_occasion, mutation: Mutations::CreateOccasion
     field :update_occasion, mutation: Mutations::UpdateOccasion
     field :delete_occasion, mutation: Mutations::DeleteOccasion
+    field :create_organization, mutation: Mutations::CreateOrganization
+    field :update_organization, mutation: Mutations::UpdateOrganization
+    field :delete_organization, mutation: Mutations::DeleteOrganization
   end
 end
