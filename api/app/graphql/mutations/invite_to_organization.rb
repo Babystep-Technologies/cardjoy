@@ -8,7 +8,6 @@ module Mutations
   # invitation or a membership is reported in `skippedEmails` and the rest still
   # go out. `errors` is reserved for things the caller must fix.
   class InviteToOrganization < BaseMutation
-    INVALID_ROLE_ERROR = "Role must be admin or member"
     NO_EMAILS_ERROR = "Enter at least one email address"
 
     argument :organization_id, ID, required: true
@@ -26,7 +25,7 @@ module Mutations
       organization = Organization.find_by(id: organization_id)
       return failure([ "Organization not found" ]) unless organization
       return failure([ NOT_AUTHORIZED_ERROR ]) unless org_admin?(organization)
-      return failure([ INVALID_ROLE_ERROR ]) unless OrganizationMembership::ROLES.include?(role)
+      return failure([ OrganizationMembership::INVALID_ROLE_ERROR ]) unless OrganizationMembership::ROLES.include?(role)
 
       addresses = normalize(emails)
       return failure([ NO_EMAILS_ERROR ]) if addresses.empty?

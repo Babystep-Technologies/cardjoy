@@ -117,7 +117,7 @@ RSpec.describe Mutations::InviteToOrganization, type: :request do
       data = exec({ organizationId: organization.id, emails: [ "a@example.com" ], role: "owner" })
     }.not_to change(OrganizationInvitation, :count)
 
-    expect(data["errors"]).to eq([ described_class::INVALID_ROLE_ERROR ])
+    expect(data["errors"]).to eq([ OrganizationMembership::INVALID_ROLE_ERROR ])
   end
 
   it "rejects an empty list of addresses" do

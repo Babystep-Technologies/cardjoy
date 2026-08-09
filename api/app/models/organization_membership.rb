@@ -11,6 +11,7 @@ class OrganizationMembership < ApplicationRecord
   ROLES = [ ADMIN, MEMBER ].freeze
 
   LAST_ADMIN_ERROR = "An organization must have at least one admin"
+  INVALID_ROLE_ERROR = "Role must be admin or member"
 
   belongs_to :organization
   belongs_to :user
