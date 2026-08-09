@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_08_232949) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -280,6 +280,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_232949) do
     t.index ["occurs_on"], name: "index_occasions_on_occurs_on"
   end
 
+  create_table "organization_credits", force: :cascade do |t|
+    t.integer "amount"
+    t.datetime "created_at", null: false
+    t.jsonb "events"
+    t.bigint "organization_id", null: false
+    t.string "reason"
+    t.string "stripe_session_id"
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_organization_credits_on_organization_id"
+  end
+
   create_table "organization_invitations", force: :cascade do |t|
     t.datetime "accepted_at"
     t.datetime "created_at", null: false
@@ -480,6 +491,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_08_232949) do
   add_foreign_key "messages", "cards"
   add_foreign_key "messages", "users"
   add_foreign_key "occasions", "contacts"
+  add_foreign_key "organization_credits", "organizations"
   add_foreign_key "organization_invitations", "organizations"
   add_foreign_key "organization_invitations", "users", column: "invited_by_id"
   add_foreign_key "organization_memberships", "organizations"
