@@ -22,6 +22,23 @@ RSpec.describe "GraphQL authentication gate", type: :request do
     end
   end
 
+  context "the organization invitation preview" do
+    it "is not challenged when unauthenticated — the invitee may have no account yet" do
+      post_operation("OrganizationInvitationPreview", "query OrganizationInvitationPreview { __typename }")
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["errors"]).to be_nil
+    end
+
+    it "does not make the rest of the invitation flow public" do
+      %w[InviteToOrganization AcceptOrganizationInvitation RevokeOrganizationInvitation].each do |operation|
+        post_operation(operation, "mutation #{operation} { __typename }")
+
+        expect(response).to have_http_status(:unauthorized), "expected #{operation} to stay behind auth"
+      end
+    end
+  end
+
   context "a non-public operation whose name contains a public substring" do
     it "is challenged when unauthenticated" do
       post_operation("UpdateCard", "mutation UpdateCard { __typename }")

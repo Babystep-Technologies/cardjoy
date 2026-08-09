@@ -50,5 +50,8 @@ module Types
     field :update_organization, mutation: Mutations::UpdateOrganization
     field :delete_organization, mutation: Mutations::DeleteOrganization
     field :switch_organization, mutation: Mutations::SwitchOrganization
+    field :invite_to_organization, mutation: Mutations::InviteToOrganization
+    field :accept_organization_invitation, mutation: Mutations::AcceptOrganizationInvitation
+    field :revoke_organization_invitation, mutation: Mutations::RevokeOrganizationInvitation
   end
 end
