@@ -56,5 +56,6 @@ module Types
     field :update_organization_membership, mutation: Mutations::UpdateOrganizationMembership
     field :remove_organization_member, mutation: Mutations::RemoveOrganizationMember
     field :leave_organization, mutation: Mutations::LeaveOrganization
+    field :allocate_organization_credits, mutation: Mutations::AllocateOrganizationCredits
   end
 end

@@ -22,6 +22,12 @@ RSpec.describe Credit, type: :model do
       expect(build(:credit, events: [])).to be_valid
     end
 
+    it "accepts org_credit_allocated, the one kind both ledgers share" do
+      # Both halves of Organization#allocate_credits! carry this kind, so the
+      # transfer reads as a single event across the two ledgers.
+      expect(build(:credit, events: [ event("event_kind" => "org_credit_allocated") ])).to be_valid
+    end
+
     it "rejects an event kind belonging to the organization ledger" do
       credit = build(:credit, events: [ event("event_kind" => "org_credit_purchased") ])
 
