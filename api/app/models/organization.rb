@@ -17,6 +17,7 @@ class Organization < ApplicationRecord
   has_many :organization_memberships, dependent: :destroy
   has_many :users, through: :organization_memberships
   has_many :organization_invitations, dependent: :destroy
+  has_many :organization_credits, dependent: :destroy
   has_many :admin_memberships,
            -> { where(role: OrganizationMembership::ADMIN) },
            class_name: "OrganizationMembership",
@@ -29,6 +30,13 @@ class Organization < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
 
   default_scope { where(deleted_at: nil) }
+
+  # Signed sum of the shared credit pool, mirroring User#credit_balance:
+  # positive rows are purchases/grants in, negative rows are allocations out.
+  sig { returns(Integer) }
+  def credit_balance
+    organization_credits.sum(:amount).to_i
+  end
 
   sig { void }
   def archive!

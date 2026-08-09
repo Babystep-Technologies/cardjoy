@@ -96,4 +96,28 @@ RSpec.describe Organization, type: :model do
       expect { organization.destroy! }.to change(OrganizationMembership, :count).by(-1)
     end
   end
+
+  describe "#credit_balance" do
+    let(:organization) { create(:organization) }
+
+    it "is zero for a pool nobody has funded" do
+      expect(organization.credit_balance).to eq(0)
+    end
+
+    it "sums the ledger, signed" do
+      create(:organization_credit, organization:, amount: 10)
+      create(:organization_credit, organization:, amount: 5)
+      create(:organization_credit, organization:, amount: -3)
+
+      expect(organization.credit_balance).to eq(12)
+    end
+
+    it "ignores other organizations' pools and personal ledgers" do
+      create(:organization_credit, organization:, amount: 4)
+      create(:organization_credit, organization: create(:organization), amount: 100)
+      create(:credit, amount: 100)
+
+      expect(organization.credit_balance).to eq(4)
+    end
+  end
 end
