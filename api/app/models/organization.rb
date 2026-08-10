@@ -12,6 +12,12 @@ class Organization < ApplicationRecord
 
   SLUG_MAX_LENGTH = 60
 
+  # Raised by #allocate_credits! when the pool can't cover the allocation.
+  class InsufficientPoolCreditsError < StandardError; end
+
+  # Raised by #allocate_credits! when the recipient doesn't belong here.
+  class NotAMemberError < StandardError; end
+
   belongs_to :created_by, class_name: "User"
 
   has_many :organization_memberships, dependent: :destroy
@@ -38,6 +44,45 @@ class Organization < ApplicationRecord
     organization_credits.sum(:amount).to_i
   end
 
+  # Move `amount` credits out of the shared pool and into a member's personal
+  # ledger. This is a transfer, not shared spending: once allocated, the credits
+  # are the member's own and are spent through the untouched User#spend_credit!.
+  #
+  # Must run inside a transaction — the two ledger rows are one transfer, and a
+  # failure on either has to roll back both. Locks the organization row for the
+  # duration of that transaction, so two admins allocating at once can't
+  # overdraw the pool (the same guard User#spend_credit! relies on).
+  #
+  # `allocated_by` is recorded in both audit trails; it is not authorized here,
+  # since that is the mutation's job.
+  sig { params(user: User, amount: Integer, allocated_by: User).returns(Credit) }
+  def allocate_credits!(user:, amount:, allocated_by:)
+    raise ArgumentError, "Amount must be positive" unless amount.positive?
+    raise NotAMemberError, "Not a member of this organization" unless users.exists?(user.id)
+
+    lock!
+    raise InsufficientPoolCreditsError, "Not enough credits in the pool" if credit_balance < amount
+
+    event_data = {
+      organization_id: id,
+      user_id: user.id,
+      allocated_by_user_id: allocated_by.id,
+      amount: amount
+    }
+
+    organization_credits.create!(
+      amount: -amount,
+      reason: "org_allocation",
+      events: [ allocation_event(event_data) ]
+    )
+
+    user.credits.create!(
+      amount: amount,
+      reason: "org_allocation",
+      events: [ allocation_event(event_data) ]
+    )
+  end
+
   sig { void }
   def archive!
     update!(deleted_at: Time.current)
@@ -53,6 +98,18 @@ class Organization < ApplicationRecord
   end
 
   private
+
+  # Both halves of a transfer carry the same audit entry. `org_credit_allocated`
+  # is the kind OrganizationCredit already ships with (see #120); Credit gains
+  # it here so the two sides of the transfer read as one event.
+  sig { params(event_data: T::Hash[Symbol, T.untyped]).returns(T::Hash[Symbol, T.untyped]) }
+  def allocation_event(event_data)
+    {
+      event_kind: "org_credit_allocated",
+      event_happened_at: Time.now.utc.iso8601(3),
+      event_data: event_data
+    }
+  end
 
   # Derive a URL-safe slug from the name, disambiguating collisions with a
   # numeric suffix. Checked against `unscoped` so an archived organization's
