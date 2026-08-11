@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_10_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -77,6 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
     t.datetime "locked_at"
     t.integer "max_messages", default: 20, null: false
     t.string "occasion"
+    t.bigint "organization_id"
     t.jsonb "recipients", default: [], null: false
     t.boolean "require_login_to_contribute", default: false, null: false
     t.string "slug"
@@ -85,6 +86,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
     t.bigint "user_id", null: false
     t.index ["deleted_at"], name: "index_cards_on_deleted_at"
     t.index ["external_id"], name: "index_cards_on_external_id", unique: true
+    t.index ["organization_id"], name: "index_cards_on_organization_id"
     t.index ["slug"], name: "index_cards_on_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["user_id"], name: "index_cards_on_user_id"
   end
@@ -240,6 +242,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
     t.integer "max_additional_guests", default: 1
     t.string "opening_message"
     t.jsonb "opening_message_config"
+    t.bigint "organization_id"
     t.date "rsvp_deadline"
     t.string "slug"
     t.string "title"
@@ -247,6 +250,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
     t.bigint "user_id", null: false
     t.jsonb "wish_list_items"
     t.index ["external_id"], name: "index_invitations_on_external_id", unique: true
+    t.index ["organization_id"], name: "index_invitations_on_organization_id"
     t.index ["slug"], name: "index_invitations_on_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["user_id"], name: "index_invitations_on_user_id"
   end
@@ -483,10 +487,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_09_170701) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "card_styles", "cards"
   add_foreign_key "card_styles", "styles"
+  add_foreign_key "cards", "organizations", on_delete: :nullify
   add_foreign_key "cards", "users"
   add_foreign_key "contacts", "users"
   add_foreign_key "credits", "users"
   add_foreign_key "guest_messages", "cards"
+  add_foreign_key "invitations", "organizations", on_delete: :nullify
   add_foreign_key "invitations", "users"
   add_foreign_key "messages", "cards"
   add_foreign_key "messages", "users"

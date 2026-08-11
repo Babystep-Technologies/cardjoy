@@ -19,7 +19,7 @@ module Mutations
 
       card = Card.find_by(external_id: card_id)
       return { card: nil, errors: [ "Card not found" ] } unless card
-      return { card: nil, errors: [ "Not authorized" ] } unless card.user_id == user.id
+      return { card: nil, errors: [ NOT_AUTHORIZED_ERROR ] } unless card.editable_by?(user)
 
       card.update!(deliver_at: nil, deliver_to_email: nil) if card.deliver_at.present?
 

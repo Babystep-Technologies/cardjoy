@@ -13,8 +13,9 @@ class Mutations::ApproveInvitationDraft
       preview_event_date: T.nilable(::Date),
       preview_event_time: T.nilable(::String),
       preview_location: T.nilable(::String),
-      ai_payload: T.nilable(T::Hash[::String, T.untyped])
+      ai_payload: T.nilable(T::Hash[::String, T.untyped]),
+      organization_id: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(preview_title: T.unsafe(nil), preview_message: T.unsafe(nil), preview_event_date: T.unsafe(nil), preview_event_time: T.unsafe(nil), preview_location: T.unsafe(nil), ai_payload: T.unsafe(nil)); end
+  def resolve(preview_title: T.unsafe(nil), preview_message: T.unsafe(nil), preview_event_date: T.unsafe(nil), preview_event_time: T.unsafe(nil), preview_location: T.unsafe(nil), ai_payload: T.unsafe(nil), organization_id: T.unsafe(nil)); end
 end

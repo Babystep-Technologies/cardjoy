@@ -17,13 +17,21 @@ module Mutations
     argument :occasion, String, required: false
     argument :cover_image_url, String, required: false
     argument :cover_image_file, ApolloUploadServer::Upload, required: false
+    # Blank means Personal. Validated below rather than read from the user's
+    # active_organization_id: the client owns the context, the server checks it.
+    argument :organization_id, ID, required: false
 
     field :card, Types::CardType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(title:, recipient:, text:, display_name: nil, style_ids: nil, occasion: nil, cover_image_url: nil, cover_image_file: nil)
+    def resolve(title:, recipient:, text:, display_name: nil, style_ids: nil, occasion: nil, cover_image_url: nil, cover_image_file: nil, organization_id: nil)
       user = context[:current_user]
       return { card: nil, errors: [ "Not authenticated" ] } unless user
+
+      # Checked before the transaction opens, so a create into an organization
+      # the caller doesn't belong to spends no credit.
+      organization = writable_organization(organization_id)
+      return { card: nil, errors: [ NOT_AUTHORIZED_ERROR ] } if organization == false
 
       ApplicationRecord.transaction do
         # Debit first so an insufficient balance blocks the create before we do
@@ -31,7 +39,7 @@ module Mutations
         # invalid, so a failed create never burns a credit.
         user.spend_credit!(reason: "card_created", event_kind: "card_created")
 
-        card = user.cards.build(title:, recipients: [ recipient ], kind: "one_on_one")
+        card = user.cards.build(title:, recipients: [ recipient ], kind: "one_on_one", organization:)
         styles = Style.where(id: style_ids)
         card.styles << styles if styles.any?
         card.occasion = occasion if occasion

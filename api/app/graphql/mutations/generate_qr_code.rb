@@ -14,7 +14,7 @@ module Mutations
       user = context[:current_user]
       card = Card.find_by(external_id: card_external_id)
       return { success: false, errors: [ "Card not found" ] } unless card
-      return { success: false, errors: [ "Unauthorized" ] } unless card.user_id == user.id
+      return { success: false, errors: [ "Unauthorized" ] } unless card.editable_by?(user)
 
       qr_url = "#{Rails.application.credentials.dig(:frontend_url)}/card/#{card.external_id}/editable"
       qr = RQRCode::QRCode.new(qr_url)

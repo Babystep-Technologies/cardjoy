@@ -10,13 +10,21 @@ module Mutations
     argument :preview_event_time, String, required: false
     argument :preview_location, String, required: false
     argument :ai_payload, GraphQL::Types::JSON, required: false
+    # Blank means Personal. Validated below rather than read from the user's
+    # active_organization_id: the client owns the context, the server checks it.
+    argument :organization_id, ID, required: false
 
     field :invitation, Types::InvitationType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(preview_title: nil, preview_message: nil, preview_event_date: nil, preview_event_time: nil, preview_location: nil, ai_payload: nil)
+    def resolve(preview_title: nil, preview_message: nil, preview_event_date: nil, preview_event_time: nil, preview_location: nil, ai_payload: nil, organization_id: nil)
       user = context[:current_user]
       return { invitation: nil, errors: [ "You must be signed in" ] } unless user
+
+      # Checked before the transaction opens, so a create into an organization
+      # the caller doesn't belong to spends no credit.
+      organization = writable_organization(organization_id)
+      return { invitation: nil, errors: [ NOT_AUTHORIZED_ERROR ] } if organization == false
 
       # Prefer explicit previews if provided, otherwise extract from ai_payload
       # T.unsafe: ai_payload is JSON that could have string or symbol keys
@@ -42,7 +50,8 @@ module Mutations
         location: location,
         event_date: event_date,
         event_time: formatted_time,
-        external_id: SecureRandom.uuid
+        external_id: SecureRandom.uuid,
+        organization: organization
       )
 
       ApplicationRecord.transaction do

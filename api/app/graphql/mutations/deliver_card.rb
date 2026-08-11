@@ -3,8 +3,9 @@
 
 module Mutations
   # Delivers a 1-on-1 card to a recipient by email. Requires an authenticated
-  # user who owns the card; sends `CardMailer#one_on_one_delivery` to the given
-  # address. Link-only sharing needs no mutation — the viewable URL is the link.
+  # user who may edit the card — its owner, or an admin of the organization that
+  # owns it; sends `CardMailer#one_on_one_delivery` to the given address.
+  # Link-only sharing needs no mutation — the viewable URL is the link.
   #
   # An optional future `deliverAt` schedules the send for that time (write now,
   # deliver on the date) by enqueuing `DeliverCardJob`; a blank or past
@@ -27,7 +28,7 @@ module Mutations
 
       card = Card.find_by(external_id: card_id)
       return { card: nil, errors: [ "Card not found" ] } unless card
-      return { card: nil, errors: [ "Not authorized" ] } unless card.user_id == user.id
+      return { card: nil, errors: [ NOT_AUTHORIZED_ERROR ] } unless card.editable_by?(user)
 
       if deliver_at.present? && deliver_at.future?
         card.update!(deliver_at:, deliver_to_email: recipient_email)

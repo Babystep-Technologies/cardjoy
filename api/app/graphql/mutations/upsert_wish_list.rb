@@ -20,8 +20,8 @@ module Mutations
       user = context[:current_user]
       return failure("You must be signed in") unless user
 
-      invitation = user.invitations.find_by(external_id: invitation_external_id)
-      return failure("Invitation not found") unless invitation
+      invitation = Invitation.find_by(external_id: invitation_external_id)
+      return failure("Invitation not found") unless invitation&.editable_by?(user)
 
       wish_list = invitation.wish_list || invitation.build_wish_list
       wish_list.assign_attributes(attributes.compact)

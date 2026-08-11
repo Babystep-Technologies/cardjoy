@@ -18,6 +18,9 @@ module Mutations
     argument :opening_message, String, required: false
     argument :opening_message_config, Types::OpeningMessageConfigInputType, required: false
     argument :slug, String, required: false
+    # Blank means Personal. Validated below rather than read from the user's
+    # active_organization_id: the client owns the context, the server checks it.
+    argument :organization_id, ID, required: false
 
     field :invitation, Types::InvitationType, null: true
     field :errors, [ String ], null: false
@@ -37,10 +40,16 @@ module Mutations
       custom_instructions: nil,
       opening_message: nil,
       opening_message_config: nil,
-      slug: nil
+      slug: nil,
+      organization_id: nil
     )
       user = context[:current_user]
       return { invitation: nil, errors: [ "You must be signed in" ] } unless user
+
+      # Checked before the transaction opens, so a create into an organization
+      # the caller doesn't belong to spends no credit.
+      organization = writable_organization(organization_id)
+      return { invitation: nil, errors: [ NOT_AUTHORIZED_ERROR ] } if organization == false
 
       # Validate and format event_time to HH:MM military time format
       formatted_time = format_time(event_time)
@@ -60,7 +69,8 @@ module Mutations
         opening_message: opening_message,
         opening_message_config: opening_message_config&.to_h,
         external_id: SecureRandom.uuid,
-        slug: slug
+        slug: slug,
+        organization: organization
       )
 
       return { invitation: nil, errors: invitation.errors.full_messages } unless invitation.valid?

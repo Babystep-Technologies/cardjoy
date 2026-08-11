@@ -1,6 +1,8 @@
 # typed: true
 
 class Card < ApplicationRecord
+  include OrganizationScoped
+
   belongs_to :user
   has_many :card_styles, dependent: :destroy
   has_many :styles, through: :card_styles

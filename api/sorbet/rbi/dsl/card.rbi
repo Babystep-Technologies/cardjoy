@@ -347,6 +347,9 @@ class Card
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def build_cover_image_blob(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
+    def build_organization(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
     def build_qr_code_attachment(*args, &blk); end
 
@@ -394,6 +397,12 @@ class Card
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def create_cover_image_blob!(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
+    def create_organization(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
+    def create_organization!(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
     def create_qr_code_attachment(*args, &blk); end
 
@@ -440,6 +449,18 @@ class Card
     sig { params(value: T::Enumerable[::Message]).void }
     def messages=(value); end
 
+    sig { returns(T.nilable(::Organization)) }
+    def organization; end
+
+    sig { params(value: T.nilable(::Organization)).void }
+    def organization=(value); end
+
+    sig { returns(T::Boolean) }
+    def organization_changed?; end
+
+    sig { returns(T::Boolean) }
+    def organization_previously_changed?; end
+
     sig { returns(T.nilable(::ActiveStorage::Attachment)) }
     def qr_code_attachment; end
 
@@ -458,6 +479,9 @@ class Card
     sig { returns(T.nilable(::ActiveStorage::Blob)) }
     def reload_cover_image_blob; end
 
+    sig { returns(T.nilable(::Organization)) }
+    def reload_organization; end
+
     sig { returns(T.nilable(::ActiveStorage::Attachment)) }
     def reload_qr_code_attachment; end
 
@@ -472,6 +496,9 @@ class Card
 
     sig { void }
     def reset_cover_image_blob; end
+
+    sig { void }
+    def reset_organization; end
 
     sig { void }
     def reset_qr_code_attachment; end
@@ -551,6 +578,9 @@ class Card
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def having(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def in_context(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def in_order_of(*args, &blk); end
@@ -1286,6 +1316,51 @@ class Card
     sig { void }
     def occasion_will_change!; end
 
+    sig { returns(T.nilable(::Integer)) }
+    def organization_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def organization_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def organization_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def organization_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def organization_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def organization_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def organization_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def organization_id_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def organization_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def organization_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def organization_id_previous_change; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def organization_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def organization_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def organization_id_was; end
+
+    sig { void }
+    def organization_id_will_change!; end
+
     sig { returns(T.untyped) }
     def recipients; end
 
@@ -1416,6 +1491,9 @@ class Card
     def restore_occasion!; end
 
     sig { void }
+    def restore_organization_id!; end
+
+    sig { void }
     def restore_recipients!; end
 
     sig { void }
@@ -1510,6 +1588,12 @@ class Card
 
     sig { returns(T::Boolean) }
     def saved_change_to_occasion?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_organization_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_organization_id?; end
 
     sig { returns(T.nilable([T.untyped, T.untyped])) }
     def saved_change_to_recipients; end
@@ -1767,6 +1851,9 @@ class Card
     def will_save_change_to_occasion?; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_organization_id?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_recipients?; end
 
     sig { returns(T::Boolean) }
@@ -1827,6 +1914,9 @@ class Card
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def having(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def in_context(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def in_order_of(*args, &blk); end

@@ -1,6 +1,8 @@
 # typed: true
 
 class Invitation < ApplicationRecord
+  include OrganizationScoped
+
   belongs_to :user
   has_many :rsvps, dependent: :destroy
   has_one :wish_list, dependent: :destroy
