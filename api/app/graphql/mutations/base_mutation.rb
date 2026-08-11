@@ -39,5 +39,29 @@ module Mutations
     def org_admin?(organization)
       current_membership(organization)&.admin? || false
     end
+
+    # The organization a creation mutation should write into, resolved from its
+    # optional `organizationId` argument. Per the epic's cross-cutting rule the
+    # client passes the context explicitly and the server validates it; we never
+    # read `active_organization_id` here.
+    #
+    # Returns nil for a blank id — Personal is a valid context, not a missing
+    # one — and `false` when the caller may not write there, so one call tells
+    # the two apart:
+    #
+    #   organization = writable_organization(organization_id)
+    #   return failure(NOT_AUTHORIZED_ERROR) if organization == false
+    #
+    # An unknown id is denied rather than reported as not-found, so a stranger
+    # can't probe which organization ids exist. Callers must run this *before*
+    # spending a credit, so a rejected create never bills anyone.
+    def writable_organization(organization_id)
+      return nil if organization_id.blank?
+
+      organization = Organization.find_by(id: organization_id)
+      return false unless organization && org_member?(organization)
+
+      organization
+    end
   end
 end

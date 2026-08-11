@@ -16,6 +16,9 @@ module Types
     field :occasion, String, null: true
     field :styles, [ Types::StyleType ], null: false
     field :user, Types::UserType, null: false
+    # The organization that owns this card; null means it is personal. Lets the
+    # dashboard label a shared card without a second round trip.
+    field :organization, Types::OrganizationType, null: true
     field :recipients, [ String ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :deliver_at, GraphQL::Types::ISO8601DateTime, null: true

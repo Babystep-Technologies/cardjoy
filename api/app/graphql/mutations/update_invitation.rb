@@ -27,8 +27,11 @@ module Mutations
       user = context[:current_user]
       return { invitation: nil, errors: [ "You must be signed in" ] } unless user
 
-      invitation = user.invitations.find_by(external_id: external_id)
-      return { invitation: nil, errors: [ "Invitation not found" ] } unless invitation
+      # Looked up globally and then authorized, rather than scoped to the
+      # caller's own invitations, so an admin of the owning organization can
+      # edit one a colleague created. See OrganizationScoped#editable_by?.
+      invitation = Invitation.find_by(external_id: external_id)
+      return { invitation: nil, errors: [ "Invitation not found" ] } unless invitation&.editable_by?(user)
 
       # Validate and format event_time if provided
       if attributes[:event_time].present?

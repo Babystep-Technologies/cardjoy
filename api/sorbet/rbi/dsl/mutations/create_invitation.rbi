@@ -22,8 +22,9 @@ class Mutations::CreateInvitation
       custom_instructions: T.nilable(::String),
       opening_message: T.nilable(::String),
       opening_message_config: T.nilable(::Types::OpeningMessageConfigInputType),
-      slug: T.nilable(::String)
+      slug: T.nilable(::String),
+      organization_id: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(title:, event_date:, event_time:, description: T.unsafe(nil), location: T.unsafe(nil), event_timezone: T.unsafe(nil), rsvp_deadline: T.unsafe(nil), cover_image_file: T.unsafe(nil), cover_image_url: T.unsafe(nil), max_additional_guests: T.unsafe(nil), attire: T.unsafe(nil), custom_instructions: T.unsafe(nil), opening_message: T.unsafe(nil), opening_message_config: T.unsafe(nil), slug: T.unsafe(nil)); end
+  def resolve(title:, event_date:, event_time:, description: T.unsafe(nil), location: T.unsafe(nil), event_timezone: T.unsafe(nil), rsvp_deadline: T.unsafe(nil), cover_image_file: T.unsafe(nil), cover_image_url: T.unsafe(nil), max_additional_guests: T.unsafe(nil), attire: T.unsafe(nil), custom_instructions: T.unsafe(nil), opening_message: T.unsafe(nil), opening_message_config: T.unsafe(nil), slug: T.unsafe(nil), organization_id: T.unsafe(nil)); end
 end

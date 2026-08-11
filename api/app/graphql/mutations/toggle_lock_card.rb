@@ -15,7 +15,7 @@ module Mutations
 
       card = Card.find_by(external_id: card_id)
       return { success: false, errors: [ "Card not found" ] } unless card
-      return { success: false, errors: [ "Unauthorized" ] } unless card.user_id == user.id
+      return { success: false, errors: [ "Unauthorized" ] } unless card.editable_by?(user)
 
       begin
         card.locked ? card.unlock! : card.lock!

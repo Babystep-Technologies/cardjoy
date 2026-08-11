@@ -13,13 +13,21 @@ module Mutations
     argument :max_messages, Integer, required: false
     argument :require_login_to_contribute, Boolean, required: false
     argument :slug, String, required: false
+    # Blank means Personal. Validated below rather than read from the user's
+    # active_organization_id: the client owns the context, the server checks it.
+    argument :organization_id, ID, required: false
 
     field :card, Types::CardType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(title:, recipients:, style_ids:, occasion: nil, contributor_prompt: nil, cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil)
+    def resolve(title:, recipients:, style_ids:, occasion: nil, contributor_prompt: nil, cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil, organization_id: nil)
       user = context[:current_user]
       return { card: nil, errors: [ "Not authenticated" ] } unless user
+
+      # Checked before the transaction opens, so a create into an organization
+      # the caller doesn't belong to spends no credit.
+      organization = writable_organization(organization_id)
+      return { card: nil, errors: [ NOT_AUTHORIZED_ERROR ] } if organization == false
 
       ApplicationRecord.transaction do
         # Debit first so an insufficient balance blocks the create before we do
@@ -27,7 +35,7 @@ module Mutations
         # invalid, so a failed create never burns a credit.
         user.spend_credit!(reason: "card_created", event_kind: "card_created")
 
-        card = user.cards.build(title:, recipients:)
+        card = user.cards.build(title:, recipients:, organization:)
         card.max_messages = max_messages if max_messages.present?
         card.require_login_to_contribute = require_login_to_contribute if require_login_to_contribute.present?
         card.slug = slug if slug.present?

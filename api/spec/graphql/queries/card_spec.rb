@@ -106,4 +106,74 @@ RSpec.describe Queries::Card, type: :request do
       expect(guest["name"]).to be_nil
     end
   end
+
+  # Organization ownership must not reach the public share link (#122). Access
+  # on this path is the unguessable external_id plus require_login_to_contribute
+  # — never membership — so an org-owned card reveals and accepts contributions
+  # exactly like a personal one.
+  context "a card an organization owns, opened signed out" do
+    let(:organization) { create(:organization) }
+    let(:card) { create(:card, user:, organization:) }
+
+    before { create(:organization_membership, organization:, user:) }
+
+    it "still renders for an anonymous visitor" do
+      create(:message, card:, user:, title: nil)
+
+      json = post_query(card)
+
+      expect(json["errors"]).to be_nil
+      expect(json.dig("data", "card", "title")).to be_present
+      expect(json.dig("data", "card", "messages").length).to eq(1)
+    end
+
+    it "still accepts an anonymous contribution" do
+      mutation = <<~GRAPHQL
+        mutation UpsertMessage($cardId: ID!, $text: String!, $guestName: String) {
+          upsertMessage(input: { cardId: $cardId, text: $text, guestName: $guestName }) {
+            success
+            errors
+          }
+        }
+      GRAPHQL
+
+      post "/graphql",
+        params: {
+          query: mutation,
+          operationName: "UpsertMessage",
+          variables: { cardId: card.external_id, text: "Congrats!", guestName: "A guest" }
+        }.to_json,
+        headers: { "Content-Type" => "application/json" }
+
+      json = JSON.parse(response.body)
+      expect(json["errors"]).to be_nil
+      expect(json.dig("data", "upsertMessage", "errors")).to be_empty
+      expect(card.guest_messages.count).to eq(1)
+    end
+
+    # The opt-in path: passing organizationId asks for a context-aware read, and
+    # that one *is* membership-gated.
+    it "refuses a non-member who asks for it in the organization's context" do
+      stranger = create(:user)
+      secret = Rails.application.credentials.dig(:jwt, :secret)
+      token = JWT.encode({ user_id: stranger.id }, secret, "HS256")
+
+      post "/graphql",
+        params: {
+          query: <<~GRAPHQL,
+            query Card($cardId: ID!, $showFlaggedMessages: Boolean!, $organizationId: ID) {
+              card(cardId: $cardId, showFlaggedMessages: $showFlaggedMessages, organizationId: $organizationId) {
+                title
+              }
+            }
+          GRAPHQL
+          operationName: "Card",
+          variables: { cardId: card.external_id, showFlaggedMessages: false, organizationId: organization.id }
+        }.to_json,
+        headers: { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" }
+
+      json = JSON.parse(response.body)
+      expect(json["errors"].first["message"]).to eq(Queries::BaseQuery::NOT_AUTHORIZED_ERROR)
+    end
+  end
 end
