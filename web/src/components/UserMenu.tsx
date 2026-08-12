@@ -8,12 +8,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, LayoutDashboard, Users, User, LogOut } from 'lucide-react';
+import { ChevronDown, LayoutDashboard, Users, User, LogOut, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { getInitials } from '@/lib/utils';
 
 export const UserMenu: React.FC = () => {
   const { user, logout } = useAuth();
+  // A user with no organizations gets no header switcher, so the way in lives here instead.
+  const { organizations } = useOrganization();
 
   if (!user) return null;
 
@@ -58,6 +61,17 @@ export const UserMenu: React.FC = () => {
             Profile
           </Link>
         </DropdownMenuItem>
+        {organizations.length === 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/organizations/new">
+                <Building2 className="h-4 w-4" />
+                Create organization
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={logout} className="cursor-pointer">
           <LogOut className="h-4 w-4" />
