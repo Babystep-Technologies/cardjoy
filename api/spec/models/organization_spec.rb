@@ -249,4 +249,69 @@ RSpec.describe Organization, type: :model do
       expect(organization.reload.credit_balance).to eq(0)
     end
   end
+
+  # These three values are interpolated into outgoing email — two into its CSS,
+  # one into a header — so their shape is enforced here rather than trusted
+  # (#123).
+  describe "brand fields" do
+    subject(:organization) { build(:organization) }
+
+    it "accepts three- and six-digit hex accent colors" do
+      expect(build(:organization, accent_color: "#433c69")).to be_valid
+      expect(build(:organization, accent_color: "#f0a")).to be_valid
+    end
+
+    it "rejects an accent color that isn't a bare hex value" do
+      [ "red", "433c69", "#4433c69", "#43_c69", "#433c69; background: url(x)" ].each do |value|
+        organization = build(:organization, accent_color: value)
+
+        expect(organization).not_to be_valid, "expected #{value.inspect} to be rejected"
+        expect(organization.errors[:accent_color]).to include("must be a hex color like #433c69")
+      end
+    end
+
+    it "rejects a reply-to that isn't an email address" do
+      organization = build(:organization, email_reply_to: "not-an-address")
+
+      expect(organization).not_to be_valid
+      expect(organization.errors[:email_reply_to]).to be_present
+    end
+
+    it "rejects footer text longer than the maximum" do
+      organization = build(:organization,
+                           email_footer_text: "x" * (Organization::FOOTER_TEXT_MAX_LENGTH + 1))
+
+      expect(organization).not_to be_valid
+      expect(organization.errors[:email_footer_text]).to be_present
+    end
+
+    it "treats every brand field as optional" do
+      expect(build(:organization, accent_color: nil, email_reply_to: nil, email_footer_text: nil))
+        .to be_valid
+      expect(build(:organization, accent_color: "", email_reply_to: "", email_footer_text: ""))
+        .to be_valid
+    end
+
+    it "rejects a logo that isn't a supported image" do
+      organization.logo.attach(
+        io: StringIO.new("not an image"), filename: "logo.txt", content_type: "text/plain"
+      )
+
+      expect(organization).not_to be_valid
+      expect(organization.errors[:logo]).to include("must be a valid image format")
+    end
+
+    it "exposes no logo_url until a logo is attached" do
+      organization.save!
+      expect(organization.logo_url).to be_nil
+
+      organization.logo.attach(
+        io: File.open(Rails.root.join("spec/fixtures/files/test_image.jpg")),
+        filename: "logo.jpg",
+        content_type: "image/jpeg"
+      )
+
+      expect(organization.logo_url).to be_present
+    end
+  end
 end

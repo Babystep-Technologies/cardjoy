@@ -9,11 +9,13 @@ class OrganizationMailer < ApplicationMailer
     @invitation = organization_invitation
     @organization = organization_invitation.organization
     @inviter = organization_invitation.invited_by
+    set_organization_brand(@organization)
     @join_url = "#{AppConfig.frontend_url}/organizations/join?token=#{organization_invitation.token}"
 
     mail(
       to: organization_invitation.email,
-      subject: "#{@inviter.name} invited you to join #{@organization.name} on CardJoy"
+      subject: "#{@inviter.name} invited you to join #{@organization.name} on CardJoy",
+      **brand_reply_to
     )
   end
 end

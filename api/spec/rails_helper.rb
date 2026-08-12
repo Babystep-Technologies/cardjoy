@@ -41,6 +41,7 @@ RSpec.configure do |config|
   config.filter_run_when_matching :focus
   config.use_transactional_fixtures = true
   config.include FactoryBot::Syntax::Methods
+  config.include ActiveSupport::Testing::TimeHelpers
   config.filter_run_when_matching :focus
 
   # Start by truncating all tables, then use transaction strategy

@@ -9,8 +9,8 @@
         margin: 0;
         padding: 0;
         font-family: 'Poppins', sans-serif;
-        background-color: <%= @brand.body_background %>;
-        color: <%= @brand.text_color %>;
+        background-color: #fefaf9;
+        color: #573b6f;
       }
 
       h1, h2, h3 {
@@ -42,16 +42,16 @@
       .primary-button {
         display: inline-block;
         background-color: transparent;
-        color: <%= @brand.accent_color %>;
+        color: #433c69;
         padding: 12px 24px;
         border-radius: 6px;
-        border: 2px solid <%= @brand.accent_color %>;
+        border: 2px solid #433c69;
         text-decoration: none;
         font-weight: 600;
       }
 
       a {
-        color: <%= @brand.accent_color %>;
+        color: #433c69;
       }
 
       .footer {
@@ -63,18 +63,19 @@
     </style>
   </head>
   <body>
-    <% if @brand.logo_url %>
       <div class="logo-wrapper">
-        <img src="<%= @brand.logo_url %>" alt="<%= @brand.logo_alt %>" />
+        <img src="https://cdn.example.com/logo.gif" alt="CardJoy Logo" />
       </div>
-    <% end %>
 
     <div class="card">
-      <%= yield %>
+      <!-- collaborator_invite.html.erb -->
+<p>You’ve been invited to write a message for <strong>Test Card</strong>!</p>
+<p>Click here to contribute: <a href="https://example.com/card/ABCDEFG/editable">View Card</a></p>
+
     </div>
 
     <div class="footer">
-      <%= @brand.footer_text %>
+      © 2026 BabyStep Technologies, Inc. All rights reserved.
     </div>
   </body>
 </html>

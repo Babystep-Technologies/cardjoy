@@ -11,6 +11,11 @@ class OccasionReminderMailer < ApplicationMailer
     @occasion = occasion
     @contact = occasion.contact
     @user = @contact.user
+    # Occasions belong to a contact, not an organization, so there is no owning
+    # organization to read. The reminder is branded by the organization the
+    # recipient is currently acting in, because that is the context the card
+    # they're being nudged to send will be created in (#123).
+    set_organization_brand(@user.active_organization)
     @occurrence = occasion.next_occurrence
     @days_away = (@occurrence - Date.current).to_i
     @suggestion = OccasionDesignSuggestion.for(occasion.kind)
@@ -18,7 +23,8 @@ class OccasionReminderMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: "#{@contact.name}'s #{@occasion.kind} is #{days_away_phrase(@days_away)} — send a card"
+      subject: "#{@contact.name}'s #{@occasion.kind} is #{days_away_phrase(@days_away)} — send a card",
+      **brand_reply_to
     )
   end
 

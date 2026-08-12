@@ -92,4 +92,115 @@ RSpec.describe Mutations::UpdateOrganization, type: :request do
     expect(response).to have_http_status(:unauthorized)
     expect(JSON.parse(response.body)["errors"]).to eq([ "Unauthorized" ])
   end
+
+  # Email branding (#123). The logo arrives as a multipart upload, so it is
+  # exercised separately from the three scalar fields.
+  describe "brand fields" do
+    let(:brand_query) do
+      <<~GRAPHQL
+        mutation UpdateOrganization(
+          $organizationId: ID!, $accentColor: String, $emailFooterText: String, $emailReplyTo: String
+        ) {
+          updateOrganization(input: {
+            organizationId: $organizationId,
+            accentColor: $accentColor,
+            emailFooterText: $emailFooterText,
+            emailReplyTo: $emailReplyTo
+          }) {
+            organization { id accentColor emailFooterText emailReplyTo logoUrl }
+            errors
+          }
+        }
+      GRAPHQL
+    end
+
+    def exec_brand(variables, user: admin)
+      post "/graphql", params: { query: brand_query, variables: }.to_json, headers: headers_for(user)
+      JSON.parse(response.body).dig("data", "updateOrganization")
+    end
+
+    it "lets an admin set the accent color, footer text, and reply-to" do
+      data = exec_brand({
+        organizationId: organization.id,
+        accentColor: "#ff0055",
+        emailFooterText: "© 2026 Acme Corp",
+        emailReplyTo: "people@acme.example"
+      })
+
+      expect(data["errors"]).to be_empty
+      expect(data["organization"]).to include(
+        "accentColor" => "#ff0055",
+        "emailFooterText" => "© 2026 Acme Corp",
+        "emailReplyTo" => "people@acme.example"
+      )
+    end
+
+    it "leaves omitted brand fields alone" do
+      organization.update!(accent_color: "#ff0055")
+
+      exec_brand({ organizationId: organization.id, emailReplyTo: "people@acme.example" })
+
+      expect(organization.reload.accent_color).to eq("#ff0055")
+    end
+
+    it "clears a brand field back to the CardJoy default when passed an empty string" do
+      organization.update!(accent_color: "#ff0055")
+
+      data = exec_brand({ organizationId: organization.id, accentColor: "" })
+
+      expect(data["errors"]).to be_empty
+      expect(organization.reload.accent_color).to eq("")
+    end
+
+    it "rejects an accent color that isn't a hex value" do
+      data = exec_brand({ organizationId: organization.id, accentColor: "red" })
+
+      expect(data["organization"]).to be_nil
+      expect(data["errors"]).to include("Accent color must be a hex color like #433c69")
+      expect(organization.reload.accent_color).to be_nil
+    end
+
+    it "rejects a reply-to that isn't an email address" do
+      data = exec_brand({ organizationId: organization.id, emailReplyTo: "nope" })
+
+      expect(data["organization"]).to be_nil
+      expect(data["errors"]).to be_present
+    end
+
+    it "returns Not authorized for a member who is not an admin" do
+      member = create(:user)
+      create(:organization_membership, organization:, user: member)
+
+      data = exec_brand({ organizationId: organization.id, accentColor: "#ff0055" }, user: member)
+
+      expect(data["errors"]).to eq([ "Not authorized" ])
+      expect(organization.reload.accent_color).to be_nil
+    end
+
+    it "attaches an uploaded logo and exposes its URL" do
+      file = fixture_file_upload("spec/fixtures/files/test_image.jpg", "image/jpeg")
+      logo_query = <<~GRAPHQL
+        mutation UpdateOrganization($organizationId: ID!, $logo: Upload) {
+          updateOrganization(input: { organizationId: $organizationId, logo: $logo }) {
+            organization { id logoUrl }
+            errors
+          }
+        }
+      GRAPHQL
+
+      post "/graphql",
+        params: {
+          operations: { query: logo_query, variables: { organizationId: organization.id, logo: nil } }.to_json,
+          map: { "0" => [ "variables.logo" ] }.to_json,
+          "0" => file
+        },
+        headers: { "Authorization" => "Bearer #{JWT.encode({ user_id: admin.id }, secret, 'HS256')}" }
+
+      data = JSON.parse(response.body).dig("data", "updateOrganization")
+
+      expect(data["errors"]).to be_empty
+      expect(data["organization"]["logoUrl"]).to be_present
+      expect(organization.reload.logo).to be_attached
+    end
+  end
 end

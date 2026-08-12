@@ -1,9 +1,14 @@
 # typed: true
 
+# Mail about a specific invitation, branded by whoever owns that invitation —
+# the organization for an org-owned invitation, CardJoy for a personal one
+# (#123). Both the guest-facing and host-facing mails are branded: a guest sees
+# who invited them, and a host sees their own organization.
 class RsvpMailer < ApplicationMailer
   def guest_confirmation(rsvp)
     @rsvp = rsvp
     @invitation = rsvp.invitation
+    set_organization_brand(@invitation.owning_organization)
     @invitation_url = "#{Rails.application.credentials.dig(:frontend_url)}/invitation/#{@invitation.external_id}"
     @calendar_links = generate_calendar_links(@invitation) if @rsvp.status == "going"
 
@@ -16,12 +21,13 @@ class RsvpMailer < ApplicationMailer
                 "Your RSVP for #{@invitation.title} has been received"
     end
 
-    mail(to: @rsvp.guest_email, subject: subject)
+    mail(to: @rsvp.guest_email, subject: subject, **brand_reply_to)
   end
 
   def host_notification(rsvp, is_update: false)
     @rsvp = rsvp
     @invitation = rsvp.invitation
+    set_organization_brand(@invitation.owning_organization)
     @is_update = is_update
     @host = @invitation.user
     @invitation_url = "#{Rails.application.credentials.dig(:frontend_url)}/invitation/#{@invitation.external_id}/edit"
@@ -35,17 +41,19 @@ class RsvpMailer < ApplicationMailer
     action = is_update ? "updated their RSVP" : "RSVPd"
     subject = "#{@rsvp.guest_name} #{action} - #{status_text} to #{@invitation.title}"
 
-    mail(to: @host.email, subject: subject)
+    mail(to: @host.email, subject: subject, **brand_reply_to)
   end
 
   def invitation_updated(rsvp)
     @rsvp = rsvp
     @invitation = rsvp.invitation
+    set_organization_brand(@invitation.owning_organization)
     @invitation_url = "#{Rails.application.credentials.dig(:frontend_url)}/invitation/#{@invitation.external_id}"
 
     mail(
       to: @rsvp.guest_email,
-      subject: "#{@invitation.title} has been updated"
+      subject: "#{@invitation.title} has been updated",
+      **brand_reply_to
     )
   end
 
