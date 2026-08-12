@@ -33,6 +33,7 @@ import ConnectSlack from '@/pages/ConnectSlack';
 import Slack from '@/pages/Slack';
 import Occasions from '@/pages/Occasions';
 import Contacts from '@/pages/Contacts/Index';
+import OrganizationNew from '@/pages/Organization/New';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Disclaimer from './pages/Disclaimer';
@@ -96,6 +97,7 @@ const App: React.FC = () => {
           <Route path="/redeem" element={<RedeemPromo />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/contacts" element={<Contacts />} />
+          <Route path="/organizations/new" element={<OrganizationNew />} />
 
           <Route path="/group-card/new" element={<CardNew />} />
           <Route path="/one-on-one-card/new" element={<CardOneOnOneNew />} />
