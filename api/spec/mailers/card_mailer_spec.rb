@@ -6,6 +6,10 @@ RSpec.describe CardMailer, type: :mailer do
   let(:frontend_url) { 'https://example.com' }
 
   before do
+    # `and_call_original` first: the first example to build a card triggers
+    # Card's lazy load, which digs into credentials for storage.yml, and a bare
+    # `with` stub rejects that call.
+    allow(Rails.application.credentials).to receive(:dig).and_call_original
     allow(Rails.application.credentials).to receive(:dig).with(:frontend_url).and_return(frontend_url)
   end
 

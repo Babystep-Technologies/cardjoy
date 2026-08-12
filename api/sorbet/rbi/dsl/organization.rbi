@@ -11,6 +11,12 @@ class Organization
   extend CommonRelationMethods
   extend GeneratedRelationMethods
 
+  sig { returns(ActiveStorage::Attached::One) }
+  def logo; end
+
+  sig { params(attachable: T.untyped).returns(T.untyped) }
+  def logo=(attachable); end
+
   private
 
   sig { returns(NilClass) }
@@ -401,11 +407,29 @@ class Organization
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_created_by(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
+    def build_logo_attachment(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
+    def build_logo_blob(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_created_by(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_created_by!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
+    def create_logo_attachment(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
+    def create_logo_attachment!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
+    def create_logo_blob(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
+    def create_logo_blob!(*args, &blk); end
 
     sig { returns(T.nilable(::User)) }
     def created_by; end
@@ -418,6 +442,18 @@ class Organization
 
     sig { returns(T::Boolean) }
     def created_by_previously_changed?; end
+
+    sig { returns(T.nilable(::ActiveStorage::Attachment)) }
+    def logo_attachment; end
+
+    sig { params(value: T.nilable(::ActiveStorage::Attachment)).void }
+    def logo_attachment=(value); end
+
+    sig { returns(T.nilable(::ActiveStorage::Blob)) }
+    def logo_blob; end
+
+    sig { params(value: T.nilable(::ActiveStorage::Blob)).void }
+    def logo_blob=(value); end
 
     sig { returns(T::Array[T.untyped]) }
     def organization_credit_ids; end
@@ -464,8 +500,20 @@ class Organization
     sig { returns(T.nilable(::User)) }
     def reload_created_by; end
 
+    sig { returns(T.nilable(::ActiveStorage::Attachment)) }
+    def reload_logo_attachment; end
+
+    sig { returns(T.nilable(::ActiveStorage::Blob)) }
+    def reload_logo_blob; end
+
     sig { void }
     def reset_created_by; end
+
+    sig { void }
+    def reset_logo_attachment; end
+
+    sig { void }
+    def reset_logo_blob; end
 
     sig { returns(T::Array[T.untyped]) }
     def user_ids; end
@@ -621,6 +669,9 @@ class Organization
     def with(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def with_attached_logo(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def with_recursive(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
@@ -628,6 +679,51 @@ class Organization
   end
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(::String)) }
+    def accent_color; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def accent_color=(value); end
+
+    sig { returns(T::Boolean) }
+    def accent_color?; end
+
+    sig { returns(T.nilable(::String)) }
+    def accent_color_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def accent_color_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def accent_color_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def accent_color_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def accent_color_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def accent_color_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def accent_color_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def accent_color_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def accent_color_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def accent_color_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def accent_color_was; end
+
+    sig { void }
+    def accent_color_will_change!; end
+
     sig { returns(::ActiveSupport::TimeWithZone) }
     def created_at; end
 
@@ -818,6 +914,96 @@ class Organization
     sig { void }
     def description_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def email_footer_text; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def email_footer_text=(value); end
+
+    sig { returns(T::Boolean) }
+    def email_footer_text?; end
+
+    sig { returns(T.nilable(::String)) }
+    def email_footer_text_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def email_footer_text_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def email_footer_text_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def email_footer_text_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def email_footer_text_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def email_footer_text_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def email_footer_text_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def email_footer_text_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def email_footer_text_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def email_footer_text_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def email_footer_text_was; end
+
+    sig { void }
+    def email_footer_text_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def email_reply_to; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def email_reply_to=(value); end
+
+    sig { returns(T::Boolean) }
+    def email_reply_to?; end
+
+    sig { returns(T.nilable(::String)) }
+    def email_reply_to_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def email_reply_to_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def email_reply_to_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def email_reply_to_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def email_reply_to_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def email_reply_to_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def email_reply_to_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def email_reply_to_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def email_reply_to_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def email_reply_to_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def email_reply_to_was; end
+
+    sig { void }
+    def email_reply_to_will_change!; end
+
     sig { returns(::Integer) }
     def id; end
 
@@ -954,6 +1140,9 @@ class Organization
     def name_will_change!; end
 
     sig { void }
+    def restore_accent_color!; end
+
+    sig { void }
     def restore_created_at!; end
 
     sig { void }
@@ -964,6 +1153,12 @@ class Organization
 
     sig { void }
     def restore_description!; end
+
+    sig { void }
+    def restore_email_footer_text!; end
+
+    sig { void }
+    def restore_email_reply_to!; end
 
     sig { void }
     def restore_id!; end
@@ -979,6 +1174,12 @@ class Organization
 
     sig { void }
     def restore_updated_at!; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_accent_color; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_accent_color?; end
 
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_created_at; end
@@ -1003,6 +1204,18 @@ class Organization
 
     sig { returns(T::Boolean) }
     def saved_change_to_description?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_email_footer_text; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_email_footer_text?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_email_reply_to; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_email_reply_to?; end
 
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_id; end
@@ -1125,6 +1338,9 @@ class Organization
     def updated_at_will_change!; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_accent_color?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_created_at?; end
 
     sig { returns(T::Boolean) }
@@ -1135,6 +1351,12 @@ class Organization
 
     sig { returns(T::Boolean) }
     def will_save_change_to_description?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_email_footer_text?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_email_reply_to?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_id?; end
@@ -1289,6 +1511,9 @@ class Organization
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def with(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def with_attached_logo(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def with_recursive(*args, &blk); end

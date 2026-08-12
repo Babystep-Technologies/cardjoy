@@ -11,6 +11,12 @@ class Organization < ApplicationRecord
   extend T::Sig
 
   SLUG_MAX_LENGTH = 60
+  FOOTER_TEXT_MAX_LENGTH = 200
+
+  # `#rgb` and `#rrggbb`. Anchored, and deliberately the only shape accepted:
+  # this value is interpolated straight into the CSS of outgoing email, so it
+  # must not be able to carry a `;` and open a second declaration.
+  HEX_COLOR_FORMAT = /\A#(?:\h{3}|\h{6})\z/
 
   # Raised by #allocate_credits! when the pool can't cover the allocation.
   class InsufficientPoolCreditsError < StandardError; end
@@ -30,12 +36,45 @@ class Organization < ApplicationRecord
            inverse_of: :organization,
            dependent: nil
 
+  # Branding for the mail this organization's content generates (#123). Mirrors
+  # the constraints in HasAttachedImage, which can't be included here because it
+  # hardcodes an attachment named `image`.
+  has_one_attached :logo
+
   before_validation :assign_slug, on: :create
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
 
+  validates :logo,
+            content_type: { in: %w[image/png image/jpeg image/gif], message: "must be a valid image format" },
+            size: { less_than: 10.megabytes, message: "must be less than 10MB" },
+            if: :logo_attached?
+
+  # The three brand values below all end up inside an outgoing email — two in
+  # its HTML, one in a header — so each is validated rather than trusted.
+  validates :accent_color,
+            format: { with: HEX_COLOR_FORMAT, message: "must be a hex color like #433c69" },
+            allow_blank: true
+  validates :email_reply_to,
+            format: { with: URI::MailTo::EMAIL_REGEXP },
+            allow_blank: true
+  validates :email_footer_text, length: { maximum: FOOTER_TEXT_MAX_LENGTH }
+
   default_scope { where(deleted_at: nil) }
+
+  # Public URL for the logo, resolved the same way as HasAttachedImage#image_url
+  # so an organization logo and a card image are served from the same place.
+  sig { returns(T.nilable(String)) }
+  def logo_url
+    # `logo_blob` rather than `logo.blob`: the has_one_through that
+    # has_one_attached generates is the typed way to reach the blob.
+    blob = logo_blob
+    return nil if blob.nil?
+    return "#{Rails.configuration.x.cdn_host}/#{blob.key}" if Rails.configuration.x.cdn_enabled
+
+    Rails.application.routes.url_helpers.rails_blob_url(logo, only_path: false)
+  end
 
   # Signed sum of the shared credit pool, mirroring User#credit_balance:
   # positive rows are purchases/grants in, negative rows are allocations out.
@@ -98,6 +137,11 @@ class Organization < ApplicationRecord
   end
 
   private
+
+  sig { returns(T::Boolean) }
+  def logo_attached?
+    logo.attached?
+  end
 
   # Both halves of a transfer carry the same audit entry. `org_credit_allocated`
   # is the kind OrganizationCredit already ships with (see #120); Credit gains
