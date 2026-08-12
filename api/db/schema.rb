@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -412,8 +412,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_120000) do
     t.datetime "deleted_at"
     t.string "kind"
     t.string "name"
+    t.bigint "organization_id"
     t.string "source"
     t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_styles_on_organization_id"
   end
 
   create_table "tags", force: :cascade do |t|
@@ -514,6 +516,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_120000) do
   add_foreign_key "slack_user_connections", "users"
   add_foreign_key "style_tags", "styles"
   add_foreign_key "style_tags", "tags"
+  add_foreign_key "styles", "organizations", on_delete: :cascade
   add_foreign_key "users", "organizations", column: "active_organization_id", on_delete: :nullify
   add_foreign_key "wish_list_contributions", "wish_lists"
   add_foreign_key "wish_list_items", "wish_lists"
