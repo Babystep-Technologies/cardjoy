@@ -49,6 +49,11 @@ import {
   jobFarewellConfig,
 } from './pages/events';
 
+// An admin-only page nobody hits on first paint, so it is code-split rather than carried in the
+// initial bundle — which also keeps that bundle under the 2 MiB the PWA plugin will precache (the
+// same limit the `phone` chunk in vite.config.ts exists for).
+const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
+
 const MaintenanceGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isMaintenance = useFeatureFlagEnabled(import.meta.env.VITE_MAINTENANCE_MODE_FEATURE_FLAG);
   const location = useLocation();
@@ -98,6 +103,14 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/organizations/new" element={<OrganizationNew />} />
+          <Route
+            path="/organizations/settings"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <OrganizationSettings />
+              </React.Suspense>
+            }
+          />
 
           <Route path="/group-card/new" element={<CardNew />} />
           <Route path="/one-on-one-card/new" element={<CardOneOnOneNew />} />

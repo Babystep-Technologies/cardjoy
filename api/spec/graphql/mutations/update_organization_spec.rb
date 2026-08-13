@@ -93,6 +93,95 @@ RSpec.describe Mutations::UpdateOrganization, type: :request do
     expect(JSON.parse(response.body)["errors"]).to eq([ "Unauthorized" ])
   end
 
+  # Changing the slug is its own act, separate from a rename (#126).
+  describe "slug" do
+    let(:slug_query) do
+      <<~GRAPHQL
+        mutation UpdateOrganization($organizationId: ID!, $slug: String) {
+          updateOrganization(input: { organizationId: $organizationId, slug: $slug }) {
+            organization { id slug }
+            errors
+          }
+        }
+      GRAPHQL
+    end
+
+    def exec_slug(variables, user: admin)
+      post "/graphql", params: { query: slug_query, variables: }.to_json, headers: headers_for(user)
+      JSON.parse(response.body).dig("data", "updateOrganization")
+    end
+
+    it "lets an admin change the slug" do
+      data = exec_slug({ organizationId: organization.id, slug: "acme-inc" })
+
+      expect(data["errors"]).to be_empty
+      expect(data.dig("organization", "slug")).to eq("acme-inc")
+      expect(organization.reload.slug).to eq("acme-inc")
+    end
+
+    it "normalizes case and surrounding whitespace" do
+      data = exec_slug({ organizationId: organization.id, slug: "  Acme-INC  " })
+
+      expect(data["errors"]).to be_empty
+      expect(organization.reload.slug).to eq("acme-inc")
+    end
+
+    it "rejects a slug with characters that don't belong in a URL" do
+      data = exec_slug({ organizationId: organization.id, slug: "acme corp!" })
+
+      expect(data["organization"]).to be_nil
+      expect(data["errors"]).to eq([ Mutations::UpdateOrganization::SLUG_FORMAT_ERROR ])
+      expect(organization.reload.slug).to eq("acme-corp")
+    end
+
+    it "rejects a blank slug" do
+      data = exec_slug({ organizationId: organization.id, slug: "  " })
+
+      expect(data["errors"]).to eq([ Mutations::UpdateOrganization::SLUG_BLANK_ERROR ])
+      expect(organization.reload.slug).to eq("acme-corp")
+    end
+
+    it "rejects a slug that is too long" do
+      data = exec_slug({ organizationId: organization.id, slug: "a" * (Organization::SLUG_MAX_LENGTH + 1) })
+
+      expect(data["errors"]).to eq([ Mutations::UpdateOrganization::SLUG_LENGTH_ERROR ])
+    end
+
+    it "rejects a slug another organization already holds" do
+      create(:organization, name: "Taken", slug: "taken", created_by: create(:user))
+
+      data = exec_slug({ organizationId: organization.id, slug: "taken" })
+
+      expect(data["errors"]).to eq([ Mutations::UpdateOrganization::SLUG_TAKEN_ERROR ])
+      expect(organization.reload.slug).to eq("acme-corp")
+    end
+
+    it "rejects a slug an archived organization still holds" do
+      create(:organization, name: "Gone", slug: "gone", created_by: create(:user)).archive!
+
+      data = exec_slug({ organizationId: organization.id, slug: "gone" })
+
+      expect(data["errors"]).to eq([ Mutations::UpdateOrganization::SLUG_TAKEN_ERROR ])
+    end
+
+    it "accepts the organization's own slug unchanged" do
+      data = exec_slug({ organizationId: organization.id, slug: "acme-corp" })
+
+      expect(data["errors"]).to be_empty
+      expect(data.dig("organization", "slug")).to eq("acme-corp")
+    end
+
+    it "returns Not authorized for a member who is not an admin" do
+      member = create(:user)
+      create(:organization_membership, organization:, user: member)
+
+      data = exec_slug({ organizationId: organization.id, slug: "hijacked" }, user: member)
+
+      expect(data["errors"]).to eq([ "Not authorized" ])
+      expect(organization.reload.slug).to eq("acme-corp")
+    end
+  end
+
   # Email branding (#123). The logo arrives as a multipart upload, so it is
   # exercised separately from the three scalar fields.
   describe "brand fields" do

@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Building2, Check, ChevronDown, Plus } from 'lucide-react';
+import { Building2, Check, ChevronDown, Plus, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
@@ -74,6 +74,14 @@ export const OrganizationMenu: React.FC = () => {
           );
         })}
         <DropdownMenuSeparator />
+        {activeOrganization && (
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link to="/organizations/settings">
+              <Settings className="h-4 w-4" />
+              Organization settings
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link to="/organizations/new">
             <Plus className="h-4 w-4" />
@@ -132,6 +140,12 @@ export const MobileOrganizationSwitcher: React.FC<{ onNavigate: () => void }> = 
             );
           })}
         </div>
+      )}
+      {activeOrganization && (
+        <Link to="/organizations/settings" onClick={onNavigate} className={entryClass}>
+          <Settings className="h-4 w-4" />
+          Organization settings
+        </Link>
       )}
       <Link to="/organizations/new" onClick={onNavigate} className={entryClass}>
         <Plus className="h-4 w-4" />
