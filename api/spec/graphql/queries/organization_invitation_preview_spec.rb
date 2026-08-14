@@ -14,6 +14,7 @@ RSpec.describe Queries::OrganizationInvitationPreview, type: :request do
           organizationName
           invitedByName
           valid
+          reason
         }
       }
     GRAPHQL
@@ -35,7 +36,8 @@ RSpec.describe Queries::OrganizationInvitationPreview, type: :request do
     expect(data).to eq(
       "organizationName" => "Acme Corp",
       "invitedByName" => "Dana Host",
-      "valid" => true
+      "valid" => true,
+      "reason" => nil
     )
   end
 
@@ -65,17 +67,25 @@ RSpec.describe Queries::OrganizationInvitationPreview, type: :request do
   it "still names the organization for an expired invitation, marked invalid" do
     expired = create(:organization_invitation, :expired, organization:, invited_by: inviter)
 
-    expect(exec(expired.token)).to include("organizationName" => "Acme Corp", "valid" => false)
+    expect(exec(expired.token)).to include(
+      "organizationName" => "Acme Corp",
+      "valid" => false,
+      "reason" => OrganizationInvitation::EXPIRED_ERROR
+    )
   end
 
   it "marks a revoked invitation invalid" do
     revoked = create(:organization_invitation, :revoked, organization:, invited_by: inviter)
-    expect(exec(revoked.token)).to include("valid" => false)
+
+    expect(exec(revoked.token))
+      .to include("valid" => false, "reason" => OrganizationInvitation::REVOKED_ERROR)
   end
 
   it "marks an accepted invitation invalid" do
     accepted = create(:organization_invitation, :accepted, organization:, invited_by: inviter)
-    expect(exec(accepted.token)).to include("valid" => false)
+
+    expect(exec(accepted.token))
+      .to include("valid" => false, "reason" => OrganizationInvitation::ALREADY_ACCEPTED_ERROR)
   end
 
   it "returns null for an unknown token" do

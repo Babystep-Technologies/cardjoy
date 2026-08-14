@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { APP_TOKEN_KEY } from '@/lib/constants';
+import { decodeValidToken } from '@/lib/auth-token';
 import { validatePassword } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 
 const SIGN_UP_MUTATION = gql`
@@ -28,6 +30,7 @@ const SIGN_UP_MUTATION = gql`
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setUser } = useAuth();
   const redirectParam = new URLSearchParams(location.search).get('redirect');
   const redirectUrl = redirectParam || '/';
   const signInLink = redirectParam
@@ -68,6 +71,10 @@ const SignUpPage: React.FC = () => {
 
     if (result?.token) {
       localStorage.setItem(APP_TOKEN_KEY, result.token);
+      // Seed the session the way SignIn and VerifyEmail do. Without it a brand-new account is only
+      // signed in as far as localStorage: `AuthContext` reads the token once on mount, so any page
+      // we redirect into — the organization join page especially — sees a signed-out visitor.
+      setUser(decodeValidToken(result.token));
       navigate(redirectUrl);
       return;
     }
