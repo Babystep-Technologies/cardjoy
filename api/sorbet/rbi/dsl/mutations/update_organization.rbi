@@ -11,11 +11,12 @@ class Mutations::UpdateOrganization
       organization_id: ::String,
       name: T.nilable(::String),
       description: T.nilable(::String),
+      slug: T.nilable(::String),
       logo: T.untyped,
       accent_color: T.nilable(::String),
       email_footer_text: T.nilable(::String),
       email_reply_to: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(organization_id:, name: T.unsafe(nil), description: T.unsafe(nil), logo: T.unsafe(nil), accent_color: T.unsafe(nil), email_footer_text: T.unsafe(nil), email_reply_to: T.unsafe(nil)); end
+  def resolve(organization_id:, name: T.unsafe(nil), description: T.unsafe(nil), slug: T.unsafe(nil), logo: T.unsafe(nil), accent_color: T.unsafe(nil), email_footer_text: T.unsafe(nil), email_reply_to: T.unsafe(nil)); end
 end

@@ -13,6 +13,13 @@ class Organization < ApplicationRecord
   SLUG_MAX_LENGTH = 60
   FOOTER_TEXT_MAX_LENGTH = 200
 
+  # The shape a hand-written slug must have, enforced by
+  # Mutations::UpdateOrganization rather than by a validation here: a slug this
+  # app generated itself was truncated to SLUG_MAX_LENGTH and may end on a
+  # hyphen, so existing rows are not all guaranteed to match. The check belongs
+  # on the one path where a person types one.
+  SLUG_FORMAT = /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/
+
   # `#rgb` and `#rrggbb`. Anchored, and deliberately the only shape accepted:
   # this value is interpolated straight into the CSS of outgoing email, so it
   # must not be able to carry a `;` and open a second declaration.
