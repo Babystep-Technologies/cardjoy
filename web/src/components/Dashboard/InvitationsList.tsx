@@ -275,9 +275,17 @@ interface InvitationsListProps {
   invitations: InvitationType[];
   onRefetch: () => void;
   onShareClick: (invitationId: string) => void;
+  // Supplied by the dashboard so the copy can name the active organization.
+  emptyTitle: string;
+  emptyDescription: string;
 }
 
-export const InvitationsList: React.FC<InvitationsListProps> = ({ invitations, onShareClick }) => {
+export const InvitationsList: React.FC<InvitationsListProps> = ({
+  invitations,
+  onShareClick,
+  emptyTitle,
+  emptyDescription,
+}) => {
   const navigate = useNavigate();
   const [openSheetInvitationId, setOpenSheetInvitationId] = useState<string | null>(null);
 
@@ -286,12 +294,8 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({ invitations, o
       <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
         <img src="/logo.svg" alt="CardJoy Logo" className="opacity-80 w-24 h-24" />
         <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-gray-800">
-            {`You haven't created any invitations yet`}
-          </h2>
-          <p className="text-gray-500 text-lg">
-            Create your first event invitation and manage RSVPs easily!
-          </p>
+          <h2 className="text-2xl font-semibold text-gray-800">{emptyTitle}</h2>
+          <p className="text-gray-500 text-lg">{emptyDescription}</p>
         </div>
         <motion.button
           onClick={() => navigate('/invitation/new')}

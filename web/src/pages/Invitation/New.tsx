@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Toaster, toast } from 'sonner';
 import { X, Calendar, Clock, MapPin, Sparkles, Upload, Wand2, Gift } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { detectTimezone } from '@/lib/timezone';
@@ -56,6 +57,9 @@ const UPSERT_WISH_LIST = gql(UPSERT_WISH_LIST_MUTATION);
 const InvitationNew: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  // An invitation started from an organization dashboard belongs to that organization.
+  // The server re-checks membership; this only supplies the default context.
+  const { activeOrganization } = useOrganization();
   const [creating, setCreating] = useState(false);
   const [coverDialogOpen, setCoverDialogOpen] = useState(false);
   const [signInDialogOpen, setSignInDialogOpen] = useState(false);
@@ -159,6 +163,7 @@ const InvitationNew: React.FC = () => {
                 eventTimezone: eventTimezone || null,
                 rsvpDeadline: rsvpDeadline ? format(rsvpDeadline, 'yyyy-MM-dd') : null,
                 coverImageFile: null,
+                organizationId: activeOrganization?.id ?? null,
                 maxAdditionalGuests,
                 attire: attire.trim() || null,
                 customInstructions: customInstructions.trim() || null,
@@ -239,6 +244,7 @@ const InvitationNew: React.FC = () => {
               eventTimezone: eventTimezone || null,
               rsvpDeadline: rsvpDeadline ? format(rsvpDeadline, 'yyyy-MM-dd') : null,
               coverImageUrl: typeof coverImage === 'string' ? coverImage : null,
+              organizationId: activeOrganization?.id ?? null,
               maxAdditionalGuests,
               attire: attire.trim() || null,
               customInstructions: customInstructions.trim() || null,

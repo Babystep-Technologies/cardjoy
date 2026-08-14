@@ -30,6 +30,11 @@ export type CardType = {
   // Set only for a 1-on-1 card with a pending scheduled send (UTC ISO instant).
   deliverAt?: string | null;
   deliverToEmail?: string | null;
+  // Set only for an organization-owned card; null means the card is personal.
+  organization?: { id: string; name: string } | null;
+  // The member who created the card. Only interesting for an org-owned card, where
+  // "whose card is this" stops being obvious.
+  user?: { id: string; name: string } | null;
 };
 
 export type UserMessageType = {

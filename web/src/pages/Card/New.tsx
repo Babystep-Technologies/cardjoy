@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { APP_TOKEN_KEY } from '@/lib/constants';
 import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import { StyleType } from '@/types/app';
@@ -68,6 +69,9 @@ const GET_STYLES = gql`
 const CardNew: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  // A card started from an organization dashboard belongs to that organization. The
+  // server re-checks membership; this only supplies the default context.
+  const { activeOrganization } = useOrganization();
   const [searchParams] = useSearchParams();
 
   const [newCard, setNewCard] = useState({ title: '', recipients: [''] });
@@ -142,6 +146,7 @@ const CardNew: React.FC = () => {
                 maxMessages,
                 requireLoginToContribute,
                 coverImageFile: null,
+                organizationId: activeOrganization?.id ?? null,
               },
             },
           })
@@ -194,6 +199,7 @@ const CardNew: React.FC = () => {
           contributorPrompt: contributorPrompt.trim() || null,
           maxMessages,
           requireLoginToContribute,
+          organizationId: activeOrganization?.id ?? null,
         };
         if (typeof coverImage === 'string' && coverImage) {
           input.coverImageUrl = coverImage;
