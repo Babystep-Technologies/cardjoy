@@ -49,10 +49,12 @@ import {
   jobFarewellConfig,
 } from './pages/events';
 
-// An admin-only page nobody hits on first paint, so it is code-split rather than carried in the
+// Organization pages nobody hits on first paint, so they are code-split rather than carried in the
 // initial bundle — which also keeps that bundle under the 2 MiB the PWA plugin will precache (the
 // same limit the `phone` chunk in vite.config.ts exists for).
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
+const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
+const OrganizationJoin = React.lazy(() => import('@/pages/Organization/Join'));
 
 const MaintenanceGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isMaintenance = useFeatureFlagEnabled(import.meta.env.VITE_MAINTENANCE_MODE_FEATURE_FLAG);
@@ -108,6 +110,23 @@ const App: React.FC = () => {
             element={
               <React.Suspense fallback={<LoadingScreen />}>
                 <OrganizationSettings />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/organizations/members"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <OrganizationMembers />
+              </React.Suspense>
+            }
+          />
+          {/* Public on purpose: the invited person may not have an account yet. See Join.tsx. */}
+          <Route
+            path="/organizations/join"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <OrganizationJoin />
               </React.Suspense>
             }
           />

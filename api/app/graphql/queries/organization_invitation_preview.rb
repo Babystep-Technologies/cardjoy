@@ -29,7 +29,8 @@ module Queries
       {
         organization_name: organization.name,
         invited_by_name: T.must(invitation.invited_by).name,
-        valid: invitation.usable?
+        valid: invitation.usable?,
+        reason: invitation.unusable_reason
       }
     end
   end

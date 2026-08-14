@@ -17,8 +17,43 @@ module Types
     field :email_footer_text, String, null: true
     field :email_reply_to, String, null: true
 
+    # The roster (#127). Any member may read it: seeing who else is here is not
+    # the same as being able to change it, and the members page renders
+    # read-only for a plain member.
+    field :memberships, [ Types::OrganizationMembershipType ], null: false
+
+    # Invitations still waiting on a reply. Admin-only, unlike the roster —
+    # OrganizationInvitationType names the invited email, and who an admin has
+    # approached is not yet the membership list.
+    field :pending_invitations, [ Types::OrganizationInvitationType ], null: false
+
     def members_count
       object.organization_memberships.count
+    end
+
+    # Oldest first, so the roster doesn't reshuffle between loads and the
+    # founding admins stay at the top where people look for them.
+    def memberships
+      return [] unless viewer_membership
+
+      object.organization_memberships.includes(:user).order(:created_at, :id)
+    end
+
+    # Newest first: the invite an admin just sent is the one they're checking on.
+    def pending_invitations
+      return [] unless viewer_membership&.admin?
+
+      object.organization_invitations.pending.includes(:invited_by).order(created_at: :desc, id: :desc)
+    end
+
+    private
+
+    # Both gates ask the same question, and a page that renders the roster
+    # alongside the pending invitations asks it twice in one request.
+    def viewer_membership
+      return @viewer_membership if defined?(@viewer_membership)
+
+      @viewer_membership = object.membership_for(context[:current_user])
     end
   end
 end
