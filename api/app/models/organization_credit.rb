@@ -21,7 +21,30 @@ class OrganizationCredit < ApplicationRecord
     org_credit_reversed_due_to_chargeback
   ].freeze
 
+  # The two people a ledger row can name, read back out of the audit trail so
+  # the credits page can render "who" next to each line (#128). The `events`
+  # jsonb is the only record of them — the table itself carries no user column.
+  #
+  # Ids arrive as integers from our own writes and as strings from Stripe
+  # metadata (`purchased_by_user_id`), so both are normalized here rather than
+  # at every call site.
+
+  # Whoever caused the row: the buyer of a purchase, the admin behind an
+  # allocation. Nil for a chargeback reversal, which no person initiated.
+  def actor_user_id
+    user_id_from_event("purchased_by_user_id") || user_id_from_event("allocated_by_user_id")
+  end
+
+  # The member an allocation went to; nil on every other kind of row.
+  def member_user_id
+    user_id_from_event("user_id")
+  end
+
   private
+
+  def user_id_from_event(key)
+    events&.first&.dig("event_data", key)&.to_i
+  end
 
   def allowed_event_kinds
     EVENT_KINDS

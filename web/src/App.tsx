@@ -54,6 +54,7 @@ import {
 // same limit the `phone` chunk in vite.config.ts exists for).
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
+const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
 const OrganizationJoin = React.lazy(() => import('@/pages/Organization/Join'));
 
 const MaintenanceGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -118,6 +119,14 @@ const App: React.FC = () => {
             element={
               <React.Suspense fallback={<LoadingScreen />}>
                 <OrganizationMembers />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/organizations/credits"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <OrganizationCredits />
               </React.Suspense>
             }
           />
