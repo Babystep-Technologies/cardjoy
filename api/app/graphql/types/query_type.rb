@@ -7,6 +7,8 @@ module Types
     field :admin_invitations, resolver: Queries::AdminInvitations
     field :admin_users, resolver: Queries::AdminUsers
     field :admin_promo_codes, resolver: Queries::AdminPromoCodes
+    field :admin_organizations, resolver: Queries::AdminOrganizations
+    field :admin_organization, resolver: Queries::AdminOrganization
     field :user_cards, resolver: Queries::UserCards
     field :card, resolver: Queries::Card
     field :styles, resolver: Queries::Styles

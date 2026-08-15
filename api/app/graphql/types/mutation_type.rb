@@ -57,6 +57,7 @@ module Types
     field :remove_organization_member, mutation: Mutations::RemoveOrganizationMember
     field :leave_organization, mutation: Mutations::LeaveOrganization
     field :allocate_organization_credits, mutation: Mutations::AllocateOrganizationCredits
+    field :grant_organization_credits, mutation: Mutations::GrantOrganizationCredits
     field :create_organization_style, mutation: Mutations::CreateOrganizationStyle
     field :archive_organization_style, mutation: Mutations::ArchiveOrganizationStyle
   end

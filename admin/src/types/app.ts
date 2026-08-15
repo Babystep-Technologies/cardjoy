@@ -40,6 +40,44 @@ export type PromoCode = {
   } | null;
 };
 
+export type Organization = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  membersCount: number;
+  creditBalance: number;
+  createdAt: string;
+};
+
+export type OrganizationMembership = {
+  role: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    creditBalance: number;
+  };
+};
+
+// One row of an organization's shared credit pool. `amount` is signed:
+// positive put credits in (a purchase or an admin grant), negative took them
+// out (an allocation to a member, or a chargeback reversal).
+export type OrganizationCredit = {
+  id: string;
+  amount: number;
+  reason: string | null;
+  createdAt: string;
+  actor: { id: string; name: string } | null;
+  member: { id: string; name: string } | null;
+};
+
+export type OrganizationDetail = Organization & {
+  memberships: OrganizationMembership[];
+  credits: OrganizationCredit[];
+};
+
 export type UserMessage = {
   id: string;
   title: string;
