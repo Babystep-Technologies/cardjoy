@@ -5,6 +5,12 @@ module Queries
   class BaseQuery < GraphQL::Schema::Resolver
     NOT_AUTHORIZED_ERROR = "Not authorized"
 
+    # Mirrors Mutations::BaseMutation::NOT_AUTHENTICATED_ERROR. The controller
+    # already rejects anonymous callers for every non-public operation, so this
+    # is the backstop for a query smuggled into an operation *named* like a
+    # public one (GraphqlController::PUBLIC_OPERATIONS matches on the name).
+    NOT_AUTHENTICATED_ERROR = "Not authenticated"
+
     private
 
     # The organization a context-aware read should run in, resolved from its

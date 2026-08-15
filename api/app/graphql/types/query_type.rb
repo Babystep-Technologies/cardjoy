@@ -31,6 +31,8 @@ module Types
     field :my_contacts, resolver: Queries::MyContacts
     field :upcoming_occasions, resolver: Queries::UpcomingOccasions
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
+    field :my_holiday_cards, resolver: Queries::MyHolidayCards
+    field :holiday_card, resolver: Queries::HolidayCard
 
     def card_occasions
       ::Card::OCCASIONS
