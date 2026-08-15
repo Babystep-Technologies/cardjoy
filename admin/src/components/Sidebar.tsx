@@ -9,6 +9,7 @@ import {
   CoinsIcon,
   HomeIcon,
   MailIcon,
+  Building2Icon,
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ const navLinks = [
   { href: '/cards', label: 'Cards', icon: CreditCardIcon },
   { href: '/invitations', label: 'Invitations', icon: MailIcon },
   { href: '/users', label: 'Users', icon: UsersIcon },
+  { href: '/organizations', label: 'Organizations', icon: Building2Icon },
   { href: '/credits', label: 'Credits & Promos', icon: CoinsIcon },
 ];
 
