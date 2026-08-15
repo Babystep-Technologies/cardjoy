@@ -4,6 +4,7 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import { CardKind, CardType } from '@/types/app';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoadingScreen from '@/components/Loading';
@@ -15,9 +16,11 @@ import ShareDialog from '@/components/ShareDialog';
 import { CardsList } from '@/components/Dashboard/CardsList';
 import { InvitationsList } from '@/components/Dashboard/InvitationsList';
 
+// `organizationId` is the context: null lists the signed-in user's personal cards,
+// an id lists everything that organization owns — including cards other members made.
 const GET_USER_CARDS = gql`
-  query UserCards($userId: ID!) {
-    userCards(userId: $userId) {
+  query UserCards($userId: ID!, $organizationId: ID) {
+    userCards(userId: $userId, organizationId: $organizationId) {
       externalId
       slug
       title
@@ -27,6 +30,14 @@ const GET_USER_CARDS = gql`
       coverImageUrl
       deliverAt
       deliverToEmail
+      organization {
+        id
+        name
+      }
+      user {
+        id
+        name
+      }
       styles {
         name
         kind
@@ -37,8 +48,8 @@ const GET_USER_CARDS = gql`
 `;
 
 const GET_USER_INVITATIONS = gql`
-  query UserInvitations($userId: ID!) {
-    userInvitations(userId: $userId) {
+  query UserInvitations($userId: ID!, $organizationId: ID) {
+    userInvitations(userId: $userId, organizationId: $organizationId) {
       externalId
       slug
       title
@@ -63,14 +74,18 @@ const DELETE_CARD = gql`
 
 // One entry per card kind, in tab order. Adding a kind (e.g. holiday) means adding an
 // entry here — the first entry doubles as the fallback bucket, see cardsByKind below.
+//
+// The empty-state copy takes the active organization's name (null in Personal) because an
+// organization dashboard is shared: "you haven't created any" is the wrong sentence when
+// the list is the whole team's and a teammate is the one reading it.
 const CARD_TABS: {
   kind: CardKind;
   label: string;
   shortLabel: string;
   createPath: string;
   createLabel: string;
-  emptyTitle: string;
-  emptyDescription: string;
+  emptyTitle: (organizationName: string | null) => string;
+  emptyDescription: (organizationName: string | null) => string;
 }[] = [
   {
     kind: 'group',
@@ -78,8 +93,14 @@ const CARD_TABS: {
     shortLabel: 'Group',
     createPath: '/group-card/new',
     createLabel: 'Create New Card',
-    emptyTitle: `You haven't created any group cards yet`,
-    emptyDescription: `Get started by creating your first card — it's quick and easy!`,
+    emptyTitle: organizationName =>
+      organizationName
+        ? `No group cards in ${organizationName} yet`
+        : `You haven't created any group cards yet`,
+    emptyDescription: organizationName =>
+      organizationName
+        ? `Create the first one — everyone in ${organizationName} will see it here.`
+        : `Get started by creating your first card — it's quick and easy!`,
   },
   {
     kind: 'one_on_one',
@@ -87,13 +108,23 @@ const CARD_TABS: {
     shortLabel: '1-on-1',
     createPath: '/one-on-one-card/new',
     createLabel: 'Send a 1-on-1 card',
-    emptyTitle: `You haven't sent any 1-on-1 cards yet`,
-    emptyDescription: 'Pick a design, write your message, and send it — no group signing needed.',
+    emptyTitle: organizationName =>
+      organizationName
+        ? `No 1-on-1 cards in ${organizationName} yet`
+        : `You haven't sent any 1-on-1 cards yet`,
+    emptyDescription: organizationName =>
+      organizationName
+        ? `Pick a design, write your message, and send it on behalf of ${organizationName}.`
+        : 'Pick a design, write your message, and send it — no group signing needed.',
   },
 ];
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { activeOrganization, loading: organizationLoading } = useOrganization();
+  // Null is Personal, and the API reads it that way — not "no filter".
+  const organizationId = activeOrganization?.id ?? null;
+  const organizationName = activeOrganization?.name ?? null;
   // Null until the user picks a tab, so the default can follow the data once it loads.
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [openDeleteConfirm, setOpenDeleteConfirm] = useState(false);
@@ -104,9 +135,13 @@ const Dashboard: React.FC = () => {
 
   const [deleteCard] = useMutation(DELETE_CARD);
 
+  // Wait for the context to resolve before asking: firing early would send
+  // organizationId: null and flash the user's personal cards inside an organization.
+  const skipQueries = !user?.user_id || organizationLoading;
+
   const { data, loading, error, refetch } = useQuery(GET_USER_CARDS, {
-    variables: { userId: user?.user_id },
-    skip: !user?.user_id,
+    variables: { userId: user?.user_id, organizationId },
+    skip: skipQueries,
     fetchPolicy: 'network-only',
     nextFetchPolicy: 'network-only',
   });
@@ -116,8 +151,8 @@ const Dashboard: React.FC = () => {
     loading: invitationsLoading,
     refetch: refetchInvitations,
   } = useQuery(GET_USER_INVITATIONS, {
-    variables: { userId: user?.user_id },
-    skip: !user?.user_id,
+    variables: { userId: user?.user_id, organizationId },
+    skip: skipQueries,
     fetchPolicy: 'network-only',
     nextFetchPolicy: 'network-only',
   });
@@ -181,7 +216,7 @@ const Dashboard: React.FC = () => {
     setShareDialogOpen(true);
   };
 
-  if (loading && invitationsLoading) return <LoadingScreen />;
+  if (organizationLoading || (loading && invitationsLoading)) return <LoadingScreen />;
   if (error) return <ErrorScreen />;
 
   const hasCards = cards.length > 0;
@@ -196,10 +231,13 @@ const Dashboard: React.FC = () => {
         <div className="flex flex-col items-center justify-center flex-grow text-center space-y-8 mt-8">
           <img src="/logo.svg" alt="CardJoy Logo" className="opacity-80 w-24 h-24" />
           <div className="space-y-2">
-            <h2 className="text-2xl font-semibold text-gray-800">Welcome to CardJoy!</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              {organizationName ? `Nothing in ${organizationName} yet` : 'Welcome to CardJoy!'}
+            </h2>
             <p className="text-gray-500 text-lg">
-              Create group greeting cards, send a 1-on-1 card, or plan an event invitation to get
-              started
+              {organizationName
+                ? `Create a card or an invitation — everyone in ${organizationName} will see it here.`
+                : 'Create group greeting cards, send a 1-on-1 card, or plan an event invitation to get started'}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -216,6 +254,17 @@ const Dashboard: React.FC = () => {
         </div>
       ) : (
         <div className="w-full max-w-7xl mx-auto mt-4 sm:mt-8 px-2 sm:px-4">
+          <div className="mb-4 sm:mb-6 text-center">
+            <h1 className="text-2xl font-semibold text-gray-800">
+              {organizationName ? `${organizationName} cards` : 'Your cards'}
+            </h1>
+            {organizationName && (
+              <p className="text-gray-500 text-sm mt-1">
+                Shared with everyone in {organizationName}.
+              </p>
+            )}
+          </div>
+
           <Tabs value={selectedTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="flex h-9 sm:h-10 items-center justify-center rounded-full bg-gray-100 p-1 mb-4 sm:mb-6 w-fit max-w-full mx-auto">
               {CARD_TABS.map(tab => (
@@ -246,8 +295,9 @@ const Dashboard: React.FC = () => {
                   onQrClick={setQrCardId}
                   createPath={tab.createPath}
                   createLabel={tab.createLabel}
-                  emptyTitle={tab.emptyTitle}
-                  emptyDescription={tab.emptyDescription}
+                  emptyTitle={tab.emptyTitle(organizationName)}
+                  emptyDescription={tab.emptyDescription(organizationName)}
+                  currentUserId={user?.user_id ?? null}
                 />
               </TabsContent>
             ))}
@@ -257,6 +307,16 @@ const Dashboard: React.FC = () => {
                 invitations={invitations}
                 onRefetch={refetchInvitations}
                 onShareClick={handleInvitationShareClick}
+                emptyTitle={
+                  organizationName
+                    ? `No invitations in ${organizationName} yet`
+                    : `You haven't created any invitations yet`
+                }
+                emptyDescription={
+                  organizationName
+                    ? `Plan an event — everyone in ${organizationName} can see it and track RSVPs.`
+                    : 'Create your first event invitation and manage RSVPs easily!'
+                }
               />
             </TabsContent>
           </Tabs>

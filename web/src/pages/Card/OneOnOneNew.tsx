@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOrganization } from '@/contexts/OrganizationContext';
 import { captureError, captureInfo } from '@/lib/posthog-capture';
 import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import { uploadGraphQLMutation } from '@/lib/graphql-upload';
@@ -125,6 +126,9 @@ const parseDeliverAt = (raw: string | null): { date: Date; time: string } | null
 const CardOneOnOneNew: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  // A card started from an organization dashboard belongs to that organization. The
+  // server re-checks membership; this only supplies the default context.
+  const { activeOrganization } = useOrganization();
   const [searchParams] = useSearchParams();
 
   // One-tap deep link from the occasion reminder email: pre-fill the schedule
@@ -245,6 +249,7 @@ const CardOneOnOneNew: React.FC = () => {
       text,
       styleIds,
       occasion,
+      organizationId: activeOrganization?.id ?? null,
     };
     if (displayName.trim()) input.displayName = displayName.trim();
 

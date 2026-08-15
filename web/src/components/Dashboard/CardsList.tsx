@@ -125,8 +125,19 @@ const useImageLoader = (src: string | null) => {
 };
 
 // Component to render a card with image loading state
+// Who to credit an organization-owned card to, or null when the card is personal and
+// the question doesn't arise. "You" rather than your own name — it reads as a list of
+// the team's cards with yours marked, which is what it is.
+// Compared as strings: the JWT carries `user_id` as a number while GraphQL hands back
+// an ID string, so `===` on the raw values never matches your own card.
+const creatorLabel = (card: CardType, currentUserId: string | null): string | null => {
+  if (!card.organization || !card.user) return null;
+  return String(card.user.id) === String(currentUserId) ? 'you' : card.user.name;
+};
+
 const CardWithImageLoader: React.FC<{
   card: CardType;
+  creator: string | null;
   onEdit: (id: string) => void;
   onShare: (id: string) => void;
   onPreview: (id: string) => void;
@@ -140,6 +151,7 @@ const CardWithImageLoader: React.FC<{
   navigate: (path: string) => void;
 }> = ({
   card,
+  creator,
   onEdit,
   onShare,
   onPreview,
@@ -228,6 +240,7 @@ const CardWithImageLoader: React.FC<{
           {scheduledAt && card.deliverToEmail && (
             <p className="text-xs text-gray-600 mt-1 truncate">Sending to {card.deliverToEmail}</p>
           )}
+          {creator && <p className="text-xs text-gray-600 mt-1 truncate">Created by {creator}</p>}
         </div>
 
         <div className="mt-auto pt-4 flex justify-end" onClick={e => e.stopPropagation()}>
@@ -410,6 +423,8 @@ interface CardsListProps {
   createLabel: string;
   emptyTitle: string;
   emptyDescription: string;
+  // Lets an org-owned card credit "you" instead of repeating your own name.
+  currentUserId: string | null;
 }
 
 export const CardsList: React.FC<CardsListProps> = ({
@@ -421,6 +436,7 @@ export const CardsList: React.FC<CardsListProps> = ({
   createLabel,
   emptyTitle,
   emptyDescription,
+  currentUserId,
 }) => {
   const navigate = useNavigate();
   const [openSheetCardId, setOpenSheetCardId] = useState<string | null>(null);
@@ -541,6 +557,7 @@ export const CardsList: React.FC<CardsListProps> = ({
           <CardWithImageLoader
             key={card.externalId}
             card={card}
+            creator={creatorLabel(card, currentUserId)}
             onEdit={id => navigate(`/card/${id}/edit`)}
             onShare={onShareClick}
             onPreview={id => window.open(`/card/${id}/viewable`, '_blank')}
