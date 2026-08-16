@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Pine bough">
+  <g stroke="#2F5D3A" stroke-linecap="round" fill="none">
+    <path d="M12 82C34 74 58 54 84 20" stroke-width="4" />
+    <g stroke-width="2.6">
+      <path d="M22 76l-6-11M22 76l11 6" />
+      <path d="M33 69l-5-12M33 69l12 5" />
+      <path d="M44 61l-4-12M44 61l12 4" />
+      <path d="M55 52l-4-13M55 52l13 4" />
+      <path d="M65 41l-3-13M65 41l13 3" />
+      <path d="M75 29l-2-12M75 29l12 2" />
+    </g>
+  </g>
+  <g fill="#8A5A2B">
+    <ellipse cx="16" cy="84" rx="5" ry="7" transform="rotate(-30 16 84)" />
+  </g>
+</svg>

@@ -1,0 +1,12 @@
+<!-- Wordmarks use a generic family stack rather than one of HolidayCard::VALID_FONTS
+     on purpose: the editor renders these through an <img> data URI, where page
+     webfonts do not apply, so a locked font would look different in the editor
+     than in print. `textLength` then pins the width, so the wordmark occupies
+     the same box no matter which fallback a given renderer resolves. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 90" width="300" height="90" role="img" aria-label="Happy Holidays">
+  <text x="150" y="50" text-anchor="middle" textLength="250" lengthAdjust="spacingAndGlyphs" font-family="Georgia, 'Times New Roman', serif" font-size="40" font-style="italic" fill="#1F3A5F">Happy Holidays</text>
+  <g stroke="#C9A227" stroke-width="2" stroke-linecap="round">
+    <path d="M40 66h95M165 66h95" />
+  </g>
+  <path d="M150 60l6 6-6 6-6-6z" fill="#C9A227" />
+</svg>

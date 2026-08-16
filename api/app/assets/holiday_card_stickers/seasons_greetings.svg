@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 90" width="300" height="90" role="img" aria-label="Season&#39;s Greetings">
+  <text x="150" y="38" text-anchor="middle" textLength="150" lengthAdjust="spacingAndGlyphs" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#2E4A3D">Season&#39;s</text>
+  <text x="150" y="74" text-anchor="middle" textLength="190" lengthAdjust="spacingAndGlyphs" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-style="italic" fill="#2E4A3D">Greetings</text>
+  <g stroke="#C9A227" stroke-width="1.8" stroke-linecap="round">
+    <path d="M45 48h55M200 48h55" />
+  </g>
+  <path d="M150 43l5 5-5 5-5-5z" fill="#C9A227" />
+</svg>

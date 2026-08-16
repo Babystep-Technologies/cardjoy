@@ -1,0 +1,198 @@
+# Holiday card template catalogue.
+#
+# Adding a template is an edit to this file plus (if it needs new artwork) an
+# SVG under app/assets/holiday_card_stickers — no migration, no model change.
+# HolidayCardCatalogue loads and validates this; spec/services/holiday_card_catalogue_spec.rb
+# is the guard rail that fails CI if a template would print badly.
+#
+# Every dimension is in INCHES, measured from the top-left of the trimmed panel,
+# so the print renderer and the React preview derive pixels from the same
+# numbers (px = inches * DPI).
+#
+# Two constraints every entry must satisfy (HolidayCardCatalogue enforces them):
+#
+#   1. Safe margin — every photo slot, text region, and sticker region sits
+#      inside the 0.25" safe margin. The background is painted out to the
+#      0.125" bleed, which is why no slot needs to reach the trim edge.
+#   2. Reserved address block — nothing on a `back` panel may overlap the region
+#      PostGrid prints the address, indicia, and barcode into. See
+#      HolidayCardCatalogue::RESERVED_ADDRESS_BLOCKS.
+#
+# Field notes:
+#   size          "<width>x<height>" in inches; must be one of HolidayCard::VALID_SIZES.
+#   background    "#rrggbb", painted across the full bleed box.
+#   radius        corner radius of a photo slot, in inches. 0 is a square corner.
+#   align         left | center | right
+#   default_font  one of HolidayCard::VALID_FONTS
+#   default_size  one of HolidayCardCatalogue::TEXT_SIZES
+#
+# Slot, text, and sticker ids are what a saved design_config points at, so
+# renaming one orphans the content of every card already using this template.
+# Add a new template instead.
+
+# ---------------------------------------------------------------- 6x4 (6w x 4h)
+
+- id: snowy_trio
+  name: Snowy Trio
+  size: "6x4"
+  description: One tall portrait beside two stacked landscapes, greeting underneath.
+  front:
+    background: "#F7FAFC"
+    photo_slots:
+      - { id: photo_1, x: 0.25, y: 0.25, w: 2.4, h: 2.85, radius: 0.1 }
+      - { id: photo_2, x: 2.75, y: 0.25, w: 3.0, h: 1.375, radius: 0.1 }
+      - { id: photo_3, x: 2.75, y: 1.725, w: 3.0, h: 1.375, radius: 0.1 }
+    text_regions:
+      - { id: greeting, x: 0.25, y: 3.25, w: 5.5, h: 0.4, align: center,
+          default_font: playfair, default_size: lg }
+    sticker_regions:
+      - { id: corner_tl, x: 0.25, y: 0.25, w: 0.75, h: 0.75 }
+      - { id: corner_br, x: 5.0, y: 2.35, w: 0.75, h: 0.75 }
+  back:
+    background: "#FFFFFF"
+    photo_slots: []
+    text_regions:
+      - { id: message, x: 0.25, y: 0.25, w: 2.5, h: 2.4, align: left,
+          default_font: cormorant, default_size: md }
+      - { id: signoff, x: 0.25, y: 2.75, w: 2.5, h: 0.45, align: left,
+          default_font: dancing_script, default_size: md }
+    sticker_regions:
+      - { id: corner_bl, x: 0.25, y: 3.3, w: 0.45, h: 0.45 }
+
+- id: single_moment
+  name: Single Moment
+  size: "6x4"
+  description: One photo, one line. The whole card is the picture and the greeting.
+  front:
+    background: "#FDF6EC"
+    photo_slots:
+      - { id: photo_1, x: 0.25, y: 0.25, w: 5.5, h: 2.9, radius: 0.08 }
+    text_regions:
+      - { id: greeting, x: 0.25, y: 3.3, w: 5.5, h: 0.45, align: center,
+          default_font: cormorant, default_size: lg }
+    sticker_regions:
+      - { id: corner_tr, x: 4.9, y: 0.25, w: 0.85, h: 0.85 }
+  back:
+    background: "#FDF6EC"
+    photo_slots: []
+    text_regions:
+      - { id: message, x: 0.25, y: 0.25, w: 2.5, h: 2.4, align: left,
+          default_font: libre_baskerville, default_size: sm }
+      - { id: signoff, x: 0.25, y: 2.75, w: 2.5, h: 0.45, align: left,
+          default_font: dancing_script, default_size: md }
+    sticker_regions:
+      - { id: corner_bl, x: 0.25, y: 3.3, w: 0.45, h: 0.45 }
+
+- id: festive_five
+  name: Festive Five
+  size: "6x4"
+  description: A hero photo and a two-by-two grid — the year in five pictures.
+  front:
+    background: "#1F3A5F"
+    photo_slots:
+      - { id: photo_1, x: 0.25, y: 0.25, w: 2.8, h: 2.85, radius: 0.1 }
+      - { id: photo_2, x: 3.15, y: 0.25, w: 1.25, h: 1.375, radius: 0.1 }
+      - { id: photo_3, x: 4.5, y: 0.25, w: 1.25, h: 1.375, radius: 0.1 }
+      - { id: photo_4, x: 3.15, y: 1.725, w: 1.25, h: 1.375, radius: 0.1 }
+      - { id: photo_5, x: 4.5, y: 1.725, w: 1.25, h: 1.375, radius: 0.1 }
+    text_regions:
+      - { id: greeting, x: 0.25, y: 3.25, w: 5.5, h: 0.4, align: center,
+          default_font: montserrat, default_size: md }
+    sticker_regions:
+      - { id: corner_tl, x: 0.25, y: 0.25, w: 0.7, h: 0.7 }
+  back:
+    background: "#FFFFFF"
+    photo_slots: []
+    text_regions:
+      - { id: message, x: 0.25, y: 0.25, w: 2.5, h: 2.4, align: left,
+          default_font: poppins, default_size: sm }
+      - { id: signoff, x: 0.25, y: 2.75, w: 2.5, h: 0.45, align: left,
+          default_font: poppins, default_size: sm }
+    sticker_regions:
+      - { id: corner_bl, x: 0.25, y: 3.3, w: 0.45, h: 0.45 }
+
+# ---------------------------------------------------------------- 6x9 (6w x 9h)
+
+- id: winter_portrait
+  name: Winter Portrait
+  size: "6x9"
+  description: A single full-height portrait over a two-line greeting.
+  front:
+    background: "#F2F7FB"
+    photo_slots:
+      - { id: photo_1, x: 0.25, y: 0.25, w: 5.5, h: 6.5, radius: 0.1 }
+    text_regions:
+      - { id: greeting, x: 0.25, y: 7.0, w: 5.5, h: 0.8, align: center,
+          default_font: playfair, default_size: xl }
+      - { id: names, x: 0.25, y: 7.9, w: 5.5, h: 0.6, align: center,
+          default_font: cormorant, default_size: md }
+    sticker_regions:
+      - { id: corner_tl, x: 0.25, y: 0.25, w: 0.9, h: 0.9 }
+      - { id: corner_br, x: 4.85, y: 5.85, w: 0.9, h: 0.9 }
+  back:
+    background: "#FFFFFF"
+    photo_slots: []
+    text_regions:
+      - { id: message, x: 0.25, y: 0.25, w: 2.5, h: 5.5, align: left,
+          default_font: cormorant, default_size: md }
+      - { id: signoff, x: 0.25, y: 5.9, w: 2.5, h: 0.8, align: left,
+          default_font: dancing_script, default_size: lg }
+    sticker_regions:
+      - { id: corner_bl, x: 0.25, y: 7.0, w: 0.8, h: 0.8 }
+
+- id: holiday_stack
+  name: Holiday Stack
+  size: "6x9"
+  description: A wide hero photo above a matched pair, with room for a real note.
+  front:
+    background: "#FFFFFF"
+    photo_slots:
+      - { id: photo_1, x: 0.25, y: 0.25, w: 5.5, h: 3.6, radius: 0.1 }
+      - { id: photo_2, x: 0.25, y: 3.95, w: 2.7, h: 2.7, radius: 0.1 }
+      - { id: photo_3, x: 3.05, y: 3.95, w: 2.7, h: 2.7, radius: 0.1 }
+    text_regions:
+      - { id: greeting, x: 0.25, y: 6.85, w: 5.5, h: 0.75, align: center,
+          default_font: playfair, default_size: lg }
+      - { id: names, x: 0.25, y: 7.7, w: 5.5, h: 0.9, align: center,
+          default_font: libre_baskerville, default_size: sm }
+    sticker_regions:
+      - { id: corner_tr, x: 4.85, y: 0.25, w: 0.9, h: 0.9 }
+  back:
+    background: "#F7FAFC"
+    photo_slots: []
+    text_regions:
+      - { id: message, x: 0.25, y: 0.25, w: 2.5, h: 5.5, align: left,
+          default_font: libre_baskerville, default_size: sm }
+      - { id: signoff, x: 0.25, y: 5.9, w: 2.5, h: 0.8, align: left,
+          default_font: dancing_script, default_size: lg }
+    sticker_regions:
+      - { id: corner_bl, x: 0.25, y: 7.0, w: 0.8, h: 0.8 }
+
+- id: family_grid
+  name: Family Grid
+  size: "6x9"
+  description: Five photos — a hero and two rows of two — for the whole family.
+  front:
+    background: "#2E4A3D"
+    photo_slots:
+      - { id: photo_1, x: 0.25, y: 0.25, w: 5.5, h: 3.2, radius: 0.1 }
+      - { id: photo_2, x: 0.25, y: 3.55, w: 2.7, h: 2.1, radius: 0.1 }
+      - { id: photo_3, x: 3.05, y: 3.55, w: 2.7, h: 2.1, radius: 0.1 }
+      - { id: photo_4, x: 0.25, y: 5.75, w: 2.7, h: 2.1, radius: 0.1 }
+      - { id: photo_5, x: 3.05, y: 5.75, w: 2.7, h: 2.1, radius: 0.1 }
+    text_regions:
+      - { id: greeting, x: 0.25, y: 7.95, w: 5.5, h: 0.6, align: center,
+          default_font: montserrat, default_size: lg }
+    sticker_regions:
+      - { id: corner_tl, x: 0.25, y: 0.25, w: 0.9, h: 0.9 }
+      - { id: corner_br, x: 4.85, y: 6.95, w: 0.9, h: 0.9 }
+  back:
+    background: "#FFFFFF"
+    photo_slots: []
+    text_regions:
+      - { id: message, x: 0.25, y: 0.25, w: 2.5, h: 5.5, align: left,
+          default_font: poppins, default_size: sm }
+      - { id: signoff, x: 0.25, y: 5.9, w: 2.5, h: 0.8, align: left,
+          default_font: poppins, default_size: sm }
+    sticker_regions:
+      - { id: corner_bl, x: 0.25, y: 7.0, w: 0.8, h: 0.8 }
