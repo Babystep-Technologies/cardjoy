@@ -24,6 +24,7 @@ class User < ApplicationRecord
   has_many :credits, dependent: :destroy
   has_many :promo_codes, dependent: :destroy
   has_many :invitations, dependent: :destroy
+  has_many :holiday_cards, dependent: :destroy
   has_many :rsvps, dependent: :destroy
   has_many :contacts, dependent: :destroy
   has_many :occasions, through: :contacts

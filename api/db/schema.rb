@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_15_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -226,6 +226,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_130000) do
     t.datetime "updated_at", null: false
     t.index ["card_id"], name: "index_guest_messages_on_card_id"
     t.index ["deleted_at"], name: "index_guest_messages_on_deleted_at"
+  end
+
+  create_table "holiday_cards", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.jsonb "design_config", default: {}, null: false
+    t.string "external_id", null: false
+    t.string "size", default: "6x4", null: false
+    t.string "template_id", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["deleted_at"], name: "index_holiday_cards_on_deleted_at"
+    t.index ["external_id"], name: "index_holiday_cards_on_external_id", unique: true
+    t.index ["user_id"], name: "index_holiday_cards_on_user_id"
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -497,6 +512,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_130000) do
   add_foreign_key "contacts", "users"
   add_foreign_key "credits", "users"
   add_foreign_key "guest_messages", "cards"
+  add_foreign_key "holiday_cards", "users"
   add_foreign_key "invitations", "organizations", on_delete: :nullify
   add_foreign_key "invitations", "users"
   add_foreign_key "messages", "cards"
