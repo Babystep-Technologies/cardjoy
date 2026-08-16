@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -89,6 +89,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
     t.index ["organization_id"], name: "index_cards_on_organization_id"
     t.index ["slug"], name: "index_cards_on_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["user_id"], name: "index_cards_on_user_id"
+  end
+
+  create_table "contact_list_memberships", force: :cascade do |t|
+    t.bigint "contact_id", null: false
+    t.bigint "contact_list_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contact_id"], name: "index_contact_list_memberships_on_contact_id"
+    t.index ["contact_list_id", "contact_id"], name: "idx_on_contact_list_id_contact_id_4784adb2b8", unique: true
+    t.index ["contact_list_id"], name: "index_contact_list_memberships_on_contact_list_id"
+  end
+
+  create_table "contact_lists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "name"], name: "index_contact_lists_on_user_id_and_name", unique: true
+    t.index ["user_id"], name: "index_contact_lists_on_user_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -515,6 +534,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
   add_foreign_key "card_styles", "styles"
   add_foreign_key "cards", "organizations", on_delete: :nullify
   add_foreign_key "cards", "users"
+  add_foreign_key "contact_list_memberships", "contact_lists"
+  add_foreign_key "contact_list_memberships", "contacts"
+  add_foreign_key "contact_lists", "users"
   add_foreign_key "contacts", "users"
   add_foreign_key "credits", "users"
   add_foreign_key "guest_messages", "cards"

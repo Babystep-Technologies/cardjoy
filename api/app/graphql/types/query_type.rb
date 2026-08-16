@@ -28,6 +28,8 @@ module Types
     field :check_slug_availability, resolver: Queries::CheckSlugAvailability
     field :viewer, resolver: Queries::Viewer
     field :my_contacts, resolver: Queries::MyContacts
+    field :my_contact_lists, resolver: Queries::MyContactLists
+    field :contact_list, resolver: Queries::ContactList
     field :upcoming_occasions, resolver: Queries::UpcomingOccasions
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
     field :my_holiday_cards, resolver: Queries::MyHolidayCards
