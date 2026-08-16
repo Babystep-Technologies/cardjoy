@@ -29,3 +29,9 @@
 
 en:
   hello: "Hello world"
+  activerecord:
+    attributes:
+      contact:
+        # Without these, a missing street line reads "Address line1 is required…".
+        address_line1: "Address line 1"
+        address_line2: "Address line 2"

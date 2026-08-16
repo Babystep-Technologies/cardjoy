@@ -74,6 +74,79 @@ RSpec.describe Mutations::UpdateContact, type: :request do
     expect(contact.reload.email).not_to eq("mom@example.com")
   end
 
+  describe "mailing address" do
+    let(:contact) { create(:contact, :mailable, user:, name: "Old Name") }
+
+    let(:query) do
+      <<~GRAPHQL
+        mutation UpdateContact(
+          $contactId: ID!, $name: String, $addressLine1: String, $addressLine2: String,
+          $city: String, $region: String, $postalCode: String, $countryCode: String
+        ) {
+          updateContact(
+            input: {
+              contactId: $contactId, name: $name,
+              addressLine1: $addressLine1, addressLine2: $addressLine2, city: $city,
+              region: $region, postalCode: $postalCode, countryCode: $countryCode
+            }
+          ) {
+            contact { id addressLine1 addressLine2 city region postalCode countryCode mailable }
+            errors
+          }
+        }
+      GRAPHQL
+    end
+
+    it "leaves the stored address alone when the address fields are omitted" do
+      data = exec(contactId: contact.id, name: "New Name")
+
+      expect(data["errors"]).to be_empty
+      expect(data["contact"]).to include(
+        "addressLine1" => "123 Market St", "city" => "San Francisco",
+        "postalCode" => "94103", "countryCode" => "US", "mailable" => true
+      )
+    end
+
+    it "updates one address field without touching the rest" do
+      data = exec(contactId: contact.id, addressLine1: "456 Mission St")
+
+      expect(data["errors"]).to be_empty
+      expect(data["contact"]).to include("addressLine1" => "456 Mission St", "city" => "San Francisco")
+    end
+
+    it "adds an address to a contact that had none" do
+      plain = create(:contact, user:)
+
+      data = exec(
+        contactId: plain.id, addressLine1: "123 Market St",
+        city: "San Francisco", postalCode: "94103", countryCode: "gb"
+      )
+
+      expect(data["errors"]).to be_empty
+      expect(data["contact"]).to include("countryCode" => "GB", "mailable" => true)
+      expect(plain.reload).to be_mailable
+    end
+
+    it "rejects an edit that would leave the address partial" do
+      data = exec(contactId: contact.id, postalCode: "")
+
+      expect(data["contact"]).to be_nil
+      expect(data["errors"]).to include("Postal code #{Contact::INCOMPLETE_ADDRESS_MESSAGE}")
+      expect(contact.reload.postal_code).to eq("94103")
+    end
+
+    it "clears the whole address when every field is given as an empty string" do
+      data = exec(
+        contactId: contact.id, addressLine1: "", addressLine2: "",
+        city: "", region: "", postalCode: "", countryCode: ""
+      )
+
+      expect(data["errors"]).to be_empty
+      expect(data["contact"]).to include("addressLine1" => nil, "city" => nil, "mailable" => false)
+      expect(contact.reload).not_to be_mailable
+    end
+  end
+
   it "does not update another user's contact" do
     other = create(:contact, name: "Theirs")
     data = exec(contactId: other.id, name: "Hacked")
