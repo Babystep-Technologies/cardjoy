@@ -1,0 +1,71 @@
+# Standardized design elements a holiday card can drop into a template's
+# sticker regions.
+#
+# `asset` is a filename under app/assets/holiday_card_stickers. The assets are
+# SVG and live in the API, not in web/public, because both consumers read them
+# from here: the print renderer inlines them as base64, and the editor fetches
+# them over GraphQL as a data URI (HolidayCardStickerType#data_uri). One copy,
+# versioned with the code that positions it.
+#
+# Categories are free-form strings; the editor groups the picker by them.
+# Adding a sticker is an entry here plus an SVG — no migration, no model change.
+
+- id: snowflake_fine
+  name: Fine Snowflake
+  category: snowflakes
+  asset: snowflake_fine.svg
+
+- id: snowflake_bold
+  name: Bold Snowflake
+  category: snowflakes
+  asset: snowflake_bold.svg
+
+- id: snowflake_cluster
+  name: Snowflake Cluster
+  category: snowflakes
+  asset: snowflake_cluster.svg
+
+- id: frost_corner
+  name: Frost Corner
+  category: snowflakes
+  asset: frost_corner.svg
+
+- id: holly_sprig
+  name: Holly Sprig
+  category: botanicals
+  asset: holly_sprig.svg
+
+- id: pine_bough
+  name: Pine Bough
+  category: botanicals
+  asset: pine_bough.svg
+
+- id: mistletoe
+  name: Mistletoe
+  category: botanicals
+  asset: mistletoe.svg
+
+- id: berry_wreath
+  name: Berry Wreath
+  category: botanicals
+  asset: berry_wreath.svg
+
+- id: happy_holidays
+  name: Happy Holidays
+  category: wordmarks
+  asset: happy_holidays.svg
+
+- id: merry_christmas
+  name: Merry Christmas
+  category: wordmarks
+  asset: merry_christmas.svg
+
+- id: seasons_greetings
+  name: Season's Greetings
+  category: wordmarks
+  asset: seasons_greetings.svg
+
+- id: happy_new_year
+  name: Happy New Year
+  category: wordmarks
+  asset: happy_new_year.svg

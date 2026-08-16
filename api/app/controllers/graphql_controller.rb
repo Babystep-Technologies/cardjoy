@@ -4,16 +4,21 @@
 class GraphqlController < ApiController
   # Operations that must work without authentication (sign-in/sign-up, the public
   # card reveal + guest messaging, RSVP, the cover-style/occasion pickers used
-  # before login, and the organization-invitation preview an invited person sees
+  # before login, the holiday card template/sticker catalogue the marketing page
+  # previews, and the organization-invitation preview an invited person sees
   # before they have an account). Matched exactly against the incoming
   # operationName — a substring match would let any operation whose name merely
   # *contains* one of these (e.g. "UpdateCard" contains "Card") skip the
   # controller-level auth gate.
+  #
+  # Everything listed here must be safe to serve to a stranger on its own terms.
+  # The holiday card catalogue is: it is reference data compiled into the
+  # release, identical for every caller, and touches no database.
   PUBLIC_OPERATIONS = %w[
     SignIn SignUp GoogleOauthSignIn SendPasswordReset GoogleAdminSignIn
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
     GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
-    OrganizationInvitationPreview
+    OrganizationInvitationPreview HolidayCardTemplates HolidayCardStickers
   ].freeze
 
   use ApolloUploadServer::Middleware

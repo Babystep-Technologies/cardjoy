@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Cluster of snowflakes">
+  <defs>
+    <g id="flake" fill="none" stroke-linecap="round">
+      <path d="M0 -20V20M-17.3 -10L17.3 10M-17.3 10L17.3 -10" />
+      <path d="M0 -20l-5 6M0 -20l5 6M0 20l-5 -6M0 20l5 -6" />
+    </g>
+  </defs>
+  <g stroke="#6E9DC4" stroke-width="2.4">
+    <use href="#flake" transform="translate(34 34) scale(1.15)" />
+  </g>
+  <g stroke="#A8C7E0" stroke-width="2">
+    <use href="#flake" transform="translate(72 58) scale(0.75) rotate(20)" />
+  </g>
+  <g stroke="#C7DCEC" stroke-width="2">
+    <use href="#flake" transform="translate(40 78) scale(0.5) rotate(-15)" />
+  </g>
+</svg>

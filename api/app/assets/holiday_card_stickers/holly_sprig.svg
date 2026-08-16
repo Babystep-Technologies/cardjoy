@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Holly sprig with berries">
+  <g fill="#2F6B43">
+    <path d="M50 52C36 50 24 40 20 26c12-2 18 4 21 9-2-8 1-14 6-19 5 6 7 13 5 20 4-6 11-9 20-7-3 12-11 21-22 23z" />
+    <path d="M50 52c14 2 26 12 30 26-12 2-18-4-21-9 2 8-1 14-6 19-5-6-7-13-5-20-4 6-11 9-20 7 3-12 11-21 22-23z" opacity="0.85" />
+  </g>
+  <g fill="#C1272D">
+    <circle cx="50" cy="50" r="7" />
+    <circle cx="62" cy="44" r="5.5" />
+    <circle cx="39" cy="57" r="5.5" />
+  </g>
+  <g fill="#E36B70" opacity="0.7">
+    <circle cx="48" cy="47" r="1.8" />
+    <circle cx="60.5" cy="42" r="1.4" />
+  </g>
+</svg>

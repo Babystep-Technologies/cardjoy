@@ -19,7 +19,6 @@ module Types
     # Lead times the occasion reminder picker offers, so the client can't drift
     # from the model's validation.
     field :occasion_reminder_lead_day_options, [ Integer ], null: false
-    field :collections, resolver: Queries::Collections
     field :user_promo_code, resolver: Queries::GetUserPromoCode
     field :business_metrics, resolver: Queries::BusinessMetrics
     field :daily_metrics, resolver: Queries::DailyMetrics
@@ -33,6 +32,8 @@ module Types
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
     field :my_holiday_cards, resolver: Queries::MyHolidayCards
     field :holiday_card, resolver: Queries::HolidayCard
+    field :holiday_card_templates, resolver: Queries::HolidayCardTemplates
+    field :holiday_card_stickers, resolver: Queries::HolidayCardStickers
 
     def card_occasions
       ::Card::OCCASIONS

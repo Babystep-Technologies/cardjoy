@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 90" width="300" height="90" role="img" aria-label="Happy New Year">
+  <text x="150" y="46" text-anchor="middle" textLength="250" lengthAdjust="spacingAndGlyphs" font-family="Helvetica, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="3" fill="#1F3A5F">HAPPY NEW YEAR</text>
+  <g stroke="#C9A227" stroke-width="2" stroke-linecap="round">
+    <path d="M40 62h220" />
+  </g>
+  <g fill="#C9A227">
+    <circle cx="150" cy="72" r="3" />
+    <circle cx="134" cy="72" r="2" />
+    <circle cx="166" cy="72" r="2" />
+  </g>
+</svg>
