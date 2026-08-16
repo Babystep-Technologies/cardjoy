@@ -45,6 +45,15 @@ class HolidayCard < ApplicationRecord
   MIN_ZOOM = 0.5
   MAX_ZOOM = 5.0
 
+  # Ceiling on attached photos, so a card cannot be used as an unbounded
+  # uploader. Comfortably above the busiest template (six slots across both
+  # panels) so someone can upload alternatives and pick between them.
+  #
+  # Enforced in Mutations::UploadHolidayCardPhoto rather than as a validation
+  # here on purpose: a validation would refuse to save an over-cap card, which
+  # would also block the delete that is the only way back under the cap.
+  MAX_PHOTOS = 20
+
   validates :external_id, presence: true, uniqueness: true, format: { with: /\A[A-Z]{7}\z/ }
   validates :size, inclusion: { in: VALID_SIZES }
   validates :template_id, presence: true
@@ -152,7 +161,11 @@ class HolidayCard < ApplicationRecord
         next
       end
 
-      unless blob_ids.include?(photo[:blob_id])
+      # Compared as strings: blob ids reach a client as GraphQL `ID` scalars,
+      # which serialize to strings, so a document round-tripped through the
+      # editor may carry "42" where the database holds 42. Both name the same
+      # photo, and rejecting one of them would make an unbuildable card.
+      unless blob_ids.map(&:to_s).include?(photo[:blob_id].to_s)
         errors.add(:design_config, "photo #{slot_id} in panel #{panel_name} references a photo that is not attached to this card")
       end
 
