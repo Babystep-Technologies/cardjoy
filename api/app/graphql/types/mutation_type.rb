@@ -60,5 +60,10 @@ module Types
     field :grant_organization_credits, mutation: Mutations::GrantOrganizationCredits
     field :create_organization_style, mutation: Mutations::CreateOrganizationStyle
     field :archive_organization_style, mutation: Mutations::ArchiveOrganizationStyle
+    field :create_holiday_card, mutation: Mutations::CreateHolidayCard
+    field :update_holiday_card, mutation: Mutations::UpdateHolidayCard
+    field :delete_holiday_card, mutation: Mutations::DeleteHolidayCard
+    field :upload_holiday_card_photo, mutation: Mutations::UploadHolidayCardPhoto
+    field :delete_holiday_card_photo, mutation: Mutations::DeleteHolidayCardPhoto
   end
 end
