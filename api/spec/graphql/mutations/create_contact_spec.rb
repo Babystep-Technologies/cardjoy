@@ -73,6 +73,68 @@ RSpec.describe Mutations::CreateContact, type: :request do
     expect(data["errors"]).to include("Name can't be blank")
   end
 
+  describe "mailing address" do
+    let(:query) do
+      <<~GRAPHQL
+        mutation CreateContact(
+          $name: String!, $addressLine1: String, $addressLine2: String,
+          $city: String, $region: String, $postalCode: String, $countryCode: String
+        ) {
+          createContact(
+            input: {
+              name: $name, addressLine1: $addressLine1, addressLine2: $addressLine2,
+              city: $city, region: $region, postalCode: $postalCode, countryCode: $countryCode
+            }
+          ) {
+            contact { id addressLine1 addressLine2 city region postalCode countryCode mailable }
+            errors
+          }
+        }
+      GRAPHQL
+    end
+
+    it "stores a complete address and reports the contact as mailable" do
+      data = exec({
+        name: "Mom", addressLine1: "123 Market St", addressLine2: "Apt 4",
+        city: "San Francisco", region: "CA", postalCode: "94103", countryCode: "us"
+      })
+
+      expect(data["errors"]).to be_empty
+      expect(data["contact"]).to include(
+        "addressLine1" => "123 Market St", "addressLine2" => "Apt 4", "city" => "San Francisco",
+        "region" => "CA", "postalCode" => "94103", "countryCode" => "US", "mailable" => true
+      )
+    end
+
+    it "creates a contact with no address at all" do
+      data = exec({ name: "Mom" })
+
+      expect(data["errors"]).to be_empty
+      expect(data["contact"]).to include("addressLine1" => nil, "city" => nil, "mailable" => false)
+    end
+
+    it "returns an error for a partial address" do
+      data = exec({ name: "Mom", city: "San Francisco" })
+
+      expect(data["contact"]).to be_nil
+      expect(data["errors"]).to include(
+        "Address line 1 #{Contact::INCOMPLETE_ADDRESS_MESSAGE}",
+        "Postal code #{Contact::INCOMPLETE_ADDRESS_MESSAGE}",
+        "Country code #{Contact::INCOMPLETE_ADDRESS_MESSAGE}"
+      )
+    end
+
+    it "returns an error for a malformed country code" do
+      data = exec({
+        name: "Mom", addressLine1: "123 Market St",
+        city: "San Francisco", postalCode: "94103", countryCode: "USA"
+      })
+
+      expect(data["contact"]).to be_nil
+      expect(data["errors"]).to include("Country code is not a valid country code")
+    end
+  end
+
   it "rejects unauthenticated callers" do
     post "/graphql",
       params: { query:, variables: { name: "Nobody" } }.to_json,

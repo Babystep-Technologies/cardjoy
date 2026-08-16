@@ -517,6 +517,186 @@ class Contact
   end
 
   module GeneratedAttributeMethods
+    sig { returns(T.nilable(::String)) }
+    def address_line1; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def address_line1=(value); end
+
+    sig { returns(T::Boolean) }
+    def address_line1?; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line1_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def address_line1_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def address_line1_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_line1_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_line1_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_line1_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line1_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_line1_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_line1_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line1_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line1_was; end
+
+    sig { void }
+    def address_line1_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line2; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def address_line2=(value); end
+
+    sig { returns(T::Boolean) }
+    def address_line2?; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line2_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def address_line2_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def address_line2_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_line2_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_line2_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_line2_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line2_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_line2_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_line2_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line2_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_line2_was; end
+
+    sig { void }
+    def address_line2_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def city; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def city=(value); end
+
+    sig { returns(T::Boolean) }
+    def city?; end
+
+    sig { returns(T.nilable(::String)) }
+    def city_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def city_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def city_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def city_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def city_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def city_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def city_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def city_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def city_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def city_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def city_was; end
+
+    sig { void }
+    def city_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def country_code; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def country_code=(value); end
+
+    sig { returns(T::Boolean) }
+    def country_code?; end
+
+    sig { returns(T.nilable(::String)) }
+    def country_code_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def country_code_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def country_code_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def country_code_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def country_code_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def country_code_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def country_code_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def country_code_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def country_code_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def country_code_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def country_code_was; end
+
+    sig { void }
+    def country_code_will_change!; end
+
     sig { returns(::ActiveSupport::TimeWithZone) }
     def created_at; end
 
@@ -833,6 +1013,96 @@ class Contact
     def phone_will_change!; end
 
     sig { returns(T.nilable(::String)) }
+    def postal_code; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def postal_code=(value); end
+
+    sig { returns(T::Boolean) }
+    def postal_code?; end
+
+    sig { returns(T.nilable(::String)) }
+    def postal_code_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def postal_code_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def postal_code_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def postal_code_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def postal_code_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def postal_code_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def postal_code_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def postal_code_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def postal_code_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def postal_code_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def postal_code_was; end
+
+    sig { void }
+    def postal_code_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def region; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def region=(value); end
+
+    sig { returns(T::Boolean) }
+    def region?; end
+
+    sig { returns(T.nilable(::String)) }
+    def region_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def region_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def region_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def region_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def region_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def region_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def region_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def region_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def region_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def region_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def region_was; end
+
+    sig { void }
+    def region_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
     def relationship; end
 
     sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
@@ -878,6 +1148,18 @@ class Contact
     def relationship_will_change!; end
 
     sig { void }
+    def restore_address_line1!; end
+
+    sig { void }
+    def restore_address_line2!; end
+
+    sig { void }
+    def restore_city!; end
+
+    sig { void }
+    def restore_country_code!; end
+
+    sig { void }
     def restore_created_at!; end
 
     sig { void }
@@ -899,6 +1181,12 @@ class Contact
     def restore_phone!; end
 
     sig { void }
+    def restore_postal_code!; end
+
+    sig { void }
+    def restore_region!; end
+
+    sig { void }
     def restore_relationship!; end
 
     sig { void }
@@ -906,6 +1194,30 @@ class Contact
 
     sig { void }
     def restore_user_id!; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_address_line1; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_address_line1?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_address_line2; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_address_line2?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_city; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_city?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_country_code; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_country_code?; end
 
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
     def saved_change_to_created_at; end
@@ -948,6 +1260,18 @@ class Contact
 
     sig { returns(T::Boolean) }
     def saved_change_to_phone?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_postal_code; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_postal_code?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_region; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_region?; end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_relationship; end
@@ -1058,6 +1382,18 @@ class Contact
     def user_id_will_change!; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_address_line1?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_address_line2?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_city?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_country_code?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_created_at?; end
 
     sig { returns(T::Boolean) }
@@ -1077,6 +1413,12 @@ class Contact
 
     sig { returns(T::Boolean) }
     def will_save_change_to_phone?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_postal_code?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_region?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_relationship?; end
