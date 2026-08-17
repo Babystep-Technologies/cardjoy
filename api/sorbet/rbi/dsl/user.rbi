@@ -370,6 +370,20 @@ class User
     sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
     def contact_ids=(ids); end
 
+    sig { returns(T::Array[T.untyped]) }
+    def contact_list_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def contact_list_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :contact_lists`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::ContactList::PrivateCollectionProxy) }
+    def contact_lists; end
+
+    sig { params(value: T::Enumerable[::ContactList]).void }
+    def contact_lists=(value); end
+
     # This method is created by ActiveRecord on the `User` class because it declared `has_many :contacts`.
     # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
     sig { returns(::Contact::PrivateCollectionProxy) }

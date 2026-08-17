@@ -21,6 +21,13 @@ module Types
     field :mailable, Boolean, null: false, method: :mailable?
 
     field :occasions, [ Types::OccasionType ], null: false
+    # The lists this contact is on, so the contacts page can show membership
+    # inline instead of cross-referencing myContactLists client-side.
+    field :contact_lists, [ Types::ContactListType ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    def contact_lists
+      object.contact_lists.order(:name)
+    end
   end
 end

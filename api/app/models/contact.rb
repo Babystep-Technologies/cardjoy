@@ -22,6 +22,16 @@ class Contact < ApplicationRecord
 
   belongs_to :user
   has_many :occasions, dependent: :destroy
+  # Deleting a contact must not leave a membership row pointing at nothing, so
+  # the join rows go with it. The lists themselves survive.
+  has_many :contact_list_memberships, dependent: :destroy
+  has_many :contact_lists, through: :contact_list_memberships
+
+  # The SQL form of #mailable?, for callers that want to count or filter without
+  # loading every row (see ContactList#mailable_contacts_count).
+  scope :mailable, -> {
+    REQUIRED_ADDRESS_FIELDS.reduce(all) { |relation, field| relation.where.not(field => [ nil, "" ]) }
+  }
 
   DUPLICATE_MESSAGE = "is already used by another contact"
 

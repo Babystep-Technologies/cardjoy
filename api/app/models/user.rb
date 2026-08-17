@@ -27,6 +27,7 @@ class User < ApplicationRecord
   has_many :holiday_cards, dependent: :destroy
   has_many :rsvps, dependent: :destroy
   has_many :contacts, dependent: :destroy
+  has_many :contact_lists, dependent: :destroy
   has_many :occasions, through: :contacts
   has_many :organization_memberships, dependent: :destroy
   has_many :organizations, through: :organization_memberships
