@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Bell, CalendarHeart, Pencil, Plus, Send, Trash2, UserPlus } from 'lucide-react';
+import { CalendarHeart, Send, UserPlus } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
@@ -14,11 +14,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { PhoneInput } from '@/components/PhoneInput';
 import {
   DEFAULT_PHONE_COUNTRY,
-  formatPhoneForDisplay,
   fromE164,
   toE164,
-  type CountryCode,
+  type CountryCode as PhoneCountryCode,
 } from '@/lib/phone';
+import {
+  addressDraftFrom,
+  addressInput,
+  emptyAddressDraft,
+  hasAddressInput,
+  validateAddress,
+  type AddressDraft,
+  type AddressErrors,
+} from '@/lib/address';
 import {
   Dialog,
   DialogContent,
@@ -34,30 +42,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-type Occasion = {
-  id: string;
-  kind: string;
-  occursOn: string;
-  recurring: boolean;
-  nextOccurrence: string;
-  // Days before the occasion that its reminder email goes out; null means off.
-  reminderLeadDays: number | null;
-};
-
-type Contact = {
-  id: string;
-  name: string;
-  email: string | null;
-  relationship: string | null;
-  phone: string | null;
-  notes: string | null;
-  occasions: Occasion[];
-};
-
-type UpcomingOccasion = Occasion & {
-  contact: { id: string; name: string };
-};
+import AddressFields from './components/AddressFields';
+import BulkActionBar from './components/BulkActionBar';
+import ContactListSidebar from './components/ContactListSidebar';
+import ContactRow from './components/ContactRow';
+import ContactsToolbar from './components/ContactsToolbar';
+import { formatDate, relativeLabel, reminderLeadLabel } from './format';
+import type {
+  AddressFilter,
+  Contact,
+  ContactListSummary,
+  Occasion,
+  UpcomingOccasion,
+} from './types';
 
 const CONTACT_FIELDS = gql`
   fragment ContactFields on Contact {
@@ -67,6 +64,17 @@ const CONTACT_FIELDS = gql`
     relationship
     phone
     notes
+    addressLine1
+    addressLine2
+    city
+    region
+    postalCode
+    countryCode
+    mailable
+    contactLists {
+      id
+      name
+    }
     occasions {
       id
       kind
@@ -85,6 +93,19 @@ const MY_CONTACTS = gql`
     }
   }
   ${CONTACT_FIELDS}
+`;
+
+// Counts only — membership comes off each contact's `contactLists`, so the sidebar never
+// has to pull every list's members.
+const MY_CONTACT_LISTS = gql`
+  query MyContactLists {
+    myContactLists {
+      id
+      name
+      contactsCount
+      mailableContactsCount
+    }
+  }
 `;
 
 const UPCOMING_OCCASIONS = gql`
@@ -183,40 +204,15 @@ const DELETE_OCCASION = gql`
   }
 `;
 
-// Occasion dates are plain "YYYY-MM-DD" strings with no time or zone. Build the Date from the parts
-// so it renders on the intended calendar day regardless of the viewer's timezone.
-function formatDate(iso: string): string {
-  const [year, month, day] = iso.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-function daysUntil(iso: string): number {
-  const [year, month, day] = iso.split('-').map(Number);
-  const target = new Date(year, month - 1, day);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function relativeLabel(iso: string): string {
-  const days = daysUntil(iso);
-  if (days <= 0) return 'Today';
-  if (days === 1) return 'Tomorrow';
-  return `in ${days} days`;
-}
-
 // `phone` holds the number as typed (national format); it's converted to E.164 on save.
 type ContactDraft = {
   name: string;
   email: string;
   relationship: string;
   phone: string;
-  phoneCountry: CountryCode;
+  phoneCountry: PhoneCountryCode;
   notes: string;
+  address: AddressDraft;
 };
 
 const INVALID_PHONE_MESSAGE = "That doesn't look like a valid phone number";
@@ -226,13 +222,6 @@ const DEFAULT_REMINDER_LEAD_DAYS = 7;
 
 // Radix's Select can't hold an empty value, so "reminders off" needs a sentinel.
 const REMINDER_OFF = 'off';
-
-// Round lead times read better as weeks or months than as a day count.
-function reminderLeadLabel(days: number): string {
-  if (days % 30 === 0) return days === 30 ? '1 month before' : `${days / 30} months before`;
-  if (days % 7 === 0) return days === 7 ? '1 week before' : `${days / 7} weeks before`;
-  return days === 1 ? '1 day before' : `${days} days before`;
-}
 
 type OccasionDraft = {
   kind: string;
@@ -249,6 +238,10 @@ const Contacts: React.FC = () => {
     refetch: refetchContacts,
   } = useQuery(MY_CONTACTS, { fetchPolicy: 'cache-and-network' });
 
+  const { data: listsData, refetch: refetchLists } = useQuery(MY_CONTACT_LISTS, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const { data: upcomingData, refetch: refetchUpcoming } = useQuery(UPCOMING_OCCASIONS, {
     fetchPolicy: 'cache-and-network',
   });
@@ -257,6 +250,7 @@ const Contacts: React.FC = () => {
   const { data: reminderOptionsData } = useQuery(REMINDER_LEAD_DAY_OPTIONS);
 
   const contacts: Contact[] = useMemo(() => contactsData?.myContacts ?? [], [contactsData]);
+  const lists: ContactListSummary[] = useMemo(() => listsData?.myContactLists ?? [], [listsData]);
   const upcoming: UpcomingOccasion[] = useMemo(
     () => upcomingData?.upcomingOccasions ?? [],
     [upcomingData]
@@ -285,13 +279,74 @@ const Contacts: React.FC = () => {
   const [saving, setSaving] = useState(false);
   // Shown under the phone field once the user leaves it (or tries to save) with a bad number.
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [addressErrors, setAddressErrors] = useState<AddressErrors>({});
 
-  const refetchAll = async () => {
-    await Promise.all([refetchContacts(), refetchUpcoming()]);
-  };
+  // Which list the table is filtered to (null = everyone), and by address completeness.
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const [addressFilter, setAddressFilter] = useState<AddressFilter>('all');
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const activeList = useMemo(
+    () => lists.find(list => list.id === selectedListId) ?? null,
+    [lists, selectedListId]
+  );
+
+  // The selected list narrows the population; the address filter then narrows what's shown.
+  // Keeping them separate lets the filter chips count against the list, not the whole book.
+  const listContacts = useMemo(
+    () =>
+      selectedListId
+        ? contacts.filter(contact => contact.contactLists.some(list => list.id === selectedListId))
+        : contacts,
+    [contacts, selectedListId]
+  );
+
+  const visibleContacts = useMemo(() => {
+    if (addressFilter === 'has') return listContacts.filter(contact => contact.mailable);
+    if (addressFilter === 'missing') return listContacts.filter(contact => !contact.mailable);
+    return listContacts;
+  }, [listContacts, addressFilter]);
+
+  const mailableCount = useMemo(
+    () => contacts.filter(contact => contact.mailable).length,
+    [contacts]
+  );
+  const listMailableCount = useMemo(
+    () => listContacts.filter(contact => contact.mailable).length,
+    [listContacts]
+  );
+
+  const visibleIds = useMemo(
+    () => new Set(visibleContacts.map(contact => contact.id)),
+    [visibleContacts]
+  );
+  // A contact hidden by the current filter shouldn't stay silently selected and get swept
+  // into the next bulk action.
+  const effectiveSelectedIds = useMemo(
+    () => selectedIds.filter(id => visibleIds.has(id)),
+    [selectedIds, visibleIds]
+  );
+
+  const refetchAll = useCallback(async () => {
+    await Promise.all([refetchContacts(), refetchLists(), refetchUpcoming()]);
+  }, [refetchContacts, refetchLists, refetchUpcoming]);
+
+  const clearSelection = useCallback(() => setSelectedIds([]), []);
+
+  const toggleSelected = useCallback((contactId: string) => {
+    setSelectedIds(prev =>
+      prev.includes(contactId) ? prev.filter(id => id !== contactId) : [...prev, contactId]
+    );
+  }, []);
+
+  const toggleAll = useCallback(
+    (selectAll: boolean) => setSelectedIds(selectAll ? visibleContacts.map(c => c.id) : []),
+    [visibleContacts]
+  );
 
   const openAddContact = () => {
     setPhoneError(null);
+    setAddressErrors({});
     setContactDialog({
       id: null,
       draft: {
@@ -301,6 +356,7 @@ const Contacts: React.FC = () => {
         phone: '',
         phoneCountry: DEFAULT_PHONE_COUNTRY,
         notes: '',
+        address: emptyAddressDraft(),
       },
     });
   };
@@ -308,6 +364,7 @@ const Contacts: React.FC = () => {
   const openEditContact = (contact: Contact) => {
     const { country, national } = fromE164(contact.phone);
     setPhoneError(null);
+    setAddressErrors({});
     setContactDialog({
       id: contact.id,
       draft: {
@@ -317,8 +374,17 @@ const Contacts: React.FC = () => {
         phone: national,
         phoneCountry: country,
         notes: contact.notes ?? '',
+        address: addressDraftFrom(contact),
       },
     });
+  };
+
+  const patchAddress = (patch: Partial<AddressDraft>) => {
+    setAddressErrors({});
+    setContactDialog(
+      prev =>
+        prev && { ...prev, draft: { ...prev.draft, address: { ...prev.draft.address, ...patch } } }
+    );
   };
 
   const openAddOccasion = (contactId: string) =>
@@ -361,6 +427,14 @@ const Contacts: React.FC = () => {
       return;
     }
     setPhoneError(null);
+    // The API rejects a partial address outright, so catch it here rather than letting the
+    // user discover the rule from a server error.
+    const addressProblems = validateAddress(draft.address);
+    setAddressErrors(addressProblems);
+    if (Object.keys(addressProblems).length > 0) {
+      toast.error('Please finish the mailing address, or clear it');
+      return;
+    }
     setSaving(true);
     try {
       const variables = {
@@ -371,6 +445,7 @@ const Contacts: React.FC = () => {
           relationship: draft.relationship.trim(),
           phone,
           notes: draft.notes.trim(),
+          ...addressInput(draft.address),
         },
       };
       const { data } = id ? await updateContact({ variables }) : await createContact({ variables });
@@ -399,6 +474,7 @@ const Contacts: React.FC = () => {
         return;
       }
       toast.success('Contact deleted');
+      setSelectedIds(prev => prev.filter(id => id !== contact.id));
       await refetchAll();
     } catch {
       toast.error('Failed to delete contact');
@@ -466,16 +542,25 @@ const Contacts: React.FC = () => {
   if (contactsLoading && contacts.length === 0) return <LoadingScreen />;
   if (contactsError && contacts.length === 0) return <ErrorScreen />;
 
+  // What the contacts panel says when it has nothing to show, which depends on why.
+  const emptyMessage = () => {
+    if (contacts.length === 0) return "You haven't added anyone yet.";
+    if (activeList && listContacts.length === 0) return `No contacts on ${activeList.name} yet.`;
+    if (addressFilter === 'has') return 'Nobody here has a mailing address yet.';
+    if (addressFilter === 'missing') return 'Everyone here has a mailing address. Nice.';
+    return 'No contacts match this filter.';
+  };
+
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 px-4 py-8">
       <Toaster />
-      <div className="mx-auto w-full max-w-4xl">
+      <div className="mx-auto w-full max-w-6xl">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Contacts</h1>
             <p className="mt-1 text-gray-600">
-              Keep track of the people you care about and their special days — so CardJoy can remind
-              you to send a card.
+              Keep track of the people you care about — their special days, and where to mail them a
+              card.
             </p>
           </div>
           <Button onClick={openAddContact} className="shrink-0">
@@ -495,7 +580,7 @@ const Contacts: React.FC = () => {
               No occasions coming up in the next 30 days.
             </p>
           ) : (
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {upcoming.map(occasion => (
                 <li
                   key={occasion.id}
@@ -522,121 +607,80 @@ const Contacts: React.FC = () => {
           )}
         </section>
 
-        {/* Contacts */}
-        <section>
-          <h2 className="mb-3 text-lg font-semibold text-gray-800">Contacts</h2>
-          {contacts.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-gray-300 bg-white/60 p-8 text-center">
-              <p className="text-gray-600">You haven&apos;t added anyone yet.</p>
-              <Button onClick={openAddContact} variant="outline" className="mt-4">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add your first contact
-              </Button>
-            </div>
-          ) : (
-            <ul className="space-y-4">
-              {contacts.map(contact => (
-                <li
-                  key={contact.id}
-                  className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-lg font-semibold text-gray-900">{contact.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {[contact.relationship, contact.email, formatPhoneForDisplay(contact.phone)]
-                          .filter(Boolean)
-                          .join(' · ') || 'No details'}
-                      </p>
-                      {contact.notes && (
-                        <p className="mt-1 line-clamp-2 text-sm text-gray-600">{contact.notes}</p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Edit ${contact.name}`}
-                        onClick={() => openEditContact(contact)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        aria-label={`Delete ${contact.name}`}
-                        onClick={() => handleDeleteContact(contact)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
+        <div className="grid gap-6 lg:grid-cols-[16rem_1fr] lg:items-start">
+          <ContactListSidebar
+            lists={lists}
+            selectedListId={selectedListId}
+            onSelectList={listId => {
+              setSelectedListId(listId);
+              clearSelection();
+            }}
+            totalContacts={contacts.length}
+            mailableContacts={mailableCount}
+            onChanged={refetchAll}
+          />
 
-                  <div className="mt-3 border-t border-gray-100 pt-3">
-                    {contact.occasions.length === 0 ? (
-                      <p className="text-sm text-gray-400">No occasions yet.</p>
-                    ) : (
-                      <ul className="space-y-2">
-                        {contact.occasions.map(occasion => (
-                          <li
-                            key={occasion.id}
-                            className="flex items-center justify-between gap-2 text-sm"
-                          >
-                            <span className="min-w-0 text-gray-700">
-                              <span className="font-medium">{occasion.kind}</span>{' '}
-                              <span className="text-gray-500">
-                                — {formatDate(occasion.occursOn)}
-                                {occasion.recurring && ' (yearly)'}
-                              </span>
-                              <span className="flex items-center gap-1 text-xs text-gray-400">
-                                <Bell className="h-3 w-3 shrink-0" />
-                                {occasion.reminderLeadDays === null
-                                  ? 'No reminder'
-                                  : `Reminder ${reminderLeadLabel(occasion.reminderLeadDays)}`}
-                              </span>
-                            </span>
-                            <span className="flex shrink-0 gap-1">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                aria-label={`Edit ${occasion.kind} occasion`}
-                                onClick={() => openEditOccasion(contact.id, occasion)}
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                aria-label={`Delete ${occasion.kind} occasion`}
-                                onClick={() => handleDeleteOccasion(occasion)}
-                              >
-                                <Trash2 className="h-3.5 w-3.5 text-red-500" />
-                              </Button>
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="mt-2 text-pink-600 hover:text-pink-700"
-                      onClick={() => openAddOccasion(contact.id)}
-                    >
-                      <Plus className="mr-1 h-4 w-4" />
-                      Add occasion
-                    </Button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+          <section className="min-w-0">
+            <h2 className="mb-3 text-lg font-semibold text-gray-800">
+              {activeList ? activeList.name : 'Contacts'}
+            </h2>
+
+            {contacts.length > 0 && (
+              <ContactsToolbar
+                selectedCount={effectiveSelectedIds.length}
+                visibleCount={visibleContacts.length}
+                onToggleAll={toggleAll}
+                addressFilter={addressFilter}
+                onAddressFilterChange={setAddressFilter}
+                totalCount={listContacts.length}
+                mailableCount={listMailableCount}
+              />
+            )}
+
+            {effectiveSelectedIds.length > 0 && (
+              <BulkActionBar
+                selectedIds={effectiveSelectedIds}
+                lists={lists}
+                activeList={activeList}
+                onClearSelection={clearSelection}
+                onChanged={refetchAll}
+              />
+            )}
+
+            {visibleContacts.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-gray-300 bg-white/60 p-8 text-center">
+                <p className="text-gray-600">{emptyMessage()}</p>
+                {contacts.length === 0 && (
+                  <Button onClick={openAddContact} variant="outline" className="mt-4">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Add your first contact
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <ul className="space-y-4">
+                {visibleContacts.map(contact => (
+                  <ContactRow
+                    key={contact.id}
+                    contact={contact}
+                    selected={effectiveSelectedIds.includes(contact.id)}
+                    onToggleSelected={toggleSelected}
+                    onEdit={openEditContact}
+                    onDelete={handleDeleteContact}
+                    onAddOccasion={openAddOccasion}
+                    onEditOccasion={openEditOccasion}
+                    onDeleteOccasion={handleDeleteOccasion}
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
       </div>
 
       {/* Contact add/edit dialog */}
       <Dialog open={!!contactDialog} onOpenChange={open => !open && setContactDialog(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{contactDialog?.id ? 'Edit contact' : 'Add contact'}</DialogTitle>
             <DialogDescription>
@@ -736,6 +780,12 @@ const Contacts: React.FC = () => {
                   rows={3}
                 />
               </div>
+              <AddressFields
+                value={contactDialog.draft.address}
+                onChange={patchAddress}
+                errors={addressErrors}
+                defaultOpen={hasAddressInput(contactDialog.draft.address)}
+              />
             </div>
           )}
           <DialogFooter>

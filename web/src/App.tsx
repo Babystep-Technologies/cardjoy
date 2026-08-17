@@ -32,7 +32,6 @@ import ClientOccasions from '@/pages/ClientOccasions';
 import ConnectSlack from '@/pages/ConnectSlack';
 import Slack from '@/pages/Slack';
 import Occasions from '@/pages/Occasions';
-import Contacts from '@/pages/Contacts/Index';
 import OrganizationNew from '@/pages/Organization/New';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -52,6 +51,10 @@ import {
 // Organization pages nobody hits on first paint, so they are code-split rather than carried in the
 // initial bundle — which also keeps that bundle under the 2 MiB the PWA plugin will precache (the
 // same limit the `phone` chunk in vite.config.ts exists for).
+//
+// Contacts is here for the same reason: it is signed-in-only, so nobody lands on it first, and the
+// address + list surfaces made it big enough to push the main chunk past that limit.
+const Contacts = React.lazy(() => import('@/pages/Contacts/Index'));
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
@@ -104,7 +107,14 @@ const App: React.FC = () => {
           <Route path="/buy_credits/success" element={<BuyCreditsSuccess />} />
           <Route path="/redeem" element={<RedeemPromo />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/contacts" element={<Contacts />} />
+          <Route
+            path="/contacts"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <Contacts />
+              </React.Suspense>
+            }
+          />
           <Route path="/organizations/new" element={<OrganizationNew />} />
           <Route
             path="/organizations/settings"
