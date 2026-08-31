@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_21_234630) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -113,6 +113,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_130000) do
   create_table "contacts", force: :cascade do |t|
     t.string "address_line1"
     t.string "address_line2"
+    t.string "address_verification_status"
+    t.datetime "address_verified_at"
+    t.string "address_zone"
     t.string "city"
     t.string "country_code"
     t.datetime "created_at", null: false

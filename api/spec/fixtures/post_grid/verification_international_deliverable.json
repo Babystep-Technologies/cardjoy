@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "message": "Address verified",
+  "data": {
+    "city": "LONDON",
+    "country": "gb",
+    "countryName": "UNITED KINGDOM",
+    "errors": {},
+    "line1": "221B BAKER ST",
+    "postalOrZip": "NW1 6XE",
+    "provinceOrState": "",
+    "status": "verified"
+  }
+}

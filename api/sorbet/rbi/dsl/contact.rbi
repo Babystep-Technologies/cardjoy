@@ -639,6 +639,151 @@ class Contact
     def address_line2_will_change!; end
 
     sig { returns(T.nilable(::String)) }
+    def address_verification_status; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def address_verification_status=(value); end
+
+    sig { returns(T::Boolean) }
+    def address_verification_status?; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_verification_status_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def address_verification_status_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def address_verification_status_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_verification_status_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_verification_status_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_verification_status_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_verification_status_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_verification_status_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_verification_status_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_verification_status_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_verification_status_was; end
+
+    sig { void }
+    def address_verification_status_will_change!; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def address_verified_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def address_verified_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def address_verified_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def address_verified_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def address_verified_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def address_verified_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def address_verified_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def address_verified_at_change_to_be_saved; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def address_verified_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def address_verified_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def address_verified_at_previous_change; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def address_verified_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def address_verified_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def address_verified_at_was; end
+
+    sig { void }
+    def address_verified_at_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_zone; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def address_zone=(value); end
+
+    sig { returns(T::Boolean) }
+    def address_zone?; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_zone_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def address_zone_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def address_zone_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_zone_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_zone_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_zone_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_zone_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def address_zone_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def address_zone_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def address_zone_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def address_zone_was; end
+
+    sig { void }
+    def address_zone_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
     def city; end
 
     sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
@@ -1185,6 +1330,15 @@ class Contact
     def restore_address_line2!; end
 
     sig { void }
+    def restore_address_verification_status!; end
+
+    sig { void }
+    def restore_address_verified_at!; end
+
+    sig { void }
+    def restore_address_zone!; end
+
+    sig { void }
     def restore_city!; end
 
     sig { void }
@@ -1237,6 +1391,24 @@ class Contact
 
     sig { returns(T::Boolean) }
     def saved_change_to_address_line2?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_address_verification_status; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_address_verification_status?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_address_verified_at; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_address_verified_at?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_address_zone; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_address_zone?; end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_city; end
@@ -1417,6 +1589,15 @@ class Contact
 
     sig { returns(T::Boolean) }
     def will_save_change_to_address_line2?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_address_verification_status?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_address_verified_at?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_address_zone?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_city?; end

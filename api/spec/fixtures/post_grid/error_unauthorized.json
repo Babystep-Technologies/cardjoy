@@ -1,0 +1,6 @@
+{
+  "error": {
+    "type": "authentication_error",
+    "message": "The API key provided is invalid or has been revoked."
+  }
+}

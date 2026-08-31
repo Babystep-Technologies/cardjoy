@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "message": "Address corrected and verified",
+  "data": {
+    "city": "TORONTO",
+    "country": "ca",
+    "countryName": "CANADA",
+    "errors": {},
+    "line1": "20-145 MULOCK AVE",
+    "postalOrZip": "M6N 1G9",
+    "provinceOrState": "ON",
+    "status": "corrected"
+  }
+}

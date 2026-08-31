@@ -65,6 +65,10 @@ docker compose exec web yarn build         # tsc type-check + build
   `ADDITIONAL_CORS_ORIGINS` from environment variables, falling back to Rails encrypted
   credentials — so local dev is unaffected. See `api/config/database.yml`, `storage.yml`, the
   Google sign-in mutations, and `initializers/cors.rb`.
+- **PostGrid (physical mail) is optional and mode-explicit:** `POSTGRID_API_KEY`,
+  `POSTGRID_TEST_API_KEY`, `POSTGRID_MODE`, each with a `credentials.post_grid.*` fallback. No key ⇒
+  `PostGrid.configured?` is false and callers degrade instead of raising. Mode never comes from
+  `Rails.env`. See the PostGrid section in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 - **Optional frontend integrations:** GIPHY, Unsplash, and PostHog are gated on their `VITE_*` keys
   being present (blank = feature hidden, no crash). Keys are optional; see `web/.env.example`.
 - **Test credentials are committed** (`api/config/credentials/test.key` + `test.yml.enc`, dummy

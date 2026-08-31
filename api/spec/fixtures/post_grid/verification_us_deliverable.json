@@ -1,0 +1,16 @@
+{
+  "status": "success",
+  "message": "Address verified",
+  "data": {
+    "city": "SAN FRANCISCO",
+    "country": "us",
+    "countryName": "UNITED STATES",
+    "errors": {},
+    "line1": "123 MARKET ST",
+    "line2": "APT 4",
+    "postalOrZip": "94103",
+    "provinceOrState": "CA",
+    "status": "verified",
+    "zipPlus4": "1741"
+  }
+}

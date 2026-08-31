@@ -43,6 +43,7 @@ module Types
     field :create_contact, mutation: Mutations::CreateContact
     field :update_contact, mutation: Mutations::UpdateContact
     field :delete_contact, mutation: Mutations::DeleteContact
+    field :verify_contact_address, mutation: Mutations::VerifyContactAddress
     field :create_contact_list, mutation: Mutations::CreateContactList
     field :rename_contact_list, mutation: Mutations::RenameContactList
     field :delete_contact_list, mutation: Mutations::DeleteContactList

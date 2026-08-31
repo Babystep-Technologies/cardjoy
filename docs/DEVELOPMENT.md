@@ -33,6 +33,28 @@ request was anonymous and sign-in appeared to succeed while silently doing nothi
 
 `credentials:edit` does not run initializers, so a missing secret is still fixable through it.
 
+### PostGrid (physical mail)
+
+Printing and mailing cards goes through PostGrid. It is entirely optional: with no key configured
+`PostGrid.configured?` is false, address verification reports itself unavailable, and nothing else
+in the app changes — the same gating GIPHY, Unsplash, and PostHog get on the frontend. **You do not
+need a PostGrid key to develop, and CI does not have one.**
+
+Three env vars, each falling back to `credentials.post_grid.*`:
+
+| Env var | Credential | Purpose |
+|---|---|---|
+| `POSTGRID_API_KEY` | `post_grid.api_key` | The live key. Mails real cards and bills real money. |
+| `POSTGRID_TEST_API_KEY` | `post_grid.test_api_key` | The test key. Everything runs, nothing is printed. |
+| `POSTGRID_MODE` | `post_grid.mode` | `live` or `test`; anything else reads as `test`. |
+
+`POSTGRID_MODE` is a separate switch from `RAILS_ENV` on purpose. Nothing in `app/services/post_grid`
+looks at `Rails.env`: the proof run uses the **test** key from **production**, and a staging box that
+happens to boot as `production` must not start mailing postcards to real people.
+
+**This repo is public. Never commit a key, live or test** — not in a credentials file, not in a spec,
+not in a fixture. The specs use an obviously fake `test_sk_…` string.
+
 ## Before you start
 
 1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).

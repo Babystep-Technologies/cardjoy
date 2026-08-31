@@ -20,6 +20,14 @@ module Types
     field :country_code, String, null: true
     field :mailable, Boolean, null: false, method: :mailable?
 
+    # Cached PostGrid verification. Always one of "verified", "undeliverable",
+    # or "unverified" — the last covers both "never checked" and "checked, then
+    # the address was edited", which are the same thing to a client.
+    field :address_verification_status, String, null: false, method: :address_verification_state
+    # Null until verified. The pricing zone the rate-card lookup keys on.
+    field :address_zone, String, null: true
+    field :address_verified_at, GraphQL::Types::ISO8601DateTime, null: true
+
     field :occasions, [ Types::OccasionType ], null: false
     # The lists this contact is on, so the contacts page can show membership
     # inline instead of cross-referencing myContactLists client-side.
