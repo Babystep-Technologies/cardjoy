@@ -1,0 +1,6 @@
+{
+  "error": {
+    "type": "internal_server_error",
+    "message": "Something went wrong on our end. Please try again."
+  }
+}

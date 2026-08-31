@@ -172,6 +172,91 @@ RSpec.describe Contact, type: :model do
     end
   end
 
+  describe "address verification cache" do
+    let(:contact) do
+      create(:contact, :mailable).tap do |record|
+        record.update!(
+          address_verified_at: 1.day.ago,
+          address_verification_status: Contact::VERIFIED_STATUS,
+          address_zone: "us_domestic"
+        )
+      end
+    end
+
+    it "reports unverified when nothing has been verified" do
+      expect(create(:contact, :mailable).address_verification_state).to eq("unverified")
+      expect(create(:contact, :mailable)).not_to be_address_verified
+    end
+
+    # The callback lives on the model, not in the mutation, so this holds for
+    # the console and any future importer too — not just updateContact.
+    # country_code is format-validated, so each field needs a value that is both
+    # different and valid — "something else" is not a country.
+    { address_line1: "456 Mission St", address_line2: "Suite 9", city: "Oakland",
+      region: "NY", postal_code: "94607", country_code: "CA" }.each do |field, new_value|
+      it "clears the cached verdict when #{field} changes" do
+        contact.update!(field => new_value)
+
+        expect(contact.reload).to have_attributes(
+          address_verified_at: nil, address_verification_status: nil, address_zone: nil
+        )
+        expect(contact.address_verification_state).to eq("unverified")
+      end
+    end
+
+    it "clears the verdict when an address field is blanked out" do
+      contact.update!(address_line2: "")
+
+      expect(contact.reload.address_verification_status).to be_nil
+    end
+
+    it "keeps the verdict when a non-address field changes" do
+      contact.update!(name: "New Name", notes: "New notes")
+
+      expect(contact.reload).to have_attributes(
+        address_verification_status: Contact::VERIFIED_STATUS, address_zone: "us_domestic"
+      )
+      expect(contact.address_verified_at).to be_present
+    end
+
+    it "keeps the verdict when an address field is reassigned its current value" do
+      contact.update!(city: contact.city)
+
+      expect(contact.reload.address_verification_status).to eq(Contact::VERIFIED_STATUS)
+    end
+
+    describe "#apply_address_verification!" do
+      let(:result) do
+        PostGrid::AddressVerification::Result.new(deliverable: true, zone: "us_domestic")
+      end
+
+      it "writes the cache without touching the address the user typed" do
+        subject = create(:contact, :mailable)
+
+        subject.apply_address_verification!(result)
+
+        expect(subject.reload).to have_attributes(
+          address_verification_status: "verified",
+          address_zone: "us_domestic",
+          address_line1: "123 Market St"
+        )
+        expect(subject.address_verified_at).to be_present
+      end
+
+      it "records an undeliverable result" do
+        subject = create(:contact, :mailable)
+
+        subject.apply_address_verification!(
+          PostGrid::AddressVerification::Result.new(deliverable: false, zone: "canada")
+        )
+
+        expect(subject.reload).to have_attributes(
+          address_verification_status: "undeliverable", address_zone: "canada"
+        )
+      end
+    end
+  end
+
   it "destroys its occasions when destroyed" do
     contact = create(:contact, :with_occasions)
     expect { contact.destroy }.to change(Occasion, :count).by(-2)

@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "message": "Address could not be verified",
+  "data": {
+    "city": "SAN FRANCISCO",
+    "country": "us",
+    "countryName": "UNITED STATES",
+    "errors": {
+      "line1": "The street number could not be found on this street.",
+      "postalOrZip": "The ZIP code does not match the city."
+    },
+    "line1": "99999 NOWHERE ST",
+    "postalOrZip": "94103",
+    "provinceOrState": "CA",
+    "status": "failed"
+  }
+}
