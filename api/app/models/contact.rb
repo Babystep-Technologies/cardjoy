@@ -37,6 +37,10 @@ class Contact < ApplicationRecord
   # the join rows go with it. The lists themselves survive.
   has_many :contact_list_memberships, dependent: :destroy
   has_many :contact_lists, through: :contact_list_memberships
+  # Nullified, never destroyed. An order is a record of money spent and of a
+  # card that is physically in the post; deleting the contact must not erase it.
+  # `recipient_snapshot` is what keeps the order readable afterwards.
+  has_many :holiday_card_mail_orders, dependent: :nullify
 
   # The SQL form of #mailable?, for callers that want to count or filter without
   # loading every row (see ContactList#mailable_contacts_count).

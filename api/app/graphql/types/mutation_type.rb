@@ -73,5 +73,6 @@ module Types
     field :delete_holiday_card_photo, mutation: Mutations::DeleteHolidayCardPhoto
     field :generate_holiday_card_proof, mutation: Mutations::GenerateHolidayCardProof
     field :approve_holiday_card_proof, mutation: Mutations::ApproveHolidayCardProof
+    field :send_holiday_card, mutation: Mutations::SendHolidayCard
   end
 end

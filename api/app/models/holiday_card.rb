@@ -15,6 +15,7 @@
 # here.
 class HolidayCard < ApplicationRecord
   belongs_to :user
+  has_many :mail_orders, class_name: "HolidayCardMailOrder", dependent: :destroy
   has_many_attached :photos
 
   # Design-document versions this model understands. Keep old numbers listed

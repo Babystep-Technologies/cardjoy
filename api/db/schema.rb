@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_165511) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_07_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -254,6 +254,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_165511) do
     t.datetime "updated_at", null: false
     t.index ["card_id"], name: "index_guest_messages_on_card_id"
     t.index ["deleted_at"], name: "index_guest_messages_on_deleted_at"
+  end
+
+  create_table "holiday_card_mail_orders", force: :cascade do |t|
+    t.integer "base_cents", null: false
+    t.integer "charged_cents", null: false
+    t.bigint "contact_id"
+    t.datetime "created_at", null: false
+    t.text "failure_reason"
+    t.bigint "holiday_card_id", null: false
+    t.string "idempotency_key", null: false
+    t.datetime "mailed_at"
+    t.string "mailing_class", null: false
+    t.bigint "postage_credit_id"
+    t.string "postgrid_id"
+    t.string "rate_card_version", null: false
+    t.jsonb "recipient_snapshot", default: {}, null: false
+    t.string "size", null: false
+    t.string "status", null: false
+    t.datetime "submitted_at"
+    t.string "tracking_number"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.string "zone", null: false
+    t.index ["contact_id"], name: "index_holiday_card_mail_orders_on_contact_id"
+    t.index ["holiday_card_id"], name: "index_holiday_card_mail_orders_on_holiday_card_id"
+    t.index ["idempotency_key"], name: "index_holiday_card_mail_orders_on_idempotency_key", unique: true
+    t.index ["postage_credit_id"], name: "index_holiday_card_mail_orders_on_postage_credit_id"
+    t.index ["postgrid_id"], name: "index_holiday_card_mail_orders_on_postgrid_id"
+    t.index ["status"], name: "index_holiday_card_mail_orders_on_status"
+    t.index ["user_id"], name: "index_holiday_card_mail_orders_on_user_id"
   end
 
   create_table "holiday_cards", force: :cascade do |t|
@@ -558,6 +588,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_165511) do
   add_foreign_key "contacts", "users"
   add_foreign_key "credits", "users"
   add_foreign_key "guest_messages", "cards"
+  add_foreign_key "holiday_card_mail_orders", "contacts", on_delete: :nullify
+  add_foreign_key "holiday_card_mail_orders", "holiday_cards"
+  add_foreign_key "holiday_card_mail_orders", "postage_credits"
+  add_foreign_key "holiday_card_mail_orders", "users"
   add_foreign_key "holiday_cards", "users"
   add_foreign_key "invitations", "organizations", on_delete: :nullify
   add_foreign_key "invitations", "users"
