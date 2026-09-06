@@ -497,6 +497,20 @@ class User
     def organizations=(value); end
 
     sig { returns(T::Array[T.untyped]) }
+    def postage_credit_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def postage_credit_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :postage_credits`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::PostageCredit::PrivateCollectionProxy) }
+    def postage_credits; end
+
+    sig { params(value: T::Enumerable[::PostageCredit]).void }
+    def postage_credits=(value); end
+
+    sig { returns(T::Array[T.untyped]) }
     def promo_code_ids; end
 
     sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }

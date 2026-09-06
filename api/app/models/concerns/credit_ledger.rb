@@ -1,15 +1,21 @@
 # typed: false
 
-# Shared validation for the two credit ledgers: Credit (personal) and
-# OrganizationCredit (an organization's shared pool). Both are append-only
-# tables carrying an `events` jsonb audit trail, and both need that array to
-# stay well formed — otherwise the ledger stops being readable as history.
+# Shared validation for the credit ledgers: Credit (personal),
+# OrganizationCredit (an organization's shared pool), and PostageCredit (the
+# cents-denominated postage wallet). All are append-only tables carrying an
+# `events` jsonb audit trail, and all need that array to stay well formed —
+# otherwise the ledger stops being readable as history.
 #
 # Each entry must be a hash with an `event_kind` drawn from the including
 # model's allowlist, a hash `event_data`, and an ISO 8601 `event_happened_at`.
 # The allowlists differ per ledger (a personal `signup_bonus` is meaningless
-# for an org pool, and vice versa), so an including model declares its own
-# `EVENT_KINDS` constant and returns it from #allowed_event_kinds.
+# for an org pool or a postage row, and vice versa), so an including model
+# declares its own `EVENT_KINDS` constant and returns it from
+# #allowed_event_kinds.
+#
+# Denomination is *not* shared: Credit and OrganizationCredit carry `amount` in
+# whole credits, PostageCredit carries `amount_cents`. This concern validates
+# the audit trail only, so it stays agnostic about which column holds the money.
 #
 # Typed `false` like the other model concerns: the validation calls back into
 # ActiveRecord methods (`events`, `errors`) that only exist on the including
