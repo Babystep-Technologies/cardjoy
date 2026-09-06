@@ -13,6 +13,7 @@ module PostGridHelpers
   LIVE_API_KEY = "live_sk_specsuitefakekeydonotuse"
 
   VERIFY_URL = "#{PostGrid::Client::ADDRESS_VERIFICATION_BASE_URL}#{PostGrid::AddressVerification::VERIFY_PATH}"
+  POSTCARDS_URL = "#{PostGrid::Client::BASE_URL}#{HolidayCard::ProofGenerator::POSTCARDS_PATH}"
 
   def post_grid_fixture(name)
     FIXTURE_DIR.join("#{name}.json").read
@@ -48,6 +49,14 @@ module PostGridHelpers
 
   def stub_verification(body:, status: 200)
     stub_request(:post, VERIFY_URL).to_return(
+      status:, body:, headers: { "Content-Type" => "application/json" }
+    )
+  end
+
+  # Defaults to the created-postcard fixture, so the happy path reads as one
+  # line. The returned stub is what a spec asserts request headers and body on.
+  def stub_postcard_create(body: post_grid_fixture("postcard_test_created"), status: 200)
+    stub_request(:post, POSTCARDS_URL).to_return(
       status:, body:, headers: { "Content-Type" => "application/json" }
     )
   end

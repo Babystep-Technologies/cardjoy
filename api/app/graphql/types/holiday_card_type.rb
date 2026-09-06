@@ -17,6 +17,24 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
+    # The proof state, as three things the editor can render directly rather
+    # than as a digest it would have to compare itself. `proofCurrent` is
+    # deliberately not "has a proof": a card whose design moved after its render
+    # still has a `proofUrl`, and the editor shows it while telling the user it
+    # is out of date.
+    field :proof_url, String, null: true
+    field :proof_generated_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :proof_current, Boolean, null: false
+    field :proof_approved, Boolean, null: false
+
+    def proof_current
+      object.proof_current?
+    end
+
+    def proof_approved
+      object.proof_approved?
+    end
+
     def photos
       object.photos.blobs.map { |blob| { blob:, card: object } }
     end

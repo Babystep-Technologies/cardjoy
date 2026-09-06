@@ -213,4 +213,152 @@ RSpec.describe HolidayCard, type: :model do
       expect(card).to be_valid
     end
   end
+
+  describe "the proof digest" do
+    let(:card) { create(:holiday_card, design_config: { "version" => 1, "front" => { "texts" => { "greeting" => { "content" => "Hi" } } } }) }
+
+    it "is stable across saves that change nothing about the design" do
+      before_digest = card.proof_design_digest_for_current_design
+      card.update!(title: "A different name for it")
+
+      expect(card.reload.proof_design_digest_for_current_design).to eq(before_digest)
+    end
+
+    it "does not depend on the order the design document's keys arrive in" do
+      one = build(:holiday_card, design_config: { "version" => 1, "front" => { "a" => 1, "b" => 2 } })
+      other = build(:holiday_card, design_config: { "front" => { "b" => 2, "a" => 1 }, "version" => 1 })
+
+      expect(one.proof_design_digest_for_current_design).to eq(other.proof_design_digest_for_current_design)
+    end
+
+    it "does depend on the order of a sticker list — that is paint order" do
+      one = build(:holiday_card, design_config: { "version" => 1, "front" => { "stickers" => [ { "sticker_id" => "a" }, { "sticker_id" => "b" } ] } })
+      other = build(:holiday_card, design_config: { "version" => 1, "front" => { "stickers" => [ { "sticker_id" => "b" }, { "sticker_id" => "a" } ] } })
+
+      expect(one.proof_design_digest_for_current_design).not_to eq(other.proof_design_digest_for_current_design)
+    end
+
+    %i[design_config template_id size].each do |field|
+      it "moves when #{field} changes" do
+        before_digest = card.proof_design_digest_for_current_design
+        card.assign_attributes(field => { design_config: { "version" => 1, "front" => { "texts" => {} } },
+                                          template_id: "another_template",
+                                          size: "6x9" }.fetch(field))
+
+        expect(card.proof_design_digest_for_current_design).not_to eq(before_digest)
+      end
+    end
+  end
+
+  describe "#proof_current?" do
+    let(:card) { create(:holiday_card) }
+
+    # What ProofGenerator leaves behind, without going near PostGrid.
+    def store_proof(on: card, at: Time.current)
+      on.update!(
+        proof_url: "https://example.test/proof.pdf",
+        proof_generated_at: at,
+        proof_design_digest: on.proof_design_digest_for_current_design
+      )
+      on
+    end
+
+    it "is false for a card that has never been proofed" do
+      expect(card.proof_current?).to be(false)
+    end
+
+    it "is true immediately after generation" do
+      expect(store_proof.proof_current?).to be(true)
+    end
+
+    it "is false after any change to the design config" do
+      store_proof
+      card.update!(design_config: { "version" => 1, "front" => { "texts" => { "greeting" => { "content" => "Moved" } } } })
+
+      expect(card.proof_current?).to be(false)
+    end
+
+    it "is false after a change to the template" do
+      store_proof
+      card.update!(template_id: "another_template")
+
+      expect(card.proof_current?).to be(false)
+    end
+
+    it "is false after a change to the size" do
+      store_proof
+      card.update!(size: "6x9")
+
+      expect(card.proof_current?).to be(false)
+    end
+
+    it "is false once the proof is older than the staleness window, even untouched" do
+      store_proof(at: HolidayCard::PROOF_MAX_AGE.ago - 1.minute)
+
+      expect(card.proof_current?).to be(false)
+    end
+
+    it "is false when the URL is missing, whatever the digest says" do
+      store_proof
+      card.update_column(:proof_url, nil)
+
+      expect(card.reload.proof_current?).to be(false)
+    end
+  end
+
+  describe "#proof_approved?" do
+    let(:card) { create(:holiday_card) }
+
+    def store_approved_proof(at: Time.current)
+      card.update!(
+        proof_url: "https://example.test/proof.pdf",
+        proof_generated_at: at,
+        proof_design_digest: card.proof_design_digest_for_current_design
+      )
+      card.update!(proof_approved_at: Time.current)
+      card
+    end
+
+    it "is true for a current, approved proof" do
+      expect(store_approved_proof.proof_approved?).to be(true)
+    end
+
+    it "is false for a proof that was never approved" do
+      card.update!(
+        proof_url: "https://example.test/proof.pdf",
+        proof_generated_at: Time.current,
+        proof_design_digest: card.proof_design_digest_for_current_design
+      )
+
+      expect(card.proof_approved?).to be(false)
+    end
+
+    # The acceptance criterion this whole mechanism exists for: an approval must
+    # never survive an edit, on any code path.
+    it "is cleared in the database when the design is edited" do
+      store_approved_proof
+      card.update!(design_config: { "version" => 1, "back" => { "texts" => { "message" => { "content" => "New" } } } })
+
+      expect(card.reload.proof_approved_at).to be_nil
+      expect(card.proof_approved?).to be(false)
+    end
+
+    it "is not cleared by a change that cannot affect the print, like the title" do
+      store_approved_proof
+      card.update!(title: "Renamed")
+
+      expect(card.reload.proof_approved_at).to be_present
+      expect(card.proof_approved?).to be(true)
+    end
+
+    # Expiry is the case no callback can catch — nothing is edited, time just
+    # passes — so `proof_approved?` has to check currency rather than trusting
+    # the stored timestamp.
+    it "is false once the proof has aged out, even though the approval is still stored" do
+      store_approved_proof(at: HolidayCard::PROOF_MAX_AGE.ago - 1.minute)
+
+      expect(card.reload.proof_approved_at).to be_present
+      expect(card.proof_approved?).to be(false)
+    end
+  end
 end

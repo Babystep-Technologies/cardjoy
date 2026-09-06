@@ -870,6 +870,206 @@ class HolidayCard
     sig { void }
     def id_will_change!; end
 
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_approved_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_approved_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def proof_approved_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_approved_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def proof_approved_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def proof_approved_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def proof_approved_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def proof_approved_at_change_to_be_saved; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def proof_approved_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_approved_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def proof_approved_at_previous_change; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def proof_approved_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_approved_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_approved_at_was; end
+
+    sig { void }
+    def proof_approved_at_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_design_digest; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def proof_design_digest=(value); end
+
+    sig { returns(T::Boolean) }
+    def proof_design_digest?; end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_design_digest_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def proof_design_digest_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def proof_design_digest_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def proof_design_digest_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def proof_design_digest_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def proof_design_digest_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_design_digest_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def proof_design_digest_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def proof_design_digest_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_design_digest_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_design_digest_was; end
+
+    sig { void }
+    def proof_design_digest_will_change!; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_generated_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_generated_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def proof_generated_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_generated_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def proof_generated_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def proof_generated_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def proof_generated_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def proof_generated_at_change_to_be_saved; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def proof_generated_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_generated_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def proof_generated_at_previous_change; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def proof_generated_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_generated_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def proof_generated_at_was; end
+
+    sig { void }
+    def proof_generated_at_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_url; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def proof_url=(value); end
+
+    sig { returns(T::Boolean) }
+    def proof_url?; end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_url_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def proof_url_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def proof_url_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def proof_url_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def proof_url_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def proof_url_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_url_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def proof_url_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def proof_url_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_url_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def proof_url_was; end
+
+    sig { void }
+    def proof_url_will_change!; end
+
     sig { void }
     def restore_created_at!; end
 
@@ -887,6 +1087,18 @@ class HolidayCard
 
     sig { void }
     def restore_id_value!; end
+
+    sig { void }
+    def restore_proof_approved_at!; end
+
+    sig { void }
+    def restore_proof_design_digest!; end
+
+    sig { void }
+    def restore_proof_generated_at!; end
+
+    sig { void }
+    def restore_proof_url!; end
 
     sig { void }
     def restore_size!; end
@@ -938,6 +1150,30 @@ class HolidayCard
 
     sig { returns(T::Boolean) }
     def saved_change_to_id_value?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_proof_approved_at; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_proof_approved_at?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_proof_design_digest; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_proof_design_digest?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_proof_generated_at; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_proof_generated_at?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_proof_url; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_proof_url?; end
 
     sig { returns(T.nilable([::String, ::String])) }
     def saved_change_to_size; end
@@ -1211,6 +1447,18 @@ class HolidayCard
 
     sig { returns(T::Boolean) }
     def will_save_change_to_id_value?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_proof_approved_at?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_proof_design_digest?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_proof_generated_at?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_proof_url?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_size?; end

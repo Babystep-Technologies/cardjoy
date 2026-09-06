@@ -83,6 +83,48 @@ RSpec.describe "Holiday card queries", type: :request do
       expect(result["photos"]).to eq([])
     end
 
+    describe "the proof fields" do
+      let(:proof_query) do
+        <<~GRAPHQL
+          query HolidayCard($externalId: String!) {
+            holidayCard(externalId: $externalId) {
+              proofUrl proofGeneratedAt proofCurrent proofApproved
+            }
+          }
+        GRAPHQL
+      end
+
+      def proof_for(card)
+        exec(proof_query, variables: { externalId: card.external_id }).dig("data", "holidayCard")
+      end
+
+      it "report nothing for a card that has never been proofed" do
+        result = proof_for(create(:holiday_card, user:))
+
+        expect(result["proofUrl"]).to be_nil
+        expect(result["proofGeneratedAt"]).to be_nil
+        expect(result["proofCurrent"]).to be(false)
+        expect(result["proofApproved"]).to be(false)
+      end
+
+      # The state the editor has to be able to draw: there *is* a PDF to show,
+      # and it is out of date. "Has a proofUrl" and "proofCurrent" have to be
+      # separately answerable for that.
+      it "keep the URL of a proof the design has moved past, but report it stale" do
+        card = create(:holiday_card, user:)
+        card.update!(proof_url: "https://example.test/proof.pdf", proof_generated_at: Time.current,
+                     proof_design_digest: card.proof_design_digest_for_current_design)
+        card.update!(proof_approved_at: Time.current)
+        card.update!(template_id: "another_template")
+
+        result = proof_for(card)
+
+        expect(result["proofUrl"]).to eq("https://example.test/proof.pdf")
+        expect(result["proofCurrent"]).to be(false)
+        expect(result["proofApproved"]).to be(false)
+      end
+    end
+
     it "exposes each attached photo with the blob id design_config points at" do
       card = create(:holiday_card, user:)
       card.photos.attach(
