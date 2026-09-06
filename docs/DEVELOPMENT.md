@@ -104,6 +104,38 @@ Generation runs inline in the mutation, not in a job: the user is waiting on it 
 bounded at 3 × (5s + 15s). Failures land in `errors` as sentences and leave the previous proof
 intact, so a PostGrid outage costs a retry rather than the render the user already had.
 
+### Mail pricing
+
+**PostGrid has no price-quote endpoint.** Creating a postcard returns an id, a status, and a PDF —
+no cost field — and there is nothing to ask beforehand. So "price a card from its destination" is
+two services that answer two different questions:
+
+- `PostGrid::AddressVerification` is the authority on **where** an address is. It returns a `zone`
+  (`us_domestic`, `canada`, `international`), cached on the contact in `address_zone`.
+- `MailPricing` is the authority on **what that costs**. `MailPricing.quote(size:, zone:)` looks up
+  a versioned rate card and returns `base_cents`, `markup_cents`, and `total_cents`.
+
+Four rules, and the send flow (#148) depends on all of them:
+
+- **The rate card is a versioned constant.** `MailPricing::RATE_CARDS` is keyed by version, and
+  every version we have ever billed under stays in it — an order records the version it used, and
+  deleting an old entry makes a past charge unreconstructable. A rate change is a new version plus a
+  bump of `CURRENT_RATE_CARD_VERSION`, never an edit in place.
+- **An unknown zone raises.** `MailPricing::UnknownRateError` is never rescued into a domestic
+  default; a missing rate means we don't know what something costs, and the caller surfaces "we
+  can't mail to this destination yet". A quiet fallback is mailing to Australia at the US price.
+- **The markup rounds up, always,** and lives only on the server. `MARKUP_BASIS_POINTS` is basis
+  points over cost so the arithmetic stays in integers. `base_cents` and the markup are absent from
+  every GraphQL type — the user is quoted one number per card.
+- **A quote is advisory.** `quoteHolidayCardMailing` prices a card against a list of contacts (and
+  verifies any contact that has no cached verdict, so bad addresses surface before anyone pays), but
+  the send flow re-prices inside the transaction that debits the postage wallet. A client never
+  sends a price back, and no mutation argument accepts one.
+
+`HolidayCard::MailingQuote` is the shared orchestration — every contact asked about comes back
+either priced or flagged with a reason, never dropped, so a quote can't tell someone "42 cards" and
+then send 38.
+
 ## Before you start
 
 1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).
