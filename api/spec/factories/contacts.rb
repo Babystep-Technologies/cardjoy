@@ -15,6 +15,29 @@ FactoryBot.define do
       country_code { "US" }
     end
 
+    # A contact carrying a cached PostGrid verdict, so a spec can exercise
+    # pricing without a verification round trip.
+    #
+    # It has to be an after(:create) update rather than plain attributes:
+    # Contact clears its verification columns in a before_save whenever an
+    # address field changes, and on create every address field is "changing".
+    trait :address_verified do
+      mailable
+
+      transient do
+        zone { PostGrid::AddressVerification::ZONE_US_DOMESTIC }
+        verification_status { Contact::VERIFIED_STATUS }
+      end
+
+      after(:create) do |contact, evaluator|
+        contact.update!(
+          address_verified_at: Time.current,
+          address_verification_status: evaluator.verification_status,
+          address_zone: evaluator.zone
+        )
+      end
+    end
+
     trait :with_occasions do
       after(:create) do |contact|
         create_list(:occasion, 2, contact: contact)
