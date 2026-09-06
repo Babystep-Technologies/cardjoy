@@ -55,6 +55,41 @@ RSpec.describe "My postage ledger", type: :request do
       expect(balance).to eq(1914)
       expect(balance).to be_an(Integer)
     end
+
+    # A chargeback on a top-up already spent on mail leaves the wallet owing
+    # money (#146). The read side has to show that rather than fall over: the
+    # balance is negative, the reversal is just another row in the history, and
+    # spending is what refuses, not reading.
+    context "when a chargeback has driven the wallet negative" do
+      before do
+        create(:postage_credit, user: user, amount_cents: 5000, reason: "purchase",
+          events: [ event("postage_purchased") ])
+        create(:postage_credit, user: user, amount_cents: -4000, reason: "mail",
+          events: [ event("postage_spent_on_mail") ])
+        create(:postage_credit, user: user, amount_cents: -5000, reason: "chargeback",
+          events: [ event("postage_reversed_due_to_chargeback") ])
+      end
+
+      it "reports the negative balance instead of clamping it to zero" do
+        body = exec(as: user)
+
+        expect(body["errors"]).to be_nil
+        expect(body.dig("data", "viewer", "postageBalanceCents")).to eq(-4000)
+      end
+
+      it "still lists the history, reversal included" do
+        rows = exec(as: user).dig("data", "myPostageLedger")
+
+        expect(rows.length).to eq(3)
+        expect(rows.map { |r| r["eventKind"] }).to include("postage_reversed_due_to_chargeback")
+      end
+
+      it "refuses to spend from an overdrawn wallet rather than raising something else" do
+        expect {
+          user.with_lock { user.spend_postage!(cents: 1, reason: "mail", event_kind: "postage_spent_on_mail") }
+        }.to raise_error(User::InsufficientPostageError)
+      end
+    end
   end
 
   describe "myPostageLedger" do

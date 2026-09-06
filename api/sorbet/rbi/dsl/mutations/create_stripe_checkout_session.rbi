@@ -6,6 +6,13 @@
 
 
 class Mutations::CreateStripeCheckoutSession
-  sig { params(price_id: ::String, organization_id: T.nilable(::String)).returns(T.untyped) }
-  def resolve(price_id:, organization_id: T.unsafe(nil)); end
+  sig do
+    params(
+      price_id: T.nilable(::String),
+      product: T.nilable(::String),
+      top_up_cents: T.nilable(::Integer),
+      organization_id: T.nilable(::String)
+    ).returns(T.untyped)
+  end
+  def resolve(price_id: T.unsafe(nil), product: T.unsafe(nil), top_up_cents: T.unsafe(nil), organization_id: T.unsafe(nil)); end
 end
