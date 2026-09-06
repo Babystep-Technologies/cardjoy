@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_06_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_06_165511) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -388,6 +388,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_120000) do
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
   end
 
+  create_table "postage_credits", force: :cascade do |t|
+    t.integer "amount_cents", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "events"
+    t.string "reason"
+    t.string "stripe_session_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_postage_credits_on_user_id"
+  end
+
   create_table "promo_code_redemptions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "promo_code_id", null: false
@@ -559,6 +570,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_06_120000) do
   add_foreign_key "organization_memberships", "organizations"
   add_foreign_key "organization_memberships", "users"
   add_foreign_key "organizations", "users", column: "created_by_id"
+  add_foreign_key "postage_credits", "users"
   add_foreign_key "promo_code_redemptions", "promo_codes"
   add_foreign_key "promo_code_redemptions", "users"
   add_foreign_key "promo_codes", "users"

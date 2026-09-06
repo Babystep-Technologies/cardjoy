@@ -13,6 +13,11 @@ class User < ApplicationRecord
   # Raised by #spend_credit! when the user cannot afford a creation.
   class InsufficientCreditsError < StandardError; end
 
+  # Raised by #spend_postage! when the postage wallet can't cover a piece of
+  # mail. Separate from InsufficientCreditsError: the two wallets are separate
+  # products, and a caller topping up postage should not be told to buy credits.
+  class InsufficientPostageError < StandardError; end
+
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, :omniauthable,
@@ -22,6 +27,7 @@ class User < ApplicationRecord
   has_many :cards, dependent: :destroy
   has_many :messages, dependent: :destroy
   has_many :credits, dependent: :destroy
+  has_many :postage_credits, dependent: :destroy
   has_many :promo_codes, dependent: :destroy
   has_many :invitations, dependent: :destroy
   has_many :holiday_cards, dependent: :destroy
@@ -73,6 +79,73 @@ class User < ApplicationRecord
 
     credits.create!(
       amount: -CREATION_CREDIT_COST,
+      reason: reason,
+      events: [
+        {
+          event_kind: event_kind,
+          event_happened_at: Time.now.utc.iso8601(3),
+          event_data: event_data
+        }
+      ]
+    )
+  end
+
+  # Signed sum of the postage wallet, in US cents (#145). Mirrors
+  # #credit_balance, on the separate cents-denominated ledger physical mail is
+  # charged against. Zero for a user who has never topped up — new users get no
+  # postage grant.
+  sig { returns(Integer) }
+  def postage_balance_cents
+    postage_credits.sum(:amount_cents).to_i
+  end
+
+  # Debit `cents` from the postage wallet for a piece of mail. Same contract as
+  # #spend_credit!: must run inside a transaction, because it locks the user row
+  # for the duration of that transaction so two concurrent sends can't both pass
+  # the balance check and overdraw the wallet. Raises InsufficientPostageError
+  # (rolling back the surrounding transaction) when the balance is short.
+  #
+  # A non-positive `cents:` is an ArgumentError rather than a silent write: with
+  # a signed ledger, a sign error would otherwise turn a charge into a grant.
+  sig do
+    params(cents: Integer, reason: String, event_kind: String, event_data: T::Hash[T.untyped, T.untyped])
+      .returns(PostageCredit)
+  end
+  def spend_postage!(cents:, reason:, event_kind:, event_data: {})
+    raise ArgumentError, "Cents must be positive" unless cents.positive?
+
+    lock!
+    raise InsufficientPostageError, "Not enough postage credit" if postage_balance_cents < cents
+
+    postage_credits.create!(
+      amount_cents: -cents,
+      reason: reason,
+      events: [
+        {
+          event_kind: event_kind,
+          event_happened_at: Time.now.utc.iso8601(3),
+          event_data: event_data
+        }
+      ]
+    )
+  end
+
+  # Put `cents` back into the postage wallet — a refund for mail we failed to
+  # send, a promo grant, an admin correction. Always a new positive row: the
+  # ledger is append-only, so the negative row a refund answers is left exactly
+  # as it was written.
+  #
+  # No lock and no balance check, unlike #spend_postage!: adding to a balance
+  # can't overdraw it.
+  sig do
+    params(cents: Integer, reason: String, event_kind: String, event_data: T::Hash[T.untyped, T.untyped])
+      .returns(PostageCredit)
+  end
+  def refund_postage!(cents:, reason:, event_kind:, event_data: {})
+    raise ArgumentError, "Cents must be positive" unless cents.positive?
+
+    postage_credits.create!(
+      amount_cents: cents,
       reason: reason,
       events: [
         {

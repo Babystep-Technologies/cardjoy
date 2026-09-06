@@ -36,6 +36,7 @@ module Types
     field :holiday_card, resolver: Queries::HolidayCard
     field :holiday_card_templates, resolver: Queries::HolidayCardTemplates
     field :holiday_card_stickers, resolver: Queries::HolidayCardStickers
+    field :my_postage_ledger, resolver: Queries::MyPostageLedger
 
     def card_occasions
       ::Card::OCCASIONS
