@@ -79,6 +79,31 @@ panned and zoomed how). Rules worth knowing before you touch it:
 The pan/zoom CSS the renderer emits is the contract the editor preview has to reuse verbatim. Two
 implementations of the cropping maths is how the on-screen proof stops matching the printed card.
 
+### Holiday card proofs
+
+Before a card is printed the user approves a **proof**: the PDF PostGrid gets from rendering the
+card, produced by the same renderer that will print it. `HolidayCard::ProofGenerator` submits the
+rendered HTML to `/postcards` with the **test** key — a real PDF, no mail, no cost — and stores the
+returned `url`. `generateHolidayCardProof` and `approveHolidayCardProof` are the two mutations; the
+type exposes `proofUrl`, `proofGeneratedAt`, `proofCurrent`, and `proofApproved`.
+
+Three rules hold this together, and the send flow (#148) depends on all of them:
+
+- **`ProofGenerator::MODE` is hard-coded to `:test`.** Not `PostGrid.default_mode`, not `Rails.env`.
+  A proof must never be a live order, and that must not depend on how a box is configured.
+- **`proof_design_digest` is the mechanism.** It hashes `design_config`, `template_id`, and `size`
+  — canonicalized, so key order and symbol-vs-string keys don't move it. `#proof_current?` compares
+  it against the card's current digest, so *any* edit invalidates the proof. `HolidayCard` also
+  clears `proof_approved_at` in a `before_save` whenever one of those three changes, the same way
+  `Contact` clears its address verification.
+- **Proofs expire.** PostGrid's PDF links are not permanent, so a proof older than
+  `HolidayCard::PROOF_MAX_AGE` reports as not current even if nothing was edited — regenerate rather
+  than serve a dead link.
+
+Generation runs inline in the mutation, not in a job: the user is waiting on it and the client is
+bounded at 3 × (5s + 15s). Failures land in `errors` as sentences and leave the previous proof
+intact, so a PostGrid outage costs a retry rather than the render the user already had.
+
 ## Before you start
 
 1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).

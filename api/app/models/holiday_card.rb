@@ -54,6 +54,23 @@ class HolidayCard < ApplicationRecord
   # would also block the delete that is the only way back under the cap.
   MAX_PHOTOS = 20
 
+  # Everything the printed card looks like. A proof is only a valid picture of
+  # this card while all three are unchanged: `design_config` is the content,
+  # `template_id` the geometry, and `size` the paper.
+  #
+  # Photo *bytes* are deliberately not in here. Replacing a photo means
+  # replacing the blob, which changes the blob id in `design_config` — so a swap
+  # already moves the digest, and hashing the attachments as well would mean a
+  # database round-trip on every currency check.
+  PROOF_DESIGN_FIELDS = %i[design_config template_id size].freeze
+
+  # How long a generated proof is trusted. PostGrid's rendered PDF links are not
+  # permanent, so past this window we report the proof as not current and
+  # regenerate rather than sending the user to a dead URL. Conservative on
+  # purpose: a needless re-render is free (test mode), and a broken proof link
+  # at the moment someone is about to spend money is not.
+  PROOF_MAX_AGE = 24.hours
+
   validates :external_id, presence: true, uniqueness: true, format: { with: /\A[A-Z]{7}\z/ }
   validates :size, inclusion: { in: VALID_SIZES }
   validates :template_id, presence: true
@@ -65,6 +82,12 @@ class HolidayCard < ApplicationRecord
   validate :design_config_structure
 
   before_validation :generate_external_id, on: :create
+  # In a callback rather than in the update mutation, so *every* path is
+  # covered — the mutations, the console, a future bulk edit. Mirrors
+  # Contact#clear_address_verification, and for the same reason: an approval
+  # that outlives the design it approved is worse than no approval, because it
+  # is the signal the send flow spends money on.
+  before_save :clear_proof_approval, if: :proof_design_changing?
 
   default_scope { where(deleted_at: nil) }
 
@@ -89,10 +112,69 @@ class HolidayCard < ApplicationRecord
     Rails.application.routes.url_helpers.rails_blob_url(blob, only_path: false)
   end
 
+  # ------------------------------------------------------------------- proof
+
+  # A fingerprint of everything that decides what the printed card looks like.
+  #
+  # Canonicalized before hashing — keys sorted, all of them strings — because
+  # the same design reaches us in more than one shape: symbol keys from a
+  # console edit, string keys back from jsonb, and hash insertion order that
+  # follows whatever the editor happened to send. None of those is a design
+  # change, and a digest that moved when they varied would invalidate proofs
+  # for no reason the user could see.
+  def proof_design_digest_for_current_design
+    payload = PROOF_DESIGN_FIELDS.index_with { |field| canonicalize(public_send(field)) }
+    Digest::SHA256.hexdigest(JSON.generate(payload))
+  end
+
+  # Whether the stored proof is still a picture of this card — the question the
+  # send flow (#148) gates on.
+  #
+  # Three ways to be false, and they are all the same failure from the user's
+  # side ("regenerate the proof"): there is no proof, the design has moved since
+  # it was rendered, or the PDF link is old enough that PostGrid may have
+  # expired it.
+  def proof_current?
+    generated_at = proof_generated_at
+    return false if proof_url.blank? || generated_at.nil? || proof_design_digest.blank?
+    return false if generated_at < PROOF_MAX_AGE.ago
+
+    proof_design_digest == proof_design_digest_for_current_design
+  end
+
+  # Approval only counts while the proof it was given to is still current.
+  # `clear_proof_approval` already nils `proof_approved_at` on an edit; this is
+  # the second lock, and it is the one that catches expiry — a proof that simply
+  # aged out is never edited, so no callback fires for it.
+  def proof_approved?
+    proof_approved_at.present? && proof_current?
+  end
+
   private
 
   def photos_attached?
     photos.attached?
+  end
+
+  # Sorted string keys, all the way down. Arrays keep their order — a sticker
+  # list is a paint order, so reordering it *is* a design change.
+  def canonicalize(value)
+    case value
+    when Hash then value.to_h { |key, nested| [ key.to_s, canonicalize(nested) ] }.sort.to_h
+    when Array then value.map { |element| canonicalize(element) }
+    else value
+    end
+  end
+
+  def proof_design_changing?
+    PROOF_DESIGN_FIELDS.any? { |field| public_send(:"#{field}_changed?") }
+  end
+
+  # Only the approval. The URL and its digest survive an edit on purpose: they
+  # are what `proof_current?` compares against to *say* the proof is stale, and
+  # they let the editor keep showing the last render while a new one is made.
+  def clear_proof_approval
+    self.proof_approved_at = nil
   end
 
   def generate_external_id
