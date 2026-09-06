@@ -40,13 +40,14 @@ Printing and mailing cards goes through PostGrid. It is entirely optional: with 
 in the app changes — the same gating GIPHY, Unsplash, and PostHog get on the frontend. **You do not
 need a PostGrid key to develop, and CI does not have one.**
 
-Three env vars, each falling back to `credentials.post_grid.*`:
+Four env vars, each falling back to `credentials.post_grid.*`:
 
 | Env var | Credential | Purpose |
 |---|---|---|
 | `POSTGRID_API_KEY` | `post_grid.api_key` | The live key. Mails real cards and bills real money. |
 | `POSTGRID_TEST_API_KEY` | `post_grid.test_api_key` | The test key. Everything runs, nothing is printed. |
 | `POSTGRID_MODE` | `post_grid.mode` | `live` or `test`; anything else reads as `test`. |
+| `POSTGRID_WEBHOOK_SECRET` | `post_grid.webhook_secret` | Signs webhook deliveries. Unset ⇒ every webhook is rejected. |
 
 `POSTGRID_MODE` is a separate switch from `RAILS_ENV` on purpose. Nothing in `app/services/post_grid`
 looks at `Rails.env`: the proof run uses the **test** key from **production**, and a staging box that
@@ -179,6 +180,40 @@ The order stores `base_cents`, `zone`, `mailing_class`, and `rate_card_version` 
 `charged_cents` so a past charge stays reconstructable — and `Types::HolidayCardMailOrderType`
 exposes none of them. `recipient_snapshot` holds the name and address as they were at send time, so
 editing or deleting the contact afterwards leaves the record of where the card went intact.
+
+### Tracking a card after it is mailed
+
+Once an order is submitted, PostGrid owns it — it moves `ready` → `printing` →
+`processed_for_delivery` → `completed`, picks up a `trackingNumber` on the way, and can be cancelled.
+`POST /webhooks/postgrid` is how any of that reaches us; polling every open order would be slow and
+rude. `PostgridWebhooksController` verifies and enqueues, `PostgridWebhookJob` applies, and
+`HolidayCardMailOrder#apply_postgrid_update!` is where the rules live.
+
+- **Every request is verified.** `PostGrid-Signature` is `t=…,v1=…` — HMAC-SHA256 over
+  `"<t>.<raw body>"` with `POSTGRID_WEBHOOK_SECRET`, the same scheme Stripe uses. Anything that
+  doesn't verify is a 401, and **an unset secret rejects everything**. This endpoint moves order
+  state and issues refunds; "the URL is unguessable" is not an access control.
+- **Answer fast, 2xx nearly always.** The transition goes to a job, and an unknown `postgrid_id`, an
+  unhandled type (`letter.updated` and friends land on the same endpoint), an unmapped status, or an
+  unparseable body are all logged no-ops. PostGrid redelivers anything that isn't promptly 2xx, so a
+  5xx buys an unbounded retry of an event we could never act on. Test-mode orders, proofs, and other
+  environments sharing the account all report here — an unknown id is normal traffic, not an error.
+- **Transitions are monotonic.** `STATUS_RANK` orders the statuses and anything that would move an
+  order backwards is dropped, because webhooks arrive out of order and get replayed. Otherwise a late
+  `printing` event makes a card the recipient is holding say it is still at the printer. The three
+  terminal statuses (`completed`, `failed`, `cancelled`) share the top rank, so each is sticky.
+- **The refund guard is the transition itself**, exactly as in `fail_and_refund!`: one conditional
+  `UPDATE` matching only rows strictly behind the target status, with the refund inside the same
+  transaction. A replayed cancellation claims no row and so refunds nothing. Not a `refunded`
+  boolean — that is a second piece of state a crash can leave disagreeing with the ledger.
+- **Refund `charged_cents`, never a fresh quote.** The rate card may have moved since the send; the
+  user is owed what they paid. An order with no `postage_credit` behind it was never charged and gets
+  no refund row.
+
+`mailed_at` is written on the way into `processed_for_delivery` and nowhere else — the first moment
+PostGrid says the piece is with the carrier. Every delivery is logged with the PostGrid id and the
+resulting transition: when a physical mailing goes wrong, that log is the only record of what the
+outside world told us.
 
 ## Before you start
 
