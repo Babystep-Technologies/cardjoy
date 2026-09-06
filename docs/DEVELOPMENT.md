@@ -136,6 +136,50 @@ Four rules, and the send flow (#148) depends on all of them:
 either priced or flagged with a reason, never dropped, so a quote can't tell someone "42 cards" and
 then send 38.
 
+### Sending cards by post
+
+`sendHolidayCard` is where the proof, the addresses, the rate card, and the wallet meet a service
+that prints things — the one place in the app where money and an irreversible physical action are in
+the same request. `myHolidayCardOrders` is the read side.
+
+**One row per piece, not per send.** `HolidayCardMailOrder` is a single postcard to a single
+address. Forty recipients is forty rows, forty PostGrid ids, forty statuses, and forty separate
+debits. Partial failure is the normal case: 38 pieces can go out while 2 are rejected and refund
+themselves. There is no batch to be atomic about — an external print service cannot be enrolled in
+our transaction — and the schema admits that rather than pretending.
+
+Five rules hold the money side together:
+
+- **Nothing is submitted inside the transaction.** The mutation re-prices, locks the user, debits,
+  and writes the order rows; `HolidayCardMailSubmissionJob` is enqueued per order only after the
+  commit. An HTTP call inside a transaction holds a connection open for a network round trip and
+  cannot be rolled back — a `ROLLBACK` after PostGrid accepted the postcard un-charges a card that
+  is already printing. There is a spec that asserts the transaction is closed by the time PostGrid
+  is called.
+- **The price is re-quoted server-side, always.** `MailPricing` is consulted again inside the debit
+  transaction, and `SendHolidayCard` has no argument that could carry a price — a spec asserts the
+  input type's full argument list, so one can't be added by accident.
+- **`idempotency_key` is minted once per order and never regenerated.** It goes out as PostGrid's
+  `Idempotency-Key` header on every attempt, which is what makes a retry return the original
+  postcard instead of printing a second one.
+- **`MailSubmission::MODE` is hard-coded to `:live`** — the mirror of `ProofGenerator::MODE`, which
+  is hard-coded to `:test`, and for a sharper reason. A test-mode send returns 2xx, returns an id,
+  and mails nothing: the wallet is debited, every order looks successful, and nothing arrives. A
+  deploy with no live key refuses to send at all rather than risk it.
+- **A refund is guarded by the status transition, not by a flag.**
+  `HolidayCardMailOrder#fail_and_refund!` claims the order with `UPDATE … WHERE status =
+  'pending'` and only refunds if it won the row, so a job that runs twice refunds once.
+
+The job's three outcomes: success records `postgrid_id` and moves to `submitted`; a retryable
+`ServiceError`/`RateLimitError` leaves the order `pending` and the wallet untouched; a 4xx, a
+retired template, or exhausted retries mark it `failed` with a reason and refund exactly
+`charged_cents`.
+
+The order stores `base_cents`, `zone`, `mailing_class`, and `rate_card_version` alongside
+`charged_cents` so a past charge stays reconstructable — and `Types::HolidayCardMailOrderType`
+exposes none of them. `recipient_snapshot` holds the name and address as they were at send time, so
+editing or deleting the contact afterwards leaves the record of where the card went intact.
+
 ## Before you start
 
 1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).
