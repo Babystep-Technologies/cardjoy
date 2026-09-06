@@ -31,6 +31,14 @@ Rails.application.configure do
   # Store uploaded files on the local file system in a temporary directory.
   config.active_storage.service = :test
 
+  # Mirrors development. Without these, `config.x.cdn_enabled` reads back as an
+  # empty ActiveSupport::OrderedOptions — which is *truthy* — so every
+  # `photo_url`/`image_url` in the suite silently produced "{}/<blob key>"
+  # instead of a URL. Setting them explicitly makes those helpers return real
+  # absolute URLs under test.
+  config.x.cdn_enabled = false
+  config.x.cdn_host = "http://localhost:3000"
+
   # Tell Action Mailer not to deliver emails to the real world.
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.

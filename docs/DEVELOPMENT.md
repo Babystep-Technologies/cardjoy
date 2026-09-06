@@ -55,6 +55,30 @@ happens to boot as `production` must not start mailing postcards to real people.
 **This repo is public. Never commit a key, live or test** — not in a credentials file, not in a spec,
 not in a fixture. The specs use an obviously fake `test_sk_…` string.
 
+### Holiday card print rendering
+
+`HolidayCard::PrintRenderer.new(card).render` turns a card into `{ front:, back: }` — the two HTML
+documents PostGrid prints. It takes a card and returns two strings; it is deliberately **not**
+coupled to PostGrid, makes no HTTP calls, and can be exercised with nothing stubbed.
+
+It combines two things that know nothing about each other: `HolidayCardCatalogue` owns the geometry
+(where `photo_2` sits, in inches), and `HolidayCard#design_config` owns the content (which photo,
+panned and zoomed how). Rules worth knowing before you touch it:
+
+- **Inches and points, never pixels.** A pixel value bakes in an assumed DPI, and PostGrid renders
+  at print resolution. There is a spec that fails if a `px` appears in the output.
+- **Absolute positioning only**, at catalogue coordinates offset by the 0.125" bleed. No flexbox,
+  no grid — those are where our renderer and PostGrid's would diverge.
+- **Everything is clipped.** Photo slots and text regions are `overflow: hidden`, so nothing can
+  spill into the reserved address block on the back panel.
+- **Fonts are vendored and inlined as base64** from `app/assets/holiday_card_fonts` — only the ones
+  a panel actually paints with. See that directory's README before adding a font.
+- **`design_config` is untrusted.** Text is escaped; font, size, alignment, and colour are checked
+  against allow-lists before they reach the CSS.
+
+The pan/zoom CSS the renderer emits is the contract the editor preview has to reuse verbatim. Two
+implementations of the cropping maths is how the on-screen proof stops matching the printed card.
+
 ## Before you start
 
 1. Work from an issue with clear **acceptance criteria** (the feature-request form captures these).

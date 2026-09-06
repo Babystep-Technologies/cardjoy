@@ -5,5 +5,8 @@ db/schema.rb linguist-generated
 
 # Mark any vendored files as having been vendored.
 vendor/* linguist-vendored
+# Third-party webfonts embedded in print output; see
+# app/assets/holiday_card_fonts/README.md.
+app/assets/holiday_card_fonts/*.woff2 binary linguist-vendored
 config/credentials/*.yml.enc diff=rails_credentials
 config/credentials.yml.enc diff=rails_credentials
