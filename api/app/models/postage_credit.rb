@@ -23,6 +23,17 @@ class PostageCredit < ApplicationRecord
 
   scope :available, -> { where("amount_cents > 0") }
 
+  # What a top-up is allowed to be worth, in US cents (#146). Postage is bought
+  # in dollar amounts rather than in units, and a tier credits its face value —
+  # $10 in, 1000¢ in the wallet — so the sold value and the ledger value are the
+  # same number and there is no exchange rate to reason about.
+  #
+  # The list lives here, on the server, because both ends need it and neither
+  # can be the client: Mutations::CreateStripeCheckoutSession validates the
+  # requested tier before charging, and StripeWebhooksController validates it
+  # again before crediting. A client that names its own amount is rejected.
+  TOP_UP_TIERS_CENTS = [ 1_000, 2_500, 5_000 ].freeze
+
   EVENT_KINDS = %w[
     postage_purchased
     postage_spent_on_mail
