@@ -145,4 +145,23 @@ RSpec.describe HolidayCardMailOrder do
       expect(order.reload.status).to eq(described_class::SUBMITTED)
     end
   end
+
+  # The behaviour lives in spec/requests/postgrid_webhooks_spec.rb, which
+  # exercises it the way it actually happens. What's here is the invariant the
+  # ordering rests on (#149).
+  describe "#apply_postgrid_update!" do
+    let(:order) { create(:holiday_card_mail_order, :submitted, user:) }
+
+    # A status missing from STATUS_RANK raises KeyError on the next webhook.
+    # The two lists have to move together.
+    it "ranks every status" do
+      expect(described_class::STATUS_RANK.keys).to match_array(described_class::STATUSES)
+    end
+
+    it "reports what it did, for the webhook log" do
+      expect(order.apply_postgrid_update!(postgrid_status: "printing")).to eq(:advanced)
+      expect(order.apply_postgrid_update!(postgrid_status: "printing")).to eq(:ignored)
+      expect(order.apply_postgrid_update!(postgrid_status: "entered_mail_stream")).to eq(:unknown_status)
+    end
+  end
 end

@@ -26,9 +26,10 @@
 # Per CLAUDE.md, config reads from the environment with a Rails credentials
 # fallback, so local dev needs no secret:
 #
-#   POSTGRID_API_KEY       → credentials.post_grid.api_key        (live_sk_…)
-#   POSTGRID_TEST_API_KEY  → credentials.post_grid.test_api_key   (test_sk_…)
-#   POSTGRID_MODE          → credentials.post_grid.mode           ("live" | "test")
+#   POSTGRID_API_KEY        → credentials.post_grid.api_key        (live_sk_…)
+#   POSTGRID_TEST_API_KEY   → credentials.post_grid.test_api_key   (test_sk_…)
+#   POSTGRID_MODE           → credentials.post_grid.mode           ("live" | "test")
+#   POSTGRID_WEBHOOK_SECRET → credentials.post_grid.webhook_secret (webhook signing)
 #
 # **This repo is public. No key, live or test, is ever committed.** The test
 # credentials file carries a dummy value only.
@@ -116,6 +117,20 @@ module PostGrid
     sig { params(mode: Symbol).returns(T::Boolean) }
     def configured?(mode: default_mode)
       api_key(mode:).present?
+    end
+
+    # The secret PostGrid signs webhook deliveries with, or nil when none is
+    # configured. It is per-webhook rather than per-mode — PostGrid shows it
+    # once, when the webhook endpoint is created — so unlike the API keys it
+    # takes no `mode:`.
+    #
+    # Nil is not "skip verification": PostgridWebhooksController rejects every
+    # request with 401 when this is unset, because an endpoint that mutates
+    # order state and issues refunds is not one to leave open on a box that
+    # forgot to configure it.
+    sig { returns(T.nilable(String)) }
+    def webhook_secret
+      env_or_credential("POSTGRID_WEBHOOK_SECRET", :webhook_secret)
     end
 
     # The mode to use when the caller has no reason to prefer one. Anything

@@ -66,8 +66,9 @@ docker compose exec web yarn build         # tsc type-check + build
   credentials — so local dev is unaffected. See `api/config/database.yml`, `storage.yml`, the
   Google sign-in mutations, and `initializers/cors.rb`.
 - **PostGrid (physical mail) is optional and mode-explicit:** `POSTGRID_API_KEY`,
-  `POSTGRID_TEST_API_KEY`, `POSTGRID_MODE`, each with a `credentials.post_grid.*` fallback. No key ⇒
-  `PostGrid.configured?` is false and callers degrade instead of raising. Mode never comes from
+  `POSTGRID_TEST_API_KEY`, `POSTGRID_MODE`, `POSTGRID_WEBHOOK_SECRET`, each with a
+  `credentials.post_grid.*` fallback. No key ⇒ `PostGrid.configured?` is false and callers degrade
+  instead of raising; no webhook secret ⇒ every webhook is rejected with 401. Mode never comes from
   `Rails.env`. See the PostGrid section in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 - **Optional frontend integrations:** GIPHY, Unsplash, and PostHog are gated on their `VITE_*` keys
   being present (blank = feature hidden, no crash). Keys are optional; see `web/.env.example`.

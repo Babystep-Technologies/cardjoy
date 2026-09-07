@@ -71,8 +71,35 @@ class HolidayCardMailOrder < ApplicationRecord
     "printing" => PRINTING,
     "processed_for_delivery" => PROCESSED_FOR_DELIVERY,
     "completed" => COMPLETED,
-    "cancelled" => CANCELLED
+    "cancelled" => CANCELLED,
+    # Not in PostGrid's documented list for postcards, but mapped anyway: if
+    # they ever do report a piece as failed, the alternative is an order frozen
+    # at `printing` forever with the user's money still spent on it (#149).
+    "failed" => FAILED
   }.freeze
+
+  # How far along a status is. Webhooks arrive out of order and get replayed, so
+  # every transition is checked against this and one that would move an order
+  # backwards is dropped — otherwise a late `printing` delivery makes a card the
+  # recipient is holding say it is still at the printer (#149).
+  #
+  # The three terminal statuses share the top rank rather than being ordered
+  # among themselves, which makes each of them sticky: nothing follows
+  # `completed`, and a `cancelled` that arrives after delivery is ignored rather
+  # than refunding a card that was actually mailed.
+  STATUS_RANK = {
+    PENDING => 0,
+    SUBMITTED => 1,
+    PRINTING => 2,
+    PROCESSED_FOR_DELIVERY => 3,
+    COMPLETED => 4,
+    FAILED => 4,
+    CANCELLED => 4
+  }.freeze
+
+  # Terminal statuses that mean the piece will never be delivered, so the user
+  # is owed their postage back.
+  REFUNDABLE_STATUSES = [ FAILED, CANCELLED ].freeze
 
   # The recipient fields `recipient_snapshot` carries, in Contact's own column
   # names so reading one back needs no translation.
@@ -156,5 +183,85 @@ class HolidayCardMailOrder < ApplicationRecord
       )
       true
     end
+  end
+
+  # Apply one PostGrid `postcard.updated` event (#149). Everything the outside
+  # world tells us about a piece after submission arrives through here.
+  #
+  # Returns what happened, for the log line PostgridWebhookJob writes — this is
+  # the only record of what PostGrid said about a physical mailing:
+  #
+  #   :advanced       — the status moved forward
+  #   :refunded       — it moved into a terminal failure and the postage went back
+  #   :ignored        — a replay, or an event that would move the status backwards
+  #   :unknown_status — a PostGrid status we have no mapping for
+  sig { params(postgrid_status: T.nilable(String), tracking_number: T.nilable(String)).returns(Symbol) }
+  def apply_postgrid_update!(postgrid_status:, tracking_number: nil)
+    target = STATUS_FROM_POSTGRID[postgrid_status.to_s]
+    outcome = target ? advance_to!(target, tracking_number) : :unknown_status
+    # An event we didn't act on can still carry news: PostGrid re-sends the same
+    # status once a tracking number exists. Only ever filled in, never
+    # overwritten, so a redelivery of an older event can't undo it.
+    record_tracking_number!(tracking_number) if outcome == :ignored || outcome == :unknown_status
+    outcome
+  end
+
+  private
+
+  # The whole transition as one conditional UPDATE, matching only rows whose
+  # status is strictly behind `target`. A replayed or out-of-order event
+  # therefore touches zero rows and returns before reaching the refund — the
+  # same shape as `fail_and_refund!`, and for the same reason: the guard has to
+  # be the row's own status, because a separate `refunded` flag is a second
+  # piece of state that a crash can leave disagreeing with the ledger.
+  sig { params(target: String, tracking_number: T.nilable(String)).returns(Symbol) }
+  def advance_to!(target, tracking_number)
+    behind = STATUSES.select { |status| STATUS_RANK.fetch(status) < STATUS_RANK.fetch(target) }
+
+    attributes = T.let({ status: target, updated_at: Time.current }, T::Hash[Symbol, T.untyped])
+    attributes[:tracking_number] = tracking_number if tracking_number.present?
+    # Written on the way into `processed_for_delivery` and nowhere else: that is
+    # the first moment PostGrid says the piece is with the carrier rather than
+    # at the printer. Once, because the transition itself can only happen once.
+    attributes[:mailed_at] = Time.current if target == PROCESSED_FOR_DELIVERY && mailed_at.nil?
+
+    self.class.transaction do
+      next :ignored if self.class.where(id:, status: behind).update_all(attributes).zero?
+
+      reload
+      next :advanced unless REFUNDABLE_STATUSES.include?(target)
+
+      refund_terminal_failure!
+    end
+  end
+
+  # Put the postage back for a piece that will never arrive. Runs inside
+  # `advance_to!`'s transaction, so the refund and the status that authorises it
+  # commit together or not at all.
+  #
+  # `charged_cents` is read off the order rather than re-quoted through
+  # MailPricing: the rate card may have moved since the send, and the user is
+  # owed what they paid, not what the piece would cost today.
+  sig { returns(Symbol) }
+  def refund_terminal_failure!
+    # No debit row behind this order means nothing was ever taken for it — a
+    # fixture, or an order built outside the send flow. Refunding it would mint
+    # postage out of nothing, so the status moves and the wallet doesn't.
+    return :advanced if postage_credit_id.nil?
+
+    T.must(user).refund_postage!(
+      cents: charged_cents,
+      reason: "holiday_card_mail_refund",
+      event_kind: "postage_refunded",
+      event_data: { "holiday_card_mail_order_id" => id, "holiday_card_id" => holiday_card_id }
+    )
+    :refunded
+  end
+
+  sig { params(number: T.nilable(String)).void }
+  def record_tracking_number!(number)
+    return if number.blank? || tracking_number.present?
+
+    update!(tracking_number: number)
   end
 end

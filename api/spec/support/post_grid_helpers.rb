@@ -12,7 +12,11 @@ module PostGridHelpers
   TEST_API_KEY = "test_sk_specsuitefakekeydonotuse"
   LIVE_API_KEY = "live_sk_specsuitefakekeydonotuse"
 
-  VERIFY_URL = "#{PostGrid::Client::ADDRESS_VERIFICATION_BASE_URL}#{PostGrid::AddressVerification::VERIFY_PATH}"
+  # Fake, and in the shape PostGrid shows once when a webhook endpoint is
+  # created. Nothing signed with it ever leaves the process.
+  WEBHOOK_SECRET = "whsec_specsuitefakesecretdonotuse"
+
+  VERIFY_URL ="#{PostGrid::Client::ADDRESS_VERIFICATION_BASE_URL}#{PostGrid::AddressVerification::VERIFY_PATH}"
   POSTCARDS_URL = "#{PostGrid::Client::BASE_URL}#{HolidayCard::ProofGenerator::POSTCARDS_PATH}"
 
   def post_grid_fixture(name)
@@ -27,6 +31,19 @@ module PostGridHelpers
     set_post_grid_env("POSTGRID_TEST_API_KEY", test_key)
     set_post_grid_env("POSTGRID_API_KEY", live_key)
     set_post_grid_env("POSTGRID_MODE", mode)
+  end
+
+  # Same real-ENV approach as the keys above: a request spec goes through the
+  # full Rack stack, and a partial double on ENV#[] doesn't survive it.
+  def with_post_grid_webhook_secret(secret = WEBHOOK_SECRET)
+    set_post_grid_env("POSTGRID_WEBHOOK_SECRET", secret)
+  end
+
+  # The `PostGrid-Signature` header for `payload`, built the way PostGrid builds
+  # it: HMAC-SHA256 over "<timestamp>.<raw body>", hex, in a `t=…,v1=…` pair.
+  def post_grid_signature(payload, secret: WEBHOOK_SECRET, timestamp: Time.now.to_i)
+    digest = OpenSSL::HMAC.hexdigest("SHA256", secret, "#{timestamp}.#{payload}")
+    "t=#{timestamp},v1=#{digest}"
   end
 
   def set_post_grid_env(key, value)

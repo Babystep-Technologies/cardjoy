@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   options "/graphql", to: "graphql#execute"
   post "/webhooks/stripe", to: "stripe_webhooks#create"
   post "/webhooks/slack", to: "slack_webhooks#create"
+  post "/webhooks/postgrid", to: "postgrid_webhooks#create"
 
   # Slack OAuth installation callback
   namespace :oauth do
