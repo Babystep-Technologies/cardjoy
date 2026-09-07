@@ -244,7 +244,10 @@ const HolidayCardEdit: React.FC = () => {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    // `h-full` rather than a viewport calculation: `RootLayout` treats this
+    // route as full-bleed, so `main` is already exactly the space under the
+    // header, with no footer below it to push against.
+    <div className="flex h-full flex-col">
       <Toaster position="top-center" richColors />
 
       <header className="flex shrink-0 flex-wrap items-center gap-3 border-b bg-white px-4 py-3">
