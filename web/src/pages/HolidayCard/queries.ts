@@ -221,10 +221,16 @@ export const DELETE_HOLIDAY_CARD_PHOTO = gql`
  * Sent as a multipart request by `uploadGraphQLMutation`, not through Apollo —
  * `apollo-upload-client` is not a dependency, so file-carrying mutations bypass
  * the client. Hence a plain string rather than a `gql` document.
+ *
+ * It takes a single `$input` variable rather than one variable per argument
+ * because that is the shape the helper builds: it posts
+ * `variables: { input }` and maps the file to `variables.input.photoFile`.
+ * Spelling the arguments out individually makes the server reject both
+ * variables as "provided invalid value".
  */
 export const UPLOAD_HOLIDAY_CARD_PHOTO = `
-  mutation UploadHolidayCardPhoto($externalId: String!, $photoFile: Upload!) {
-    uploadHolidayCardPhoto(input: { externalId: $externalId, photoFile: $photoFile }) {
+  mutation UploadHolidayCardPhoto($input: UploadHolidayCardPhotoInput!) {
+    uploadHolidayCardPhoto(input: $input) {
       photo { blobId filename contentType byteSize url }
       errors
     }

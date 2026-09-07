@@ -1,18 +1,24 @@
 /**
  * One text region, edited in place.
  *
- * When selected the region swaps a `<div>` for a `<textarea>` carrying the
- * *identical* computed style — same family, same point-derived size, same line
- * height, same alignment, same wrapping. That is what keeps the editing state
- * honest: if the textarea laid text out even slightly differently, a message
- * would reflow the moment the user clicked away, which is precisely the
- * "close enough" preview this feature exists to avoid.
+ * The region is a `<textarea>` carrying the *identical* computed style the print
+ * renderer would give it — same family, same point-derived size, same line
+ * height, same alignment, same wrapping — with all of the browser's own textarea
+ * chrome reset away. Editing therefore happens on the thing that prints rather
+ * than on a proxy for it, and nothing reflows when the user clicks away.
+ *
+ * It is a textarea *always*, not only while selected. Swapping a div for a
+ * textarea on click looks tidier but does not work: the element the pointer went
+ * down on is gone by the time the browser assigns focus, so focus lands on
+ * `<body>` and the first thing the user types is silently dropped. Rendering one
+ * element throughout lets the browser do its own focus handling, which it is
+ * better at than we are.
  *
  * The region clips its overflow exactly as the print renderer does, so a
  * greeting too long for its box is visibly cut off here rather than discovered
  * on the proof.
  */
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import type { CSSProperties } from 'react';
 import { setTextPlacement, textPlacement } from '../design';
 import type {
@@ -48,71 +54,50 @@ export const TextRegion: React.FC<TextRegionProps> = ({
 }) => {
   const placement = textPlacement(config, panel, region.id);
   const content = placement?.content ?? '';
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (selected) textareaRef.current?.focus();
-  }, [selected]);
-
-  if (selected && onChange) {
-    return (
-      <textarea
-        ref={textareaRef}
-        value={content}
-        // The model rejects anything longer, so stopping here means the user
-        // sees the limit as they hit it rather than as a rejected save.
-        maxLength={options.textMaxLength}
-        onChange={event =>
-          onChange(
-            setTextPlacement(config, panel, region.id, {
-              ...placement,
-              content: event.target.value,
-            })
-          )
-        }
-        onPointerDown={event => event.stopPropagation()}
-        style={{
-          ...style,
-          // Reset the browser's own textarea chrome so only the print style shows.
-          background: 'transparent',
-          border: 'none',
-          outline: 'none',
-          padding: 0,
-          margin: 0,
-          resize: 'none',
-          overflow: 'hidden',
-          boxShadow: '0 0 0 2px var(--color-brand-yellow)',
-        }}
-      />
-    );
-  }
 
   return (
-    <div
-      style={{ ...style, cursor: 'text' }}
-      onPointerDown={event => {
-        event.stopPropagation();
-        onSelect();
+    <textarea
+      value={content}
+      readOnly={!onChange}
+      // The model rejects anything longer, so stopping here means the user sees
+      // the limit as they hit it rather than as a save the server refuses.
+      maxLength={options.textMaxLength}
+      placeholder={showGuides ? labelFor(region.id) : undefined}
+      aria-label={labelFor(region.id)}
+      onChange={event =>
+        onChange?.(
+          setTextPlacement(config, panel, region.id, {
+            ...placement,
+            content: event.target.value,
+          })
+        )
+      }
+      // Focus is the source of truth for "which region is being edited", so the
+      // rail follows the caret rather than needing its own click handling.
+      onFocus={onSelect}
+      onPointerDown={event => event.stopPropagation()}
+      style={{
+        ...style,
+        // Reset the browser's own textarea chrome so only the print style shows.
+        background: 'transparent',
+        border: 'none',
+        outline: 'none',
+        padding: 0,
+        margin: 0,
+        resize: 'none',
+        overflow: 'hidden',
+        cursor: 'text',
+        ...(selected ? { boxShadow: '0 0 0 2px var(--color-brand-yellow)' } : {}),
       }}
-    >
-      {content || (showGuides ? <PlaceholderHint region={region} /> : '')}
-    </div>
+    />
   );
 };
 
 /**
- * What an empty region says before anyone writes in it. Rendered at the region's
- * own type size and colour-muted, so it reads as an invitation rather than as
- * content the user might mistake for something that prints.
- */
-const PlaceholderHint: React.FC<{ region: TextRegionSpec }> = ({ region }) => (
-  <span className="opacity-40 select-none">{labelFor(region.id)}</span>
-);
-
-/**
- * A human label for a region id. Falls back to the id itself with its
- * underscores opened out, so a template that adds a region nobody thought about
- * still gets something readable rather than a blank box.
+ * A human label for a region id, used as the empty-state placeholder. Falls back
+ * to the id itself with its underscores opened out, so a template that adds a
+ * region nobody thought about still gets something readable rather than a blank
+ * box.
  */
 function labelFor(id: string): string {
   const labels: Record<string, string> = {

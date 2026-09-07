@@ -40,6 +40,16 @@ interface UseAutosaveOptions {
   draft: Draft;
   /** What the server last acknowledged. Saves are skipped while it matches. */
   saved: Draft | null;
+  /**
+   * False until the card has loaded and the working copy has been seeded.
+   *
+   * Without this the hook would run against the page's initial empty state,
+   * where there is no `saved` to compare against and so everything looks dirty.
+   * On a slow load that debounce fires before the seed lands and posts a blank
+   * document with an empty `templateId` — which is to say it overwrites the
+   * user's card with nothing.
+   */
+  enabled: boolean;
   onSaved: (card: HolidayCard) => void;
 }
 
@@ -50,7 +60,7 @@ interface UpdateResponse {
   };
 }
 
-export function useAutosave({ externalId, draft, saved, onSaved }: UseAutosaveOptions) {
+export function useAutosave({ externalId, draft, saved, enabled, onSaved }: UseAutosaveOptions) {
   const [state, setState] = useState<SaveState>('idle');
   const [errors, setErrors] = useState<string[]>([]);
   const [update] = useMutation<UpdateResponse>(UPDATE_HOLIDAY_CARD);
@@ -66,10 +76,12 @@ export function useAutosave({ externalId, draft, saved, onSaved }: UseAutosaveOp
   const onSavedRef = useRef(onSaved);
   onSavedRef.current = onSaved;
 
-  const dirty = !saved || !sameDraft(draft, saved);
+  const dirty = enabled && (!saved || !sameDraft(draft, saved));
+  const enabledRef = useRef(enabled);
+  enabledRef.current = enabled;
 
   const flush = useCallback(async () => {
-    if (inFlight.current) return;
+    if (inFlight.current || !enabledRef.current) return;
 
     const pending = latest.current;
     const acknowledged = savedRef.current;

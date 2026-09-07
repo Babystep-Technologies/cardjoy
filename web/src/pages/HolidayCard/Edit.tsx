@@ -126,7 +126,16 @@ const HolidayCardEdit: React.FC = () => {
     [config, templateId, title]
   );
 
-  const autosave = useAutosave({ externalId, draft, saved, onSaved: handleSaved });
+  const autosave = useAutosave({
+    externalId,
+    draft,
+    saved,
+    // Only once the working copy has actually been seeded from the server —
+    // before that the draft is this component's empty initial state, and saving
+    // it would overwrite the user's card with nothing.
+    enabled: Boolean(card && config),
+    onSaved: handleSaved,
+  });
 
   const template = useMemo(
     () => data?.holidayCardTemplates.find(candidate => candidate.id === templateId),
