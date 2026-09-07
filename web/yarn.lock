@@ -1197,10 +1197,20 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.9.tgz#50dea3616bc8191fb8e112283b49eaff03e78429"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
+"@fontsource/cormorant@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/cormorant/-/cormorant-5.3.0.tgz#bad6556b4319ab037b1cb897845f0db698fb340f"
+  integrity sha512-r2xrO2/35L+miyYFaERPRn3TGA8G83fKAR4wGG3s4WC5pLRZ7Cw3brDjr8tRwESCHXgB3r7jZqjfK2kLPv3zrQ==
+
 "@fontsource/dancing-script@^5.2.8":
   version "5.2.8"
   resolved "https://registry.yarnpkg.com/@fontsource/dancing-script/-/dancing-script-5.2.8.tgz#30f1b2c5e7333178f96c389d0ebb0c2e17bc97ed"
   integrity sha512-zHVVgIQ5/rAIM0VVp1QMsqvJm9INHO5/C82E9rHT6NlabjaPTFYn8wl9lT4vPWizfB0TublGQM1999kfdA+XFA==
+
+"@fontsource/libre-baskerville@^5.3.0":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/libre-baskerville/-/libre-baskerville-5.3.0.tgz#78364a23a4ef5daf8979992da9ea5a1cae8c95f2"
+  integrity sha512-IA6OLq36/JWMX70Fha15sri2qWsijFh7hgdDXCRZHjKUHtWarLQoiGilvm7iMqm7HiYFEv9acF3+IuRHO9kUiA==
 
 "@fontsource/montserrat@^5.2.8":
   version "5.2.8"

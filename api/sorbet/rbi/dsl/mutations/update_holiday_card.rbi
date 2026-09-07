@@ -10,8 +10,9 @@ class Mutations::UpdateHolidayCard
     params(
       external_id: ::String,
       title: T.nilable(::String),
+      template_id: T.nilable(::String),
       design_config: T.nilable(T::Hash[::String, T.untyped])
     ).returns(T.untyped)
   end
-  def resolve(external_id:, title: T.unsafe(nil), design_config: T.unsafe(nil)); end
+  def resolve(external_id:, title: T.unsafe(nil), template_id: T.unsafe(nil), design_config: T.unsafe(nil)); end
 end

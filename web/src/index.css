@@ -7,6 +7,12 @@
 @import '@fontsource/montserrat/700.css';
 @import '@fontsource/dancing-script/400.css';
 @import '@fontsource/dancing-script/700.css';
+/* The two seasonal serifs in HolidayCard::VALID_FONTS. The print renderer
+   embeds weight 400 of all six families, so the holiday card preview needs the
+   same files locally — otherwise those two regions would preview in a fallback
+   face at different metrics and break where the lines wrap. */
+@import '@fontsource/cormorant/400.css';
+@import '@fontsource/libre-baskerville/400.css';
 @import 'tailwindcss';
 @tailwind base;
 @tailwind components;

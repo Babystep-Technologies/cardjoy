@@ -11,9 +11,11 @@ RSpec.describe Mutations::UpdateHolidayCard, type: :request do
 
   let(:query) do
     <<~GRAPHQL
-      mutation UpdateHolidayCard($externalId: String!, $title: String, $designConfig: JSON) {
-        updateHolidayCard(input: { externalId: $externalId, title: $title, designConfig: $designConfig }) {
-          holidayCard { externalId title designConfig }
+      mutation UpdateHolidayCard($externalId: String!, $title: String, $templateId: String, $designConfig: JSON) {
+        updateHolidayCard(input: {
+          externalId: $externalId, title: $title, templateId: $templateId, designConfig: $designConfig
+        }) {
+          holidayCard { externalId title templateId designConfig }
           errors
         }
       }
@@ -92,6 +94,61 @@ RSpec.describe Mutations::UpdateHolidayCard, type: :request do
     result = update(designConfig: { "version" => 99, "front" => {} })
 
     expect(result["errors"].join).to include("unknown version")
+  end
+
+  describe "templateId" do
+    # Switching layout is an edit: the user keeps their photos and their message
+    # and changes the arrangement, so the editor sends the re-mapped document
+    # alongside the new id in one save.
+    it "switches the card to another template of the same size" do
+      result = update(templateId: "single_moment")
+
+      expect(result["errors"]).to be_empty
+      expect(card.reload.template_id).to eq("single_moment")
+    end
+
+    it "saves the re-mapped document and the new template together" do
+      remapped = { "version" => 1, "front" => { "texts" => { "greeting" => { "content" => "Happy Holidays" } } }, "back" => {} }
+
+      update(templateId: "single_moment", designConfig: remapped)
+
+      expect(card.reload.template_id).to eq("single_moment")
+      expect(card.design_config.dig("front", "texts", "greeting", "content")).to eq("Happy Holidays")
+    end
+
+    # A template's geometry is drawn for one panel size, so a 6x9 layout on a
+    # 6x4 card would push every slot past the trim line.
+    it "refuses a template drawn for a different size" do
+      result = update(templateId: "winter_portrait")
+
+      expect(result["errors"]).to eq([ "Template winter_portrait is not available in size 6x4" ])
+      expect(card.reload.template_id).to eq("snowy_trio")
+    end
+
+    it "refuses a template that is not in the catalogue" do
+      result = update(templateId: "no_such_template")
+
+      expect(result["errors"]).to eq([ "Unknown template" ])
+      expect(card.reload.template_id).to eq("snowy_trio")
+    end
+
+    it "leaves the template alone when it is not sent" do
+      update(title: "Renamed")
+
+      expect(card.reload.template_id).to eq("snowy_trio")
+    end
+
+    # template_id is one of HolidayCard::PROOF_DESIGN_FIELDS, so a layout change
+    # has to invalidate an approval the same way a content change does.
+    it "clears a proof approval" do
+      card.update!(proof_url: "https://example.com/proof.pdf", proof_generated_at: Time.current,
+        proof_design_digest: card.proof_design_digest_for_current_design, proof_approved_at: Time.current)
+
+      update(templateId: "single_moment")
+
+      expect(card.reload.proof_approved_at).to be_nil
+      expect(card).not_to be_proof_approved
+    end
   end
 
   it "returns Not authorized for another user's card" do
