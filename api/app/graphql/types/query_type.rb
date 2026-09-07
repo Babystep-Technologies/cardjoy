@@ -36,6 +36,7 @@ module Types
     field :holiday_card, resolver: Queries::HolidayCard
     field :holiday_card_templates, resolver: Queries::HolidayCardTemplates
     field :holiday_card_stickers, resolver: Queries::HolidayCardStickers
+    field :holiday_card_editor_options, resolver: Queries::HolidayCardEditorOptions
     field :my_postage_ledger, resolver: Queries::MyPostageLedger
     field :quote_holiday_card_mailing, resolver: Queries::QuoteHolidayCardMailing
     field :my_holiday_card_orders, resolver: Queries::MyHolidayCardOrders

@@ -19,6 +19,7 @@ class GraphqlController < ApiController
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
     GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
     OrganizationInvitationPreview HolidayCardTemplates HolidayCardStickers
+    HolidayCardEditorOptions
   ].freeze
 
   use ApolloUploadServer::Middleware

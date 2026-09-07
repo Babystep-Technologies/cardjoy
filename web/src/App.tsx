@@ -55,6 +55,13 @@ import {
 // Contacts is here for the same reason: it is signed-in-only, so nobody lands on it first, and the
 // address + list surfaces made it big enough to push the main chunk past that limit.
 const Contacts = React.lazy(() => import('@/pages/Contacts/Index'));
+
+// The holiday card editor is the biggest page in the app — a live print preview,
+// the template catalogue, and the sticker artwork as inline data URIs. Nobody
+// lands on it first, so it stays out of the initial bundle for the same reason
+// Contacts does.
+const HolidayCardNew = React.lazy(() => import('@/pages/HolidayCard/New'));
+const HolidayCardEdit = React.lazy(() => import('@/pages/HolidayCard/Edit'));
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
@@ -161,6 +168,23 @@ const App: React.FC = () => {
           <Route path="/card/:cardExternalId/edit" element={<CardEdit />} />
           <Route path="/card/:cardExternalId/viewable" element={<CardViewable />} />
           <Route path="/card/:cardExternalId/editable" element={<CardEditable />} />
+
+          <Route
+            path="/holiday-card/new"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <HolidayCardNew />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/holiday-card/:externalId/edit"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <HolidayCardEdit />
+              </React.Suspense>
+            }
+          />
 
           <Route path="/invitation/new" element={<InvitationNew />} />
           <Route path="/invitation/:id" element={<InvitationView />} />
