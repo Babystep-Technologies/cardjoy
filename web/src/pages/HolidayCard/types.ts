@@ -129,6 +129,36 @@ export interface HolidayCard {
   updatedAt: string;
 }
 
+/**
+ * Whether the print partner is configured, asked before the send flow is
+ * offered rather than discovered at the charge step (#153).
+ *
+ * Two booleans because they read two different keys — proofs run against
+ * PostGrid's test mode and mailing against live — so a deploy can genuinely
+ * have one and not the other. A send needs both: nothing can be mailed without
+ * an approved proof.
+ */
+export interface MailingAvailability {
+  proofsAvailable: boolean;
+  mailingAvailable: boolean;
+}
+
+/** Both halves configured, i.e. a send could actually run start to finish. */
+export function canSendByPost(availability: MailingAvailability | null | undefined): boolean {
+  return Boolean(availability?.proofsAvailable && availability?.mailingAvailable);
+}
+
+/** Counts behind the dashboard's "40 mailed · 2 failed". Never null; zeroed instead. */
+export interface OrderSummary {
+  /** Orders placed. `total - failed` is what actually went into the post. */
+  total: number;
+  inFlight: number;
+  delivered: number;
+  /** Failed or cancelled — every one of these was refunded. */
+  failed: number;
+  lastOrderedAt: string | null;
+}
+
 // ------------------------------------------------------------------ document
 
 /** One photo placed in a slot. Pan is a fraction of the slot; zoom is a multiplier. */

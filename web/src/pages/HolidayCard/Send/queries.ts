@@ -46,11 +46,23 @@ const SEND_CARD_FIELDS = gql`
   }
 `;
 
-/** The card, the address book, and the lists — one round trip on flow entry. */
+/**
+ * The card, the address book, the lists — and whether any of this can run at
+ * all. One round trip on flow entry.
+ *
+ * `holidayCardMailingAvailability` rides along rather than being asked for
+ * separately because the answer decides whether the flow renders. A second
+ * request would let the stepper paint first and be withdrawn a moment later
+ * (#153).
+ */
 export const GET_SEND_DATA = gql`
   query HolidayCardSend($externalId: String!) {
     holidayCard(externalId: $externalId) {
       ...SendCardFields
+    }
+    holidayCardMailingAvailability {
+      proofsAvailable
+      mailingAvailable
     }
     myContacts {
       ...SendContactFields
@@ -152,29 +164,8 @@ export const UPDATE_CONTACT_ADDRESS = gql`
   ${SEND_CONTACT_FIELDS}
 `;
 
-/** The order list the flow lands on, and the page that polls it afterwards. */
-export const MY_HOLIDAY_CARD_ORDERS = gql`
-  query MyHolidayCardOrders($holidayCardId: ID!) {
-    myHolidayCardOrders(holidayCardId: $holidayCardId) {
-      id
-      status
-      chargedCents
-      recipientName
-      recipientAddress {
-        name
-        addressLine1
-        addressLine2
-        city
-        region
-        postalCode
-        countryCode
-      }
-      contactId
-      trackingNumber
-      failureReason
-      submittedAt
-      mailedAt
-      createdAt
-    }
-  }
-`;
+/**
+ * The order list the flow lands on lives with the orders page itself, in
+ * `../queries.ts` — it outlives this flow, and the page that polls it is not
+ * part of it.
+ */

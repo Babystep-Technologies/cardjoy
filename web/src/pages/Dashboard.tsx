@@ -15,6 +15,12 @@ import CardQrCode from '@/pages/Card/components/QrCode';
 import ShareDialog from '@/components/ShareDialog';
 import { CardsList } from '@/components/Dashboard/CardsList';
 import { InvitationsList } from '@/components/Dashboard/InvitationsList';
+import {
+  HolidayCardsList,
+  type DashboardHolidayCard,
+  type DashboardTemplate,
+} from '@/components/Dashboard/HolidayCardsList';
+import { GET_DASHBOARD_HOLIDAY_CARDS } from '@/pages/HolidayCard/queries';
 
 // `organizationId` is the context: null lists the signed-in user's personal cards,
 // an id lists everything that organization owns — including cards other members made.
@@ -157,8 +163,32 @@ const Dashboard: React.FC = () => {
     nextFetchPolicy: 'network-only',
   });
 
+  /**
+   * Holiday cards (#153). No `organizationId` and no tab inside an
+   * organization, because `myHolidayCards` has no organization argument —
+   * holiday cards are deliberately personal for now (see `Queries::
+   * MyHolidayCards`). Listing someone's personal cards under a heading that
+   * says "shared with everyone in Acme" would be a lie about who can see them,
+   * so the tab is simply absent there rather than quietly showing the wrong
+   * scope.
+   */
+  const { data: holidayData } = useQuery(GET_DASHBOARD_HOLIDAY_CARDS, {
+    skip: skipQueries || organizationId !== null,
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'network-only',
+  });
+
   const cards: CardType[] = useMemo(() => data?.userCards || [], [data]);
   const invitations = invitationsData?.userInvitations || [];
+  const holidayCards: DashboardHolidayCard[] = useMemo(
+    () => holidayData?.myHolidayCards ?? [],
+    [holidayData]
+  );
+  const holidayTemplates: DashboardTemplate[] = useMemo(
+    () => holidayData?.holidayCardTemplates ?? [],
+    [holidayData]
+  );
+  const showHolidayTab = organizationId === null;
 
   // Bucket cards by kind for the per-kind tabs. A kind the API knows about but this UI
   // doesn't have a tab for yet falls back to the first tab, so no card ever goes missing.
@@ -175,8 +205,16 @@ const Dashboard: React.FC = () => {
 
   // Land on the first kind the user actually has, so someone who only sends 1-on-1 cards
   // doesn't open the dashboard on an empty Group tab. A manual choice always wins.
-  const selectedTab =
-    activeTab ?? CARD_TABS.find(tab => cardsByKind[tab.kind].length > 0)?.kind ?? CARD_TABS[0].kind;
+  //
+  // Holiday is last in that search rather than absent from it: someone whose only
+  // content is a holiday card would otherwise open the dashboard on an empty Group
+  // tab and conclude they had lost it.
+  const firstPopulatedKind = CARD_TABS.find(tab => cardsByKind[tab.kind].length > 0)?.kind;
+  const holidayFallback =
+    organizationId === null && holidayCards.length > 0 && invitations.length === 0
+      ? 'holiday'
+      : undefined;
+  const selectedTab = activeTab ?? firstPopulatedKind ?? holidayFallback ?? CARD_TABS[0].kind;
 
   // Listen for delete events from child components
   useEffect(() => {
@@ -221,7 +259,8 @@ const Dashboard: React.FC = () => {
 
   const hasCards = cards.length > 0;
   const hasInvitations = invitations.length > 0;
-  const hasAnyContent = hasCards || hasInvitations;
+  const hasHolidayCards = showHolidayTab && holidayCards.length > 0;
+  const hasAnyContent = hasCards || hasInvitations || hasHolidayCards;
 
   return (
     <div className="flex flex-col flex-grow min-h-[calc(100vh-4rem)] p-4">
@@ -237,7 +276,7 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-500 text-lg">
               {organizationName
                 ? `Create a card or an invitation — everyone in ${organizationName} will see it here.`
-                : 'Create group greeting cards, send a 1-on-1 card, or plan an event invitation to get started'}
+                : 'Create a group card, send a 1-on-1 card, plan an event invitation, or post a holiday card to get started'}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -250,6 +289,11 @@ const Dashboard: React.FC = () => {
             <Button asChild size="lg" variant="outline">
               <Link to="/invitation/new">Create an invitation</Link>
             </Button>
+            {showHolidayTab && (
+              <Button asChild size="lg" variant="outline">
+                <Link to="/holiday-card/new">Make a holiday card</Link>
+              </Button>
+            )}
           </div>
         </div>
       ) : (
@@ -284,6 +328,14 @@ const Dashboard: React.FC = () => {
               >
                 Invites{hasInvitations && ` (${invitations.length})`}
               </TabsTrigger>
+              {showHolidayTab && (
+                <TabsTrigger
+                  value="holiday"
+                  className="rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
+                >
+                  Holiday{hasHolidayCards && ` (${holidayCards.length})`}
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {CARD_TABS.map(tab => (
@@ -319,6 +371,17 @@ const Dashboard: React.FC = () => {
                 }
               />
             </TabsContent>
+
+            {showHolidayTab && (
+              <TabsContent value="holiday" className="mt-0">
+                <HolidayCardsList
+                  cards={holidayCards}
+                  templates={holidayTemplates}
+                  emptyTitle="You haven't made a holiday card yet"
+                  emptyDescription="Design one, then have it printed and posted to everyone on your list."
+                />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       )}

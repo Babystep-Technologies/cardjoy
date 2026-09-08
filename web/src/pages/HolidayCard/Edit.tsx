@@ -22,12 +22,14 @@ import { normalizeDesign, scrubBlob } from './design';
 import { Editor } from './Editor';
 import { SaveStatus } from './Editor/SaveStatus';
 import { useAutosave } from './Editor/useAutosave';
+import { canSendByPost } from './types';
 import type {
   DesignConfig,
   EditorOptions,
   HolidayCard,
   HolidayCardPhoto,
   HolidayCardTemplate,
+  MailingAvailability,
   Sticker,
 } from './types';
 
@@ -41,6 +43,7 @@ const MIN_EDITOR_WIDTH = 700;
 
 interface EditorDataResponse {
   holidayCard: HolidayCard | null;
+  holidayCardMailingAvailability: MailingAvailability;
   holidayCardTemplates: HolidayCardTemplate[];
   holidayCardStickers: Sticker[];
   holidayCardEditorOptions: EditorOptions;
@@ -141,6 +144,10 @@ const HolidayCardEdit: React.FC = () => {
     () => data?.holidayCardTemplates.find(candidate => candidate.id === templateId),
     [data, templateId]
   );
+
+  // Whether the door into the send flow is worth opening. Absent data reads as
+  // unavailable, which is the safe direction: the flow refuses on its own too.
+  const sendAvailable = canSendByPost(data?.holidayCardMailingAvailability);
 
   const handlePhotoUploaded = useCallback((photo: HolidayCardPhoto) => {
     setCard(current => (current ? { ...current, photos: [...current.photos, photo] } : current));
@@ -279,18 +286,35 @@ const HolidayCardEdit: React.FC = () => {
 
               The pending debounce is flushed first. Leaving mid-debounce would
               have the send flow render a proof of the *previous* design, which
-              is the one failure the proof mechanism exists to prevent. */}
-          <Button
-            size="sm"
-            onClick={async () => {
-              if (autosave.dirty) await autosave.saveNow();
-              navigate(`/holiday-card/${externalId}/send`);
-            }}
-            disabled={autosave.state === 'saving'}
-          >
-            <Send className="mr-1.5 h-4 w-4" />
-            Send by post
-          </Button>
+              is the one failure the proof mechanism exists to prevent.
+
+              Disabled, not hidden, when the print partner is unconfigured
+              (#153): the editor still works — designing is free and useful —
+              but a button that leads somewhere that cannot finish is worse
+              than one that says why it can't. */}
+          {sendAvailable ? (
+            <Button
+              size="sm"
+              onClick={async () => {
+                if (autosave.dirty) await autosave.saveNow();
+                navigate(`/holiday-card/${externalId}/send`);
+              }}
+              disabled={autosave.state === 'saving'}
+            >
+              <Send className="mr-1.5 h-4 w-4" />
+              Send by post
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="hidden text-xs text-gray-500 sm:inline">
+                Posting is unavailable right now — your design keeps saving.
+              </span>
+              <Button size="sm" disabled title="Sending by post is unavailable right now">
+                <Send className="mr-1.5 h-4 w-4" />
+                Send by post
+              </Button>
+            </div>
+          )}
         </div>
       </header>
 

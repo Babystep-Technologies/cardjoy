@@ -27,6 +27,16 @@ module Types
     field :proof_current, Boolean, null: false
     field :proof_approved, Boolean, null: false
 
+    # What became of this card in the post, as counts (#153). Batch-loaded, so
+    # the dashboard's list of cards costs one grouped query rather than one per
+    # card — see Sources::HolidayCardOrderSummaryByCardId.
+    field :order_summary, Types::HolidayCardOrderSummaryType, null: false,
+      description: "How many pieces this card has been mailed as, and how they went."
+
+    def order_summary
+      dataloader.with(Sources::HolidayCardOrderSummaryByCardId).load(object.id)
+    end
+
     def proof_current
       object.proof_current?
     end
