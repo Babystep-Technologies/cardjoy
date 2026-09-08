@@ -10,15 +10,23 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { clearPostageCheckout } from '@/lib/postage';
 import { clearPostageReturnTo, readPostageReturnTo } from '@/pages/HolidayCard/Send/state';
 
 const BuyPostageCancel: React.FC = () => {
   const navigate = useNavigate();
   const [returnTo] = React.useState(() => readPostageReturnTo());
 
+  // No money moved, so there is no webhook to wait for. Dropping the note here
+  // stops a later success page from comparing against a balance recorded for a
+  // top-up that never happened.
+  React.useEffect(() => {
+    clearPostageCheckout();
+  }, []);
+
   const handleReturn = () => {
     clearPostageReturnTo();
-    navigate(returnTo ?? '/dashboard');
+    navigate(returnTo ?? '/postage');
   };
 
   return (
@@ -39,7 +47,7 @@ const BuyPostageCancel: React.FC = () => {
           </>
         ) : (
           <Link
-            to="/buy_postage"
+            to="/postage"
             className="inline-block rounded-xl bg-black px-6 py-3 font-medium text-white transition-colors hover:bg-gray-800"
           >
             Try again
