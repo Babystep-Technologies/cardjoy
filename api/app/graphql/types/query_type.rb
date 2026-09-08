@@ -49,6 +49,7 @@ module Types
       description: "Allowed postage top-up amounts, in US cents, cheapest first."
     field :quote_holiday_card_mailing, resolver: Queries::QuoteHolidayCardMailing
     field :my_holiday_card_orders, resolver: Queries::MyHolidayCardOrders
+    field :holiday_card_mailing_availability, resolver: Queries::HolidayCardMailingAvailability
 
     def card_occasions
       ::Card::OCCASIONS

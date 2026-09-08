@@ -27,12 +27,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { ArrowLeft, Pencil, PackageX } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
 import { Button } from '@/components/ui/button';
 import { pluralize } from '@/lib/money';
+import { canSendByPost, type MailingAvailability } from '../types';
 import {
   APPROVE_PROOF,
   GENERATE_PROOF,
@@ -72,6 +73,7 @@ import {
  */
 interface SendDataResponse {
   holidayCard: SendCard | null;
+  holidayCardMailingAvailability: MailingAvailability;
   myContacts: SendContact[];
   myContactLists: SendContactList[];
 }
@@ -389,6 +391,57 @@ const HolidayCardSend: React.FC = () => {
   }
 
   if (!card) return <LoadingScreen />;
+
+  /**
+   * No print partner, no send flow (#153).
+   *
+   * Shown instead of the stepper rather than as a banner above it, because
+   * every step below it is a step toward a charge that cannot happen. Both
+   * mutations already refuse — `generateHolidayCardProof` and `sendHolidayCard`
+   * return "unavailable" when their key is missing — so without this the user
+   * picks forty recipients and learns at the proof step. The editor is
+   * untouched: designing works with no key configured, and the way back to it
+   * is the first thing on this screen.
+   */
+  if (!canSendByPost(data?.holidayCardMailingAvailability)) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 px-4 py-8">
+        <div className="mx-auto w-full max-w-2xl">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 gap-1.5"
+            onClick={() => navigate(`/holiday-card/${externalId}/edit`)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to the editor
+          </Button>
+          <div className="mt-4 rounded-xl border border-amber-200 bg-white p-8 text-center">
+            <PackageX className="mx-auto h-10 w-10 text-amber-500" />
+            <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+              Sending by post isn&apos;t available right now
+            </h1>
+            <p className="mt-2 text-gray-600">
+              We can&apos;t reach our print-and-mail partner, so we can&apos;t print a proof or put
+              anything in the post at the moment. Nothing has been charged and nothing has been
+              lost.
+            </p>
+            <p className="mt-2 text-gray-600">
+              Your design is saved. Keep working on it and try sending again later.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button onClick={() => navigate(`/holiday-card/${externalId}/edit`)}>
+                Keep editing
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                Back to dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 px-4 py-8">

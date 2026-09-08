@@ -1,8 +1,12 @@
 import { Mail, Heart, PartyPopper, Gift, type LucideIcon } from 'lucide-react';
 
 // Product identities shown in marketing surfaces. This is broader than the API's
-// Card::KINDS (group | one_on_one): invitation is a separate model and holiday is not
-// built yet, but all four share one brand identity here.
+// Card::KINDS (group | one_on_one): invitation and holiday are separate models with
+// their own flows, but all four share one brand identity here.
+//
+// Holiday is the odd one out in what it produces — it is printed and posted rather
+// than shared as a link — so copy about it belongs to physical mail. Anything here
+// promising a link or an email for a holiday card is wrong.
 export type CardTypeId = 'group' | 'one_on_one' | 'invitation' | 'holiday';
 
 export interface CardTypeTheme {
@@ -14,7 +18,7 @@ export interface CardTypeTheme {
   // Job-to-be-done phrasing for intent-led marketing CTAs — leads with what the
   // user wants to do rather than the internal card-type name.
   intent: string;
-  // Empty when the type has no working create flow yet (holiday).
+  // Empty when the type has no working create flow yet. All four are live.
   route: string;
   icon: LucideIcon;
   description: string;
@@ -73,14 +77,13 @@ export const cardTypes: CardTypeTheme[] = [
     label: 'Holiday Cards',
     shortLabel: 'Holiday',
     cta: 'Create a Holiday Card',
-    intent: 'Send holiday cards to your list',
-    route: '',
+    intent: 'Post holiday cards to your list',
+    route: '/holiday-card/new',
     icon: Gift,
     description:
-      'Spread seasonal cheer with festive cards made for the holidays — coming soon to CardJoy.',
+      'Design a festive card once, then have it printed and posted to everyone on your list.',
     colorVar: 'var(--color-brand-yellow)',
     gradient: 'from-[var(--color-brand-yellow)] to-[var(--color-brand-pink)]',
-    comingSoon: true,
   },
 ];
 

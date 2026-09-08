@@ -188,4 +188,92 @@ RSpec.describe "Holiday card queries", type: :request do
       expect(result.dig("data", "holidayCard")).to be_nil
     end
   end
+
+  # The dashboard's send summary (#153): counts, so a list of cards needn't pull
+  # every order row to say "40 mailed · 2 failed".
+  describe "orderSummary" do
+    let(:query) do
+      <<~GRAPHQL
+        query MyHolidayCards {
+          myHolidayCards {
+            externalId
+            orderSummary { total inFlight delivered failed lastOrderedAt }
+          }
+        }
+      GRAPHQL
+    end
+
+    def summaries = exec(query).dig("data", "myHolidayCards")
+
+    it "zeroes a card that has never been sent, rather than returning null" do
+      create(:holiday_card, user:)
+
+      expect(summaries.first["orderSummary"]).to eq(
+        "total" => 0, "inFlight" => 0, "delivered" => 0, "failed" => 0, "lastOrderedAt" => nil
+      )
+    end
+
+    it "splits orders into in-flight, delivered, and failed" do
+      card = create(:holiday_card, user:)
+      create(:holiday_card_mail_order, user:, holiday_card: card)
+      create(:holiday_card_mail_order, :submitted, user:, holiday_card: card)
+      create(:holiday_card_mail_order, :failed, user:, holiday_card: card)
+      create(
+        :holiday_card_mail_order,
+        user:, holiday_card: card, status: HolidayCardMailOrder::COMPLETED
+      )
+
+      expect(summaries.first["orderSummary"]).to include(
+        "total" => 4, "inFlight" => 2, "delivered" => 1, "failed" => 1
+      )
+    end
+
+    # `cancelled` is refunded exactly as `failed` is, and means the same thing
+    # to the person reading the list: it did not arrive, the money came back.
+    it "counts a cancelled order as failed" do
+      card = create(:holiday_card, user:)
+      create(
+        :holiday_card_mail_order,
+        user:, holiday_card: card, status: HolidayCardMailOrder::CANCELLED
+      )
+
+      expect(summaries.first["orderSummary"]).to include("failed" => 1, "inFlight" => 0)
+    end
+
+    it "reports when the card was last sent" do
+      card = create(:holiday_card, user:)
+      create(:holiday_card_mail_order, user:, holiday_card: card, created_at: 3.days.ago)
+      latest = create(:holiday_card_mail_order, user:, holiday_card: card, created_at: 1.hour.ago)
+
+      expect(Time.iso8601(summaries.first["orderSummary"]["lastOrderedAt"]))
+        .to be_within(1.second).of(latest.created_at)
+    end
+
+    it "does not attribute one card's orders to another" do
+      sent = create(:holiday_card, user:, title: "Sent", created_at: 1.hour.ago)
+      unsent = create(:holiday_card, user:, title: "Unsent", created_at: 2.hours.ago)
+      create(:holiday_card_mail_order, user:, holiday_card: sent)
+
+      totals = summaries.to_h { |card| [ card["externalId"], card["orderSummary"]["total"] ] }
+
+      expect(totals).to eq(sent.external_id => 1, unsent.external_id => 0)
+    end
+
+    # The whole reason the field is batch-loaded. Without the dataloader source
+    # this is one query per card, which is what a dashboard listing a season's
+    # worth of cards would pay on every load.
+    it "costs a fixed number of queries however many cards are listed" do
+      3.times { create(:holiday_card, user:) }
+
+      queries = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*_, payload|
+        queries << payload[:sql] if payload[:sql].include?("holiday_card_mail_orders")
+      end
+      summaries
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+
+      # One grouped count and one grouped maximum, regardless of card count.
+      expect(queries.size).to eq(2)
+    end
+  end
 end

@@ -116,11 +116,22 @@ export const GET_TEMPLATES = gql`
   ${TEMPLATE_FIELDS}
 `;
 
-/** Everything the editor needs to open a card, in one round trip. */
+/**
+ * Everything the editor needs to open a card, in one round trip.
+ *
+ * `holidayCardMailingAvailability` is here rather than on the send flow alone
+ * because the editor owns the door into it. Designing is free and works with no
+ * print partner configured; offering a live "Send by post" button that leads to
+ * a dead end is what this field prevents (#153).
+ */
 export const GET_EDITOR_DATA = gql`
   query HolidayCardEditor($externalId: String!) {
     holidayCard(externalId: $externalId) {
       ...HolidayCardFields
+    }
+    holidayCardMailingAvailability {
+      proofsAvailable
+      mailingAvailable
     }
     holidayCardTemplates {
       ...TemplateFields
@@ -154,6 +165,84 @@ export const GET_EDITOR_DATA = gql`
   }
   ${HOLIDAY_CARD_FIELDS}
   ${TEMPLATE_FIELDS}
+`;
+
+/**
+ * The orders page (#153): the card's name, and one row per piece mailed.
+ *
+ * The card comes along so the page can say *which* card these went out as,
+ * rather than heading a list of forty addresses with nothing to identify it.
+ * `recipientAddress` is the order's own snapshot, not the contact's — a contact
+ * edited since is not where the card went, and this page's whole job is saying
+ * where it went.
+ */
+export const GET_ORDERS = gql`
+  query HolidayCardOrders($externalId: String!, $holidayCardId: ID!) {
+    holidayCard(externalId: $externalId) {
+      externalId
+      title
+    }
+    myHolidayCardOrders(holidayCardId: $holidayCardId) {
+      id
+      status
+      chargedCents
+      recipientName
+      recipientAddress {
+        name
+        addressLine1
+        addressLine2
+        city
+        region
+        postalCode
+        countryCode
+      }
+      contactId
+      trackingNumber
+      failureReason
+      submittedAt
+      mailedAt
+      createdAt
+    }
+  }
+`;
+
+/**
+ * The dashboard's holiday tab. Counts rather than orders — see
+ * `HolidayCardOrderSummaryType`; a card mailed to forty people costs five
+ * integers here rather than forty rows nobody is going to read on a tile.
+ *
+ * The templates ride along for the thumbnail: a card with no photo yet still
+ * has a template, and its background colour is enough to tell two cards apart.
+ * Only the three fields the tile paints, not the full print geometry the editor
+ * asks for.
+ */
+export const GET_DASHBOARD_HOLIDAY_CARDS = gql`
+  query DashboardHolidayCards {
+    myHolidayCards {
+      externalId
+      title
+      size
+      templateId
+      updatedAt
+      photos {
+        url
+      }
+      orderSummary {
+        total
+        inFlight
+        delivered
+        failed
+        lastOrderedAt
+      }
+    }
+    holidayCardTemplates {
+      id
+      name
+      front {
+        background
+      }
+    }
+  }
 `;
 
 /** The options alone, for the create page — it has no card to load yet. */
