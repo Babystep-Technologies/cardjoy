@@ -356,10 +356,10 @@ const HolidayCardSend: React.FC = () => {
 
   /**
    * The top-up link. The path is written down before the redirect so
-   * `/buy_postage` knows where to send the user back to; the selection is
+   * `/postage` knows where to send the user back to; the selection is
    * already in storage, so they come back to it intact.
    */
-  const topUpPath = '/buy_postage';
+  const topUpPath = '/postage';
   const handleTopUpIntent = useCallback(() => {
     rememberPostageReturnTo(`/holiday-card/${externalId}/send`);
   }, [externalId]);

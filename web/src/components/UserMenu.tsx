@@ -8,15 +8,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChevronDown, LayoutDashboard, Users, User, LogOut, Building2 } from 'lucide-react';
+import { ChevronDown, LayoutDashboard, Users, User, LogOut, Building2, Stamp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrganization } from '@/contexts/OrganizationContext';
-import { getInitials } from '@/lib/utils';
+import { usePostageBalance } from '@/hooks/usePostageBalance';
+import { formatCents } from '@/lib/money';
+import { cn, getInitials } from '@/lib/utils';
 
 export const UserMenu: React.FC = () => {
   const { user, logout } = useAuth();
   // A user with no organizations gets no header switcher, so the way in lives here instead.
   const { organizations } = useOrganization();
+  // Shown as a dollar amount and labelled "Postage", never as a credit count:
+  // this is a different wallet from the credits that buy digital cards, and
+  // conflating them costs the user money on the wrong thing.
+  const { balanceCents, loading: balanceLoading, overdrawn } = usePostageBalance();
 
   if (!user) return null;
 
@@ -59,6 +65,22 @@ export const UserMenu: React.FC = () => {
           <Link to="/profile">
             <User className="h-4 w-4" />
             Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link to="/postage">
+            <Stamp className="h-4 w-4" />
+            Postage
+            {!balanceLoading && (
+              <span
+                className={cn(
+                  'ml-auto text-xs font-semibold tabular-nums',
+                  overdrawn ? 'text-red-600' : 'text-gray-500'
+                )}
+              >
+                {formatCents(balanceCents)}
+              </span>
+            )}
           </Link>
         </DropdownMenuItem>
         {organizations.length === 0 && (

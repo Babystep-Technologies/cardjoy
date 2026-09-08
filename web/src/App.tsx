@@ -124,15 +124,20 @@ const App: React.FC = () => {
           <Route path="/buy_credits/cancel" element={<BuyCreditsCancel />} />
           <Route path="/buy_credits/success" element={<BuyCreditsSuccess />} />
           {/* Postage is a separate, cents-denominated wallet from card credits.
-              These three paths are fixed server-side in CreateStripeCheckoutSession. */}
+              The wallet lives at /postage — it is somewhere you check a balance
+              and read history, not only somewhere you buy. The two Stripe
+              return paths below keep their `buy_postage` prefix because
+              CreateStripeCheckoutSession builds those URLs server-side, and a
+              session created before a deploy still comes back to them. */}
           <Route
-            path="/buy_postage"
+            path="/postage"
             element={
               <React.Suspense fallback={<LoadingScreen />}>
                 <BuyPostage />
               </React.Suspense>
             }
           />
+          <Route path="/buy_postage" element={<LegacyRedirect to="/postage" />} />
           <Route
             path="/buy_postage/cancel"
             element={

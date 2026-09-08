@@ -152,4 +152,49 @@ RSpec.describe "My postage ledger", type: :request do
       expect(JSON.parse(response.body)["data"]&.dig("myPostageLedger")).to be_nil
     end
   end
+
+  # The top-up page offers these and CreateStripeCheckoutSession validates
+  # against them (#152). Serving them from the model constant is what keeps the
+  # two ends from drifting — a tier the page offers is a tier checkout accepts.
+  describe "postageTopUpTiersCents" do
+    let(:tiers_query) { "{ postageTopUpTiersCents }" }
+
+    def exec_tiers(as:)
+      token = JWT.encode({ user_id: as.id }, secret, "HS256")
+      post "/graphql",
+        params: { query: tiers_query }.to_json,
+        headers: { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" }
+      JSON.parse(response.body)
+    end
+
+    it "serves the model's constant, in cents and cheapest first" do
+      tiers = exec_tiers(as: user).dig("data", "postageTopUpTiersCents")
+
+      expect(tiers).to eq(PostageCredit::TOP_UP_TIERS_CENTS)
+      expect(tiers).to eq(tiers.sort)
+      expect(tiers).to all(be_an(Integer))
+    end
+
+    # Every served tier survives the mutation's own validation. That check reads
+    # the same constant, so this is really a guard on the field not being
+    # rewritten to serve something else: an amount the page can offer must be an
+    # amount checkout will take.
+    it "offers only amounts that checkout will accept" do
+      tiers = exec_tiers(as: user).dig("data", "postageTopUpTiersCents")
+
+      rejected = tiers.reject { |cents| PostageCredit::TOP_UP_TIERS_CENTS.include?(cents) }
+
+      expect(rejected).to be_empty
+    end
+
+    # Not a stranger's to read: the endpoint gates on the operation name, and
+    # this one is not on the public list.
+    it "requires a signed-in caller like the rest of the wallet" do
+      post "/graphql",
+        params: { query: tiers_query }.to_json,
+        headers: { "Content-Type" => "application/json" }
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
 end

@@ -38,6 +38,15 @@ module Types
     field :holiday_card_stickers, resolver: Queries::HolidayCardStickers
     field :holiday_card_editor_options, resolver: Queries::HolidayCardEditorOptions
     field :my_postage_ledger, resolver: Queries::MyPostageLedger
+    # The top-up amounts the postage wallet sells, so the page offering them and
+    # the mutation validating them read the same list (#152) rather than the
+    # client carrying its own copy to drift out of sync.
+    #
+    # The same for every caller — it is a price list, not anyone's balance — but
+    # still served through the authenticated endpoint, because the only thing
+    # that asks is the signed-in wallet page.
+    field :postage_top_up_tiers_cents, [ Integer ], null: false,
+      description: "Allowed postage top-up amounts, in US cents, cheapest first."
     field :quote_holiday_card_mailing, resolver: Queries::QuoteHolidayCardMailing
     field :my_holiday_card_orders, resolver: Queries::MyHolidayCardOrders
 
@@ -47,6 +56,10 @@ module Types
 
     def occasion_reminder_lead_day_options
       ::Occasion::REMINDER_LEAD_DAY_OPTIONS
+    end
+
+    def postage_top_up_tiers_cents
+      ::PostageCredit::TOP_UP_TIERS_CENTS
     end
   end
 end
