@@ -62,6 +62,17 @@ const Contacts = React.lazy(() => import('@/pages/Contacts/Index'));
 // Contacts does.
 const HolidayCardNew = React.lazy(() => import('@/pages/HolidayCard/New'));
 const HolidayCardEdit = React.lazy(() => import('@/pages/HolidayCard/Edit'));
+// The send flow and the order list are only ever reached from the editor, so
+// they ride the same code-split as it rather than the initial bundle.
+const HolidayCardSend = React.lazy(() => import('@/pages/HolidayCard/Send'));
+const HolidayCardOrders = React.lazy(() => import('@/pages/HolidayCard/Orders'));
+
+// The postage wallet pages, split for the same reason: signed-in-only, reached
+// from the send flow or from Stripe's redirect, and the main chunk has around
+// 30 KiB of headroom left under the 2 MiB the PWA plugin will precache.
+const BuyPostage = React.lazy(() => import('@/pages/BuyPostage'));
+const BuyPostageCancel = React.lazy(() => import('@/pages/BuyPostage/Cancel'));
+const BuyPostageSuccess = React.lazy(() => import('@/pages/BuyPostage/Success'));
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
@@ -112,6 +123,32 @@ const App: React.FC = () => {
           <Route path="/buy_credits" element={<BuyCredits />} />
           <Route path="/buy_credits/cancel" element={<BuyCreditsCancel />} />
           <Route path="/buy_credits/success" element={<BuyCreditsSuccess />} />
+          {/* Postage is a separate, cents-denominated wallet from card credits.
+              These three paths are fixed server-side in CreateStripeCheckoutSession. */}
+          <Route
+            path="/buy_postage"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <BuyPostage />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/buy_postage/cancel"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <BuyPostageCancel />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/buy_postage/success"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <BuyPostageSuccess />
+              </React.Suspense>
+            }
+          />
           <Route path="/redeem" element={<RedeemPromo />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route
@@ -182,6 +219,22 @@ const App: React.FC = () => {
             element={
               <React.Suspense fallback={<LoadingScreen />}>
                 <HolidayCardEdit />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/holiday-card/:externalId/send"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <HolidayCardSend />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/holiday-card/:externalId/orders"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <HolidayCardOrders />
               </React.Suspense>
             }
           />
