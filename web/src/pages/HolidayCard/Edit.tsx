@@ -9,12 +9,13 @@
  * when it goes to the server.
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
 import { ArrowLeft, Monitor, Send } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
+import ErrorScreen from '@/components/Error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DELETE_HOLIDAY_CARD_PHOTO, GET_EDITOR_DATA } from './queries';
@@ -23,6 +24,7 @@ import { Editor } from './Editor';
 import { SaveStatus } from './Editor/SaveStatus';
 import { useAutosave } from './Editor/useAutosave';
 import { canSendByPost } from './types';
+import { cardFieldErrored, isAuthFailure } from './loadState';
 import type {
   DesignConfig,
   EditorOptions,
@@ -41,12 +43,18 @@ import type {
  */
 const MIN_EDITOR_WIDTH = 700;
 
+/**
+ * Every field optional but `holidayCard` — under `errorPolicy: 'all'` a partial
+ * response is a real shape the page has to handle, not a theoretical one. Typing
+ * the siblings as always-present would let a `.find` on `undefined` through the
+ * type checker and into the editor.
+ */
 interface EditorDataResponse {
   holidayCard: HolidayCard | null;
-  holidayCardMailingAvailability: MailingAvailability;
-  holidayCardTemplates: HolidayCardTemplate[];
-  holidayCardStickers: Sticker[];
-  holidayCardEditorOptions: EditorOptions;
+  holidayCardMailingAvailability?: MailingAvailability | null;
+  holidayCardTemplates?: HolidayCardTemplate[] | null;
+  holidayCardStickers?: Sticker[] | null;
+  holidayCardEditorOptions?: EditorOptions | null;
 }
 
 interface DeletePhotoResponse {
@@ -59,13 +67,19 @@ interface DeletePhotoResponse {
 const HolidayCardEdit: React.FC = () => {
   const { externalId = '' } = useParams<{ externalId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const { data, loading, error } = useQuery<EditorDataResponse>(GET_EDITOR_DATA, {
+  const { data, loading, error, refetch } = useQuery<EditorDataResponse>(GET_EDITOR_DATA, {
     variables: { externalId },
     // The design document is the thing being edited, so a background refetch
     // overwriting it mid-edit would be a data-loss bug rather than a refresh.
     fetchPolicy: 'network-only',
     nextFetchPolicy: 'cache-first',
+    // The card and the catalogue arrive together, but they do not fail together.
+    // Without this, one bad sticker asset takes down a card that loaded fine —
+    // the whole response is discarded and the page reports the card as missing.
+    // With it, the card still opens and only the palette is empty.
+    errorPolicy: 'all',
   });
 
   // The working copy. `card` tracks the server's answer (photos, ids); `config`,
@@ -141,7 +155,7 @@ const HolidayCardEdit: React.FC = () => {
   });
 
   const template = useMemo(
-    () => data?.holidayCardTemplates.find(candidate => candidate.id === templateId),
+    () => data?.holidayCardTemplates?.find(candidate => candidate.id === templateId),
     [data, templateId]
   );
 
@@ -199,9 +213,36 @@ const HolidayCardEdit: React.FC = () => {
     []
   );
 
+  /**
+   * A session the server no longer accepts. Retrying cannot fix it, and
+   * `lib/apollo-client.ts` clears the token without redirecting on purpose (so
+   * public pages keep working), which leaves the redirect to the pages that do
+   * require a user.
+   */
+  const authFailed = isAuthFailure(error);
+  useEffect(() => {
+    if (!authFailed) return;
+    navigate(`/sign_in?redirect=${encodeURIComponent(location.pathname)}`);
+  }, [authFailed, navigate, location.pathname]);
+
+  // A sibling field failing is survivable — an empty sticker palette is not a
+  // broken editor. Missing geometry or options is not: there is nothing to draw
+  // the card at.
+  const essentialsMissing =
+    Boolean(data) && (!data?.holidayCardTemplates || !data?.holidayCardEditorOptions);
+  const loadFailed =
+    (Boolean(error) && (!data?.holidayCard || cardFieldErrored(error))) || essentialsMissing;
+
   if (loading && !card) return <LoadingScreen />;
 
-  if (error || (data && !data.holidayCard)) {
+  // The effect above is on its way to the sign-in page; showing anything else in
+  // the meantime would be showing it to someone who is not signed in.
+  if (authFailed) return <LoadingScreen />;
+
+  // The card resolved to null on its own terms — the one case the copy below is
+  // actually true for. Every other failure used to land here too, which is how a
+  // schema mismatch came to report a perfectly good card as missing.
+  if (data && data.holidayCard === null && !cardFieldErrored(error)) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
         <h1 className="text-2xl font-semibold text-gray-900">We could not find that card</h1>
@@ -212,6 +253,20 @@ const HolidayCardEdit: React.FC = () => {
           Start a new holiday card
         </Button>
       </div>
+    );
+  }
+
+  // Everything else: the request failed, or came back without the geometry and
+  // options the editor cannot draw a card without. Retry is offered because most
+  // of these are transient. The specific reason is not paraphrased into copy that
+  // would be wrong as often as right — `lib/apollo-client.ts` logs it instead.
+  if (loadFailed) {
+    return (
+      <ErrorScreen
+        message="We could not open this card."
+        details="The card itself may be fine — something went wrong fetching it. Please try again."
+        action={<Button onClick={() => void refetch().catch(() => {})}>Try again</Button>}
+      />
     );
   }
 
