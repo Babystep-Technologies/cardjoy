@@ -11,7 +11,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@apollo/client';
-import { ArrowLeft, Monitor } from 'lucide-react';
+import { ArrowLeft, Monitor, Send } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
@@ -270,8 +270,27 @@ const HolidayCardEdit: React.FC = () => {
           className="h-9 w-56 border-transparent bg-gray-50 font-medium hover:border-gray-200 focus:border-gray-300"
         />
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
           <SaveStatus state={autosave.state} errors={autosave.errors} />
+          {/* The way out of the editor and into the send flow (#151). Editing
+              invalidates any approved proof, so this is deliberately a
+              navigation rather than a "send now" — the proof and the price are
+              stages of their own on the other side.
+
+              The pending debounce is flushed first. Leaving mid-debounce would
+              have the send flow render a proof of the *previous* design, which
+              is the one failure the proof mechanism exists to prevent. */}
+          <Button
+            size="sm"
+            onClick={async () => {
+              if (autosave.dirty) await autosave.saveNow();
+              navigate(`/holiday-card/${externalId}/send`);
+            }}
+            disabled={autosave.state === 'saving'}
+          >
+            <Send className="mr-1.5 h-4 w-4" />
+            Send by post
+          </Button>
         </div>
       </header>
 
