@@ -26,14 +26,16 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Pencil, PackageX } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
+import ErrorScreen from '@/components/Error';
 import { Button } from '@/components/ui/button';
 import { pluralize } from '@/lib/money';
 import { canSendByPost, type MailingAvailability } from '../types';
+import { cardFieldErrored, isAuthFailure } from '../loadState';
 import {
   APPROVE_PROOF,
   GENERATE_PROOF,
@@ -98,6 +100,7 @@ interface QuoteResponse {
 const HolidayCardSend: React.FC = () => {
   const { externalId = '' } = useParams<{ externalId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const client = useApolloClient();
 
   const { data, loading, error, refetch } = useQuery<SendDataResponse>(GET_SEND_DATA, {
@@ -373,10 +376,25 @@ const HolidayCardSend: React.FC = () => {
     if (stage === 'review') handleTopUpIntent();
   }, [stage, handleTopUpIntent]);
 
+  /**
+   * A session the server no longer accepts. Same reasoning as the editor: the
+   * Apollo error link clears the token without redirecting, so a page that
+   * requires a user has to do it.
+   */
+  const authFailed = isAuthFailure(error);
+  useEffect(() => {
+    if (!authFailed) return;
+    navigate(`/sign_in?redirect=${encodeURIComponent(location.pathname)}`);
+  }, [authFailed, navigate, location.pathname]);
+
   if (loading && !data) return <LoadingScreen />;
   if (!restored) return <LoadingScreen />;
 
-  if (error || (data && !card)) {
+  // On its way to sign-in; see the effect above.
+  if (authFailed) return <LoadingScreen />;
+
+  // The card is genuinely gone — the only reading under which this copy is true.
+  if (data && card === null && !cardFieldErrored(error)) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
         <h1 className="text-2xl font-semibold text-gray-900">We could not find that card</h1>
@@ -387,6 +405,18 @@ const HolidayCardSend: React.FC = () => {
           Back to dashboard
         </Button>
       </div>
+    );
+  }
+
+  // The request failed. Nothing here has been charged for, so a retry is safe to
+  // offer and is usually all it takes.
+  if (error && (!card || cardFieldErrored(error))) {
+    return (
+      <ErrorScreen
+        message="We could not open this card."
+        details="The card itself may be fine — something went wrong fetching it. Please try again."
+        action={<Button onClick={() => void refetch().catch(() => {})}>Try again</Button>}
+      />
     );
   }
 
