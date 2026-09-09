@@ -14,6 +14,7 @@ import React, { useRef, useState } from 'react';
 import { ImagePlus, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadGraphQLMutation } from '@/lib/graphql-upload';
+import { validateImageContents } from '@/lib/image-upload';
 import { UPLOAD_HOLIDAY_CARD_PHOTO } from '../queries';
 import type { EditorOptions, HolidayCardPhoto } from '../types';
 
@@ -78,6 +79,16 @@ export const PhotoLibrary: React.FC<PhotoLibraryProps> = ({
         }
         if (file.size > MAX_BYTES) {
           setError(`"${file.name}" is larger than 10MB.`);
+          continue;
+        }
+
+        // What the file *is*, not what it is called. An iPhone HEIC saved as
+        // .jpg reports `image/jpeg` above and passes, then fails the server's
+        // byte-level check after the whole upload — so read the signature here
+        // and say so now. See `lib/image-upload.ts`.
+        const contentsError = await validateImageContents(file);
+        if (contentsError) {
+          setError(contentsError);
           continue;
         }
 

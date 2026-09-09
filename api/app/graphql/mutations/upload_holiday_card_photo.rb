@@ -37,7 +37,7 @@ module Mutations
       holiday_card.photos.attach(io: photo_file.to_io, filename: photo_file.original_filename)
 
       if holiday_card.errors.any?
-        errors = friendly_errors(holiday_card.errors.full_messages)
+        errors = friendly_errors(holiday_card.errors.full_messages, photo_file)
         # Drop the rejected in-memory attachment so the record isn't left dirty.
         holiday_card.reload
         return failure(errors)
@@ -51,15 +51,70 @@ module Mutations
     # Mirrors the message rewriting in `create_card.rb`: the raw validator text
     # ("Photos must be less than 10MB") reads like a schema note rather than
     # something a person can act on.
-    def friendly_errors(messages)
+    def friendly_errors(messages, photo_file)
       messages.map do |message|
         if message.include?("less than 10")
           "Photo is too large. Please choose an image smaller than 10MB."
         elsif message.include?("valid image format")
-          "Photo must be a PNG, JPG, or GIF image."
+          wrong_format_message(photo_file)
         else
           message
         end
+      end
+    end
+
+    # The content type validation reads the file's actual bytes, not its name —
+    # that is the point of it, since an extension can say anything. But it means
+    # the person who picked a file their computer calls a JPG gets told to pick a
+    # PNG, JPG, or GIF, which reads as nonsense and leaves them nothing to do.
+    #
+    # So name what the file actually is. HEIC gets its own sentence because it is
+    # by far the common case: it is what an iPhone shoots by default, and macOS
+    # will happily report `image/jpeg` for one, so it passes every check that
+    # trusts the extension and fails this one.
+    def wrong_format_message(photo_file)
+      detected = detected_content_type(photo_file)
+
+      case detected
+      when "image/heic", "image/heif"
+        "That photo is in Apple's HEIC format, which we cannot print. On your iPhone, " \
+          "either set Settings › Camera › Formats to \"Most Compatible\", or export this " \
+          "photo as a JPG and upload that."
+      when nil, *HolidayCard::PRINTABLE_IMAGE_TYPES
+        # Either the bytes were unreadable, or Marcel disagrees with the
+        # validator's own sniff. Naming a type the validator just rejected would
+        # be worse than saying nothing, so fall back to the plain rule.
+        "Photo must be a PNG, JPG, or GIF image."
+      else
+        "That file is #{format_name(detected)}, not a PNG, JPG, or GIF. Please convert it and try again."
+      end
+    end
+
+    FORMAT_NAMES = {
+      "image/webp" => "a WebP image",
+      "image/bmp" => "a BMP image",
+      "image/tiff" => "a TIFF image",
+      "image/avif" => "an AVIF image",
+      "image/svg+xml" => "an SVG",
+      "application/pdf" => "a PDF"
+    }.freeze
+
+    def format_name(content_type)
+      FORMAT_NAMES.fetch(content_type) { "a #{content_type} file" }
+    end
+
+    # Marcel reads the leading bytes, the same way the validator's spoof check
+    # does, so this reports the type the validator actually objected to rather
+    # than a second opinion. Best effort: a message is not worth raising over, so
+    # anything unreadable falls back to the generic wording above.
+    def detected_content_type(photo_file)
+      @detected_content_type ||= begin
+        io = photo_file.to_io
+        io.rewind
+        Marcel::MimeType.for(io, name: photo_file.original_filename)
+      rescue StandardError => e
+        Rails.logger.warn("Could not sniff rejected upload's content type: #{e.class}: #{e.message}")
+        nil
       end
     end
 
