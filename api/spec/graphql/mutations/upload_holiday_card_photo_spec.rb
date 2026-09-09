@@ -53,6 +53,17 @@ RSpec.describe Mutations::UploadHolidayCardPhoto, type: :request do
     Rack::Test::UploadedFile.new(tempfile.path, "image/png")
   end
 
+  # ISO base media container declaring the `heic` brand — what both Marcel and
+  # the `file` command key off. Declared as image/jpeg by the uploader, exactly
+  # as a browser would for a `.jpg` name.
+  def heic_named_jpg
+    tempfile = Tempfile.new([ "IMG_4021", ".jpg" ], binmode: true)
+    tempfile.write("\x00\x00\x00\x20ftypheic\x00\x00\x00\x00mif1heic".b)
+    tempfile.write("\0" * 2048)
+    tempfile.rewind
+    Rack::Test::UploadedFile.new(tempfile.path, "image/jpeg")
+  end
+
   it "attaches a JPEG and returns its blob id and url" do
     result = upload(jpeg).dig("data", "uploadHolidayCardPhoto")
 
@@ -79,13 +90,28 @@ RSpec.describe Mutations::UploadHolidayCardPhoto, type: :request do
     expect(card.reload.photos.count).to eq(2)
   end
 
-  it "rejects a PDF" do
+  it "rejects a PDF, naming what it actually is" do
     pdf = fixture_file_upload("spec/fixtures/files/test_document.pdf", "application/pdf")
 
     result = upload(pdf).dig("data", "uploadHolidayCardPhoto")
 
     expect(result["photo"]).to be_nil
-    expect(result["errors"]).to eq([ "Photo must be a PNG, JPG, or GIF image." ])
+    expect(result["errors"]).to eq(
+      [ "That file is a PDF, not a PNG, JPG, or GIF. Please convert it and try again." ]
+    )
+    expect(card.reload.photos.count).to eq(0)
+  end
+
+  # The case that prompted this: an iPhone shoots HEIC, macOS reports the file as
+  # `image/jpeg` on the strength of a `.jpg` name, and every check that trusts
+  # the extension passes it through to the one that does not. Being told to pick
+  # "a PNG, JPG, or GIF" is useless to someone who believes they just did.
+  it "names HEIC when an iPhone photo is uploaded under a .jpg name" do
+    result = upload(heic_named_jpg).dig("data", "uploadHolidayCardPhoto")
+
+    expect(result["photo"]).to be_nil
+    expect(result["errors"].first).to include("HEIC")
+    expect(result["errors"].first).to include("Most Compatible")
     expect(card.reload.photos.count).to eq(0)
   end
 

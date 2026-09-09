@@ -28,6 +28,13 @@ class HolidayCard < ApplicationRecord
 
   VALID_SIZES = %w[6x4 6x9].freeze
 
+  # The image formats we can actually put on card stock, and the single source of
+  # truth for them. The content type validation below reads a photo's real bytes
+  # rather than trusting its extension, so this is the list the *contents* must
+  # match — see Mutations::UploadHolidayCardPhoto, which reports what a rejected
+  # file turned out to be.
+  PRINTABLE_IMAGE_TYPES = %w[image/png image/jpeg image/gif].freeze
+
   # The locked font set, and the single source of truth for it. The print
   # renderer inlines these as base64, so every entry must be webfont-embeddable.
   # The first four match Invitation::VALID_FONTS; the last two are the seasonal
@@ -76,7 +83,7 @@ class HolidayCard < ApplicationRecord
   validates :size, inclusion: { in: VALID_SIZES }
   validates :template_id, presence: true
   validates :title, length: { maximum: 255 }, allow_blank: true
-  validates :photos, content_type: { in: %w[image/png image/jpeg image/gif], message: "must be a valid image format" },
+  validates :photos, content_type: { in: PRINTABLE_IMAGE_TYPES, message: "must be a valid image format" },
     size: { less_than: 10.megabytes, message: "must be less than 10MB" },
     if: :photos_attached?
 
