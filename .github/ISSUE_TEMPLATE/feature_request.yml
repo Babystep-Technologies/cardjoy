@@ -32,7 +32,6 @@ body:
       multiple: true
       options:
         - web (consumer app)
-        - admin (dashboard)
         - api (Rails/GraphQL backend)
         - not sure
     validations:

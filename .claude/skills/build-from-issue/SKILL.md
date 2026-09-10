@@ -20,8 +20,11 @@ the issue instead of guessing.
    ```bash
    gh issue view <number>
    ```
-   Restate, in your own words, what "done" means and which apps it touches (api / web / admin). If
-   the acceptance criteria are ambiguous or too large for one PR, stop and comment on the issue.
+   Restate, in your own words, what "done" means and which apps it touches (api / web). If the
+   acceptance criteria are ambiguous or too large for one PR, stop and comment on the issue.
+
+   Issues about the **admin dashboard UI** don't belong here — that app lives in a separate private
+   repo. Admin-scoped *API* work (`api/app/graphql/**/admin_*`) does belong here.
 
 2. **Orient in the code.** Read `CLAUDE.md`, `docs/ARCHITECTURE.md`, and the reference files named in
    `docs/DEVELOPMENT.md` for the layer(s) you'll touch. Find the closest existing feature and mirror

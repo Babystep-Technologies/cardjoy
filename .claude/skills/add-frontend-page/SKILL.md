@@ -6,9 +6,11 @@ allowed-tools: Bash, Read, Edit, Write, Grep, Glob
 
 # Add a frontend page
 
-Create a new page in the consumer app (`web/`) or admin app (`admin/`) the way CardJoy does it. Read
+Create a new page in the consumer app (`web/`) the way CardJoy does it. Read
 [docs/DEVELOPMENT.md](../../../docs/DEVELOPMENT.md) for the full pattern; the reference
 implementation is `web/src/pages/Card/New.tsx` with `web/src/lib/apollo-client.ts`.
+
+The admin dashboard is a separate private repo — pages for it are not built here.
 
 ## Steps
 
@@ -40,8 +42,6 @@ implementation is `web/src/pages/Card/New.tsx` with `web/src/lib/apollo-client.t
 
 3. **Route** in `web/src/App.tsx`: import the page and add a
    `<Route path="/foo/new" element={<FooNew />} />` inside `<Routes>`.
-
-4. For the **admin** app, do the same under `admin/src/` (same stack).
 
 ## Gates
 

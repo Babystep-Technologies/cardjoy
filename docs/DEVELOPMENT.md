@@ -8,7 +8,7 @@ Everything runs in Docker. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup; 
 
 ```bash
 make setup   # build, install deps, create & seed the database
-make dev     # start api :3000, web :3001, admin :3002
+make dev     # start api :3000, web :3001
 ```
 
 ### Secrets in local development
@@ -231,9 +231,9 @@ Run `make check` before opening a PR. It runs everything CI runs:
 | Ruby style | `docker compose exec api bundle exec rubocop` | `api-ci` / Rubocop |
 | Ruby types | `docker compose exec api bundle exec srb tc` | `api-ci` / Sorbet |
 | Ruby tests | `docker compose exec api bundle exec rspec` | `api-ci` / RSpec |
-| web/admin lint | `yarn lint` in each | `web-ci` / `admin-ci` |
-| web/admin format | `yarn format-check` in each | `web-ci` / `admin-ci` |
-| web/admin build | `yarn build` (tsc) in each | `web-ci` / `admin-ci` |
+| web lint | `docker compose exec web yarn lint` | `web-ci` |
+| web format | `docker compose exec web yarn format-check` | `web-ci` |
+| web build | `docker compose exec web yarn build` (tsc) | `web-ci` |
 
 > If Sorbet complains about a gem or a generated method after you add code, regenerate the RBIs the
 > way CI does: `docker compose exec api bundle exec tapioca gems` and
@@ -312,8 +312,8 @@ resolver class). Return existing `Types::*` objects. Add a request spec under `s
 
 ## Frontend: add a page / wire up the API
 
-The consumer app is `web/`; the admin app is `admin/` (same stack). Reference implementation:
-`web/src/pages/Card/New.tsx` (queries + a mutation) and `web/src/lib/apollo-client.ts`.
+The consumer app is `web/`. Reference implementation: `web/src/pages/Card/New.tsx` (queries + a
+mutation) and `web/src/lib/apollo-client.ts`.
 
 Steps:
 

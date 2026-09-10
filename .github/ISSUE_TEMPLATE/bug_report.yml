@@ -23,7 +23,6 @@ body:
       description: Which part of the app is affected?
       options:
         - web (consumer app)
-        - admin (dashboard)
         - api (Rails/GraphQL backend)
         - not sure
     validations:

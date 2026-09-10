@@ -21,7 +21,7 @@ Closes #
 - [ ] Branched off `main` (not pushing to `main` directly)
 - [ ] Commit messages follow `<type>(<scope>): <description>`
 - [ ] `make test` passes (backend RSpec)
-- [ ] `make lint` passes (RuboCop, Sorbet, web/admin ESLint + Prettier)
+- [ ] `make lint` passes (RuboCop, Sorbet, web ESLint + Prettier)
 - [ ] `make build` passes (frontends type-check and build)
 - [ ] Added/updated tests where it makes sense
 - [ ] Updated docs (`README`, `CONTRIBUTING`, `docs/`) if behavior or setup changed

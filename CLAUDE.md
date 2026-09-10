@@ -7,8 +7,11 @@ Open-source app for creating and sharing group cards and invitations. Hosted at
 
 - `api/` - Rails backend (GraphQL API), all development within Docker
 - `web/` - Consumer-facing React/TypeScript frontend (Vite)
-- `admin/` - Admin interface (React/TypeScript, Vite)
 - `docs/` - Documentation ([ARCHITECTURE](docs/ARCHITECTURE.md), [DEVELOPMENT](docs/DEVELOPMENT.md))
+
+The internal admin dashboard was extracted to a **separate private repo**. Its admin-scoped GraphQL
+types, queries, and mutations stay in `api/` — they are authorization-checked and part of the same
+schema, so don't treat them as dead code.
 
 This repo holds the **application only**. Do not add deployment/infrastructure config here.
 
@@ -26,7 +29,7 @@ Everything runs in Docker — no local Ruby/Node needed. A `Makefile` wraps the 
 
 ```bash
 make setup   # build, install deps, create & seed the database
-make dev     # start api :3000, web :3001, admin :3002
+make dev     # start api :3000, web :3001
 make check   # run every quality gate (test + lint + build)
 ```
 
@@ -39,9 +42,9 @@ docker compose exec api bundle exec srb tc       # Sorbet type check
 docker compose exec api ./bin/rails console
 ```
 
-### Frontend (web/ and admin/)
+### Frontend (web/)
 ```bash
-docker compose exec web yarn lint          # ESLint (also: admin)
+docker compose exec web yarn lint          # ESLint
 docker compose exec web yarn format-check  # Prettier check (yarn format to fix)
 docker compose exec web yarn build         # tsc type-check + build
 ```
@@ -59,7 +62,7 @@ docker compose exec web yarn build         # tsc type-check + build
 ## Conventions & gotchas
 
 - **Do NOT push to `main`.** Branch + open a PR. `main` is protected; app CI (`api-ci`,
-  `web-ci`, `admin-ci`) runs on PRs.
+  `web-ci`) runs on PRs.
 - Commit format: `<type>(<scope>): <description>`. Before pushing: rspec, RuboCop, Sorbet, Prettier.
 - **Config via env with credential fallback:** production reads `DB_*`, `GCS_*`, `GOOGLE_CLIENT_ID`,
   `ADDITIONAL_CORS_ORIGINS` from environment variables, falling back to Rails encrypted

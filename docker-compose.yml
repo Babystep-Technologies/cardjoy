@@ -70,24 +70,6 @@ services:
     command: tail -f /dev/null
     # this is needed for having react server available
     stdin_open: true
-  admin:
-    build: ./admin
-    volumes:
-      - ./admin:/app/admin
-        # Anonymous volume shadows the bind mount so the image's installed
-        # node_modules (from `yarn install`) are used, not the host's.
-      - /app/admin/node_modules
-    ports:
-      - "3002:3002"
-    environment:
-      - NODE_ENV=development
-    # depends_on:
-    #   - api
-    networks:
-      - cardjoy-network-local
-    command: tail -f /dev/null
-    # this is needed for having react server available
-    stdin_open: true
 volumes:
   cardjoy-db:
   cardjoy-redis:
