@@ -29,6 +29,7 @@ module Types
     field :reset_password, mutation: Mutations::ResetPassword
     field :update_card_by_admin, mutation: Mutations::UpdateCardByAdmin
     field :update_invitation_by_admin, mutation: Mutations::UpdateInvitationByAdmin
+    field :update_holiday_card_by_admin, mutation: Mutations::UpdateHolidayCardByAdmin
     field :flag_card_message, mutation: Mutations::FlagCardMessage
     field :generate_qr_code, mutation: Mutations::GenerateQrCode
     field :create_support_request, mutation: Mutations::CreateSupportRequest
