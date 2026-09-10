@@ -17,6 +17,18 @@ module Types
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
+    # The owner, and the moderation state admin acts on (#178). Named to match
+    # Types::CardType so the dashboard renders either product through one
+    # component. There is no `locked`: a holiday card takes no contributions, so
+    # there is nothing to lock.
+    #
+    # `user` is always the caller for every non-admin query that returns this
+    # type, so it exposes nothing new there — it is here because the admin list
+    # is the first reader that does not already know whose card this is.
+    field :user, Types::UserType, null: false
+    field :flagged, Boolean, null: false
+    field :deleted, Boolean, null: false
+
     # The proof state, as three things the editor can render directly rather
     # than as a digest it would have to compare itself. `proofCurrent` is
     # deliberately not "has a proof": a card whose design moved after its render

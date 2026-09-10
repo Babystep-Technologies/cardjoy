@@ -5,6 +5,8 @@ module Types
   class QueryType < Types::BaseObject
     field :admin_cards, resolver: Queries::AdminCards
     field :admin_invitations, resolver: Queries::AdminInvitations
+    field :admin_holiday_cards, resolver: Queries::AdminHolidayCards
+    field :admin_holiday_card, resolver: Queries::AdminHolidayCard
     field :admin_users, resolver: Queries::AdminUsers
     field :admin_promo_codes, resolver: Queries::AdminPromoCodes
     field :admin_organizations, resolver: Queries::AdminOrganizations

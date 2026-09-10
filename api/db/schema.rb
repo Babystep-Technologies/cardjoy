@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -291,6 +291,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_120000) do
     t.datetime "deleted_at"
     t.jsonb "design_config", default: {}, null: false
     t.string "external_id", null: false
+    t.datetime "flagged_at"
     t.datetime "proof_approved_at"
     t.string "proof_design_digest"
     t.datetime "proof_generated_at"
