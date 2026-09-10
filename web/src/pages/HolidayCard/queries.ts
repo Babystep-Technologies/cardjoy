@@ -245,6 +245,21 @@ export const GET_DASHBOARD_HOLIDAY_CARDS = gql`
   }
 `;
 
+/**
+ * Delete a holiday card that has never been mailed (#205). The server refuses a
+ * card with orders against it, so `errors` is the message to show — the
+ * dashboard only offers this on unsent cards, but the check that matters is
+ * there and not here.
+ */
+export const DELETE_HOLIDAY_CARD = gql`
+  mutation DeleteHolidayCard($externalId: String!) {
+    deleteHolidayCard(input: { externalId: $externalId }) {
+      success
+      errors
+    }
+  }
+`;
+
 /** The options alone, for the create page — it has no card to load yet. */
 export const GET_EDITOR_OPTIONS = gql`
   query HolidayCardEditorOptions {

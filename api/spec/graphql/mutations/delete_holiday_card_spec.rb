@@ -38,6 +38,32 @@ RSpec.describe Mutations::DeleteHolidayCard, type: :request do
     expect(mine).to be_empty
   end
 
+  it "refuses a card that has been mailed, and leaves it in myHolidayCards" do
+    create(:holiday_card_mail_order, :submitted, holiday_card: card, user:)
+
+    result = exec({ externalId: card.external_id }).dig("data", "deleteHolidayCard")
+
+    expect(result["success"]).to be false
+    expect(result["errors"]).to eq([ Mutations::DeleteHolidayCard::MAILED_ERROR ])
+    expect(card.reload.deleted_at).to be_nil
+
+    mine = exec({}, gql: "query MyHolidayCards { myHolidayCards { externalId } }")
+      .dig("data", "myHolidayCards")
+    expect(mine.pluck("externalId")).to eq([ card.external_id ])
+  end
+
+  # A refunded piece is still an order: it is in the orders view and its refund
+  # is in the postage ledger, both of which read back through the card. So the
+  # rule is "has orders", not "has orders that arrived".
+  it "refuses a card whose only order failed and was refunded" do
+    create(:holiday_card_mail_order, :failed, holiday_card: card, user:)
+
+    result = exec({ externalId: card.external_id }).dig("data", "deleteHolidayCard")
+
+    expect(result["errors"]).to eq([ Mutations::DeleteHolidayCard::MAILED_ERROR ])
+    expect(card.reload.deleted_at).to be_nil
+  end
+
   it "returns Not authorized for another user's card" do
     other = create(:holiday_card)
 
