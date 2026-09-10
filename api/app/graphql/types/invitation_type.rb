@@ -19,6 +19,12 @@ module Types
     field :custom_instructions, String, null: true
     field :opening_message, String, null: true
     field :opening_message_config, Types::OpeningMessageConfigType, null: true
+    # Moderation state, matching Types::CardType so one admin component can
+    # render either product. `locked` refuses new RSVPs; `flagged` hides the
+    # invitation from guests; `deleted` is the soft delete admin calls archive.
+    field :locked, Boolean, null: false
+    field :flagged, Boolean, null: false
+    field :deleted, Boolean, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
     field :user, Types::UserType, null: false

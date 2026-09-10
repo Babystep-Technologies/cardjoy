@@ -231,6 +231,27 @@ RSpec.describe Mutations::CreateRsvp, type: :request do
       expect(data["rsvp"]).to be_nil
       expect(data["errors"]).to include("RSVP deadline has passed")
     end
+
+    # The invitation half of Card's lock (#177). Admin locks an invitation when
+    # the guest list is the problem, so the guard is here rather than only in the
+    # client that draws the form.
+    it "returns error when the invitation has been locked by an admin" do
+      locked_invitation = create(:invitation, user: host_user)
+      locked_invitation.lock!
+
+      execute_rsvp_mutation(
+        invitationId: locked_invitation.id,
+        guestName: "Blocked User",
+        guestEmail: "blocked@example.com",
+        status: "going"
+      )
+
+      json = JSON.parse(response.body)
+      data = json.dig("data", "createRsvp")
+      expect(data["rsvp"]).to be_nil
+      expect(data["errors"]).to include("This invitation is no longer accepting RSVPs")
+      expect(Rsvp.where(guest_email: "blocked@example.com")).to be_empty
+    end
   end
 
   describe "calendar links" do

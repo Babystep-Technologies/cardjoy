@@ -55,6 +55,8 @@ const GET_INVITATION = gql`
       eventTime
       eventTimezone
       rsvpDeadline
+      locked
+      flagged
       coverImageUrl
       maxAdditionalGuests
       attire
@@ -246,6 +248,23 @@ const InvitationView: React.FC = () => {
     return null; // Will redirect in onError
   }
 
+  // A flagged invitation is hidden from guests, the same way a flagged card is
+  // (see pages/Card/Editable.tsx) — admin flags one when the content itself is
+  // the problem, so there is nothing safe to render.
+  if (invitation.flagged) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#fff6f6] px-4 text-center text-red-800">
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-4">
+          This invitation is currently under review
+        </h1>
+        <p className="max-w-lg text-md sm:text-lg">
+          It has been temporarily hidden because it may violate our content policy. Our policy team
+          is reviewing it to ensure it aligns with our community standards.
+        </p>
+      </div>
+    );
+  }
+
   // Transform GraphQL response to OpeningMessageConfig format
   const getOpeningMessageConfig = (): OpeningMessageConfig | null => {
     if (invitation.openingMessageConfig) {
@@ -376,9 +395,13 @@ const InvitationView: React.FC = () => {
   };
 
   const eventDate = new Date(`${invitation.eventDate}T${invitation.eventTime}`);
-  const isRSVPClosed = invitation.rsvpDeadline
+  // Locked is the other way RSVPs close: an admin stops an invitation taking
+  // replies without touching its deadline. Mutations::CreateRsvp refuses either
+  // way, so this only spares a guest filling in a form that cannot succeed.
+  const isDeadlinePassed = invitation.rsvpDeadline
     ? new Date(invitation.rsvpDeadline) < new Date()
     : false;
+  const isRSVPClosed = isDeadlinePassed || Boolean(invitation.locked);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 animate-fade-in">
@@ -693,7 +716,11 @@ const InvitationView: React.FC = () => {
               <Card className="p-6 bg-gray-100 text-center">
                 <Clock className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                 <div className="text-lg font-semibold text-gray-700">RSVP Closed</div>
-                <div className="mt-1 text-gray-500 text-sm">The deadline has passed</div>
+                <div className="mt-1 text-gray-500 text-sm">
+                  {isDeadlinePassed
+                    ? 'The deadline has passed'
+                    : 'This invitation is no longer accepting RSVPs'}
+                </div>
               </Card>
             )}
           </div>

@@ -9,15 +9,18 @@ module Queries
     argument :search, String, required: false
 
     def resolve(page:, per_page:, search: nil)
-      # Limit per_page to prevent abuse
-      per_page = [ per_page, 100 ].min
+      # Limit per_page to prevent abuse. Clamped at both ends, because
+      # `perPage: 0` divides by zero when the total pages are worked out.
+      per_page = AdminListable.clamp_per_page(per_page)
 
       # Build the query
       users = ::User.order(created_at: :desc)
 
-      # Apply search filter if provided
+      # Apply search filter if provided. `sanitize_sql_like` so a name holding
+      # `_` or `%` matches literally, the way it already does in the card and
+      # invitation searches.
       if search.present?
-        search_term = "%#{search}%"
+        search_term = "%#{::User.sanitize_sql_like(search)}%"
         users = users.where(
           "email ILIKE ? OR name ILIKE ?",
           search_term,

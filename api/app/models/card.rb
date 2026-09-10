@@ -2,6 +2,7 @@
 
 class Card < ApplicationRecord
   include OrganizationScoped
+  include AdminListable
 
   belongs_to :user
   has_many :card_styles, dependent: :destroy
@@ -60,17 +61,23 @@ class Card < ApplicationRecord
     "Work anniversary"
   ].freeze
 
-  def self.paginated(page:, per_page:, search: nil)
-    scope = all
-    if search.present?
-      scope = scope.where("title ILIKE ?", "%#{sanitize_sql_like(search)}%")
-    end
+  # Admin list configuration; the implementation is AdminListable. `kind` is the
+  # filter that matters most here — group cards and 1-on-1 cards are two
+  # products sharing one table, and admin could not tell them apart at all.
+  def self.admin_filters
+    %w[kind occasion organization_id]
+  end
 
-    total = scope.count
-    offset = (page.to_i - 1) * per_page.to_i
-    paginated = scope.order(created_at: :desc).offset(offset).limit(per_page)
+  def self.admin_sorts
+    super.merge(
+      # A correlated subquery rather than a join, so ordering by contribution
+      # volume does not change which rows `count` returns.
+      "message_count" => "(SELECT COUNT(*) FROM messages WHERE messages.card_id = cards.id)"
+    )
+  end
 
-    [ paginated, total ]
+  def self.admin_preloads
+    [ :user, :organization ]
   end
 
   def delete!; update!(deleted_at: Time.current); end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_07_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -310,12 +310,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_120000) do
     t.string "attire"
     t.datetime "created_at", null: false
     t.text "custom_instructions"
+    t.datetime "deleted_at"
     t.text "description"
     t.date "event_date"
     t.string "event_time"
     t.string "event_timezone"
     t.string "external_id"
+    t.datetime "flagged_at"
     t.string "location"
+    t.datetime "locked_at"
     t.integer "max_additional_guests", default: 1
     t.string "opening_message"
     t.jsonb "opening_message_config"
@@ -326,6 +329,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_120000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.jsonb "wish_list_items"
+    t.index ["deleted_at"], name: "index_invitations_on_deleted_at"
     t.index ["external_id"], name: "index_invitations_on_external_id", unique: true
     t.index ["organization_id"], name: "index_invitations_on_organization_id"
     t.index ["slug"], name: "index_invitations_on_slug", unique: true, where: "(slug IS NOT NULL)"
