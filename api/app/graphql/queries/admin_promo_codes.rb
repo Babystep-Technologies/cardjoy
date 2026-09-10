@@ -11,8 +11,9 @@ module Queries
       admin = context[:current_admin]
       raise GraphQL::ExecutionError, "Not authorized" unless admin
 
-      # Limit per_page to prevent abuse
-      per_page = [ per_page, 100 ].min
+      # Limit per_page to prevent abuse. Clamped at both ends, because
+      # `perPage: 0` divides by zero when the total pages are worked out.
+      per_page = AdminListable.clamp_per_page(per_page)
 
       promo_codes = PromoCode.includes(:user).order(created_at: :desc)
 

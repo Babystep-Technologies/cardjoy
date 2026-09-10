@@ -2,6 +2,7 @@
 
 class Invitation < ApplicationRecord
   include OrganizationScoped
+  include AdminListable
 
   belongs_to :user
   has_many :rsvps, dependent: :destroy
@@ -29,17 +30,39 @@ class Invitation < ApplicationRecord
   VALID_FONTS = %w[poppins playfair montserrat dancing_script].freeze
   VALID_BACKGROUND_TYPES = %w[color gradient image].freeze
 
-  def self.paginated(page:, per_page:, search: nil)
-    scope = all
-    if search.present?
-      scope = scope.where("title ILIKE ?", "%#{sanitize_sql_like(search)}%")
-    end
+  # Archived invitations are hidden everywhere, the way archived cards are. The
+  # only writer is Mutations::UpdateInvitationByAdmin — there is no user-facing
+  # invitation delete — so this scope exists to make admin's archive action
+  # actually take an invitation out of circulation.
+  default_scope { where(deleted_at: nil) }
 
-    total = scope.count
-    offset = (page.to_i - 1) * per_page.to_i
-    paginated = scope.order(created_at: :desc).offset(offset).limit(per_page)
+  def delete!; update!(deleted_at: Time.current); end
+  def restore!; update!(deleted_at: nil); end
+  def flag!; update!(flagged_at: Time.current); end
+  def unflag!; update!(flagged_at: nil); end
+  def lock!; update!(locked_at: Time.current); end
+  def unlock!; update!(locked_at: nil); end
 
-    [ paginated, total ]
+  def deleted; deleted_at.present?; end
+  def flagged; flagged_at.present?; end
+  def locked; locked_at.present?; end
+
+  # Admin list configuration; the implementation is AdminListable. No `kind`
+  # here — an invitation is one product — and no message-count sort, because
+  # what an invitation accumulates is RSVPs.
+  def self.admin_filters
+    %w[organization_id]
+  end
+
+  def self.admin_sorts
+    super.merge(
+      "event_date" => "invitations.event_date",
+      "rsvp_count" => "(SELECT COUNT(*) FROM rsvps WHERE rsvps.invitation_id = invitations.id)"
+    )
+  end
+
+  def self.admin_preloads
+    [ :user, :organization ]
   end
 
   def cover_image_url

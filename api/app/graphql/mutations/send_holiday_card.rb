@@ -52,6 +52,9 @@ module Mutations
     NO_RECIPIENTS_ERROR = "Pick at least one recipient."
     TOO_MANY_RECIPIENTS_ERROR = "Send to at most #{MAX_RECIPIENTS} recipients at a time."
     NO_PROOF_ERROR = "Approve a proof of this card before sending it."
+    # An admin flagged this card (#178). Says nothing about why: the person
+    # sending it is not necessarily the person who reported it.
+    FLAGGED_ERROR = "This card is under review and cannot be sent right now."
     STALE_PROOF_ERROR = "This card has changed since its proof was approved. " \
                         "Generate a new proof and approve it before sending."
     # No live key on this deploy. Mailing is optional app-wide (CLAUDE.md), so
@@ -106,6 +109,11 @@ module Mutations
       # The gate the whole proof mechanism exists to provide. Told apart because
       # they ask different things of the user: one has never approved anything,
       # the other approved a card that has since moved.
+      # Checked ahead of the proof gates, and ahead of any spending: a flagged
+      # card must not print however good its proof is. This is what makes admin's
+      # flag mean something for a product whose only outward act is being mailed.
+      return failure(FLAGGED_ERROR) if card.flagged
+
       return failure(NO_PROOF_ERROR) if card.proof_approved_at.blank?
       return failure(STALE_PROOF_ERROR) unless card.proof_current?
 

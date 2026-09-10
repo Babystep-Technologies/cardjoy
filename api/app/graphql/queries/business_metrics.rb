@@ -18,6 +18,12 @@ module Queries
         cards_last_90_days: ::Card.where("created_at >= ?", 90.days.ago).count,
         cards_last_180_days: ::Card.where("created_at >= ?", 180.days.ago).count,
 
+        holiday_cards_last_1_day: ::HolidayCard.where("created_at >= ?", 1.day.ago).count,
+        holiday_cards_last_7_days: ::HolidayCard.where("created_at >= ?", 7.days.ago).count,
+        holiday_cards_last_30_days: ::HolidayCard.where("created_at >= ?", 30.days.ago).count,
+        holiday_cards_last_90_days: ::HolidayCard.where("created_at >= ?", 90.days.ago).count,
+        holiday_cards_last_180_days: ::HolidayCard.where("created_at >= ?", 180.days.ago).count,
+
         invitations_last_1_day: ::Invitation.where("created_at >= ?", 1.day.ago).count,
         invitations_last_7_days: ::Invitation.where("created_at >= ?", 7.days.ago).count,
         invitations_last_30_days: ::Invitation.where("created_at >= ?", 30.days.ago).count,

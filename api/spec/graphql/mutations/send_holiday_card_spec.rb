@@ -218,6 +218,31 @@ RSpec.describe Mutations::SendHolidayCard, type: :request do
     end
   end
 
+  # What makes an admin flag mean something for a product whose only outward act
+  # is being printed and posted (#178).
+  describe "an admin-flagged card" do
+    before { top_up(1_000) }
+
+    it "refuses to send however good its proof is, and debits nothing" do
+      approve_proof
+      card.flag!
+
+      result = exec(contacts: [ ada ])
+
+      expect(result["errors"]).to eq([ described_class::FLAGGED_ERROR ])
+      expect(HolidayCardMailOrder.count).to eq(0)
+      expect(balance).to eq(1_000)
+    end
+
+    it "sends again once the flag is lifted" do
+      approve_proof
+      card.flag!
+      card.unflag!
+
+      expect(exec(contacts: [ ada ])["errors"]).to eq([])
+    end
+  end
+
   describe "recipient and ownership checks" do
     before do
       approve_proof

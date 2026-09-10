@@ -14,6 +14,14 @@ module Types
     field :cards_last_90_days, Integer, null: false
     field :cards_last_180_days, Integer, null: false
 
+    # Holiday card creation metrics (#178). Without these the product was
+    # invisible on the dashboard while it was the one being launched.
+    field :holiday_cards_last_1_day, Integer, null: false
+    field :holiday_cards_last_7_days, Integer, null: false
+    field :holiday_cards_last_30_days, Integer, null: false
+    field :holiday_cards_last_90_days, Integer, null: false
+    field :holiday_cards_last_180_days, Integer, null: false
+
     # Invitation creation metrics
     field :invitations_last_1_day, Integer, null: false
     field :invitations_last_7_days, Integer, null: false

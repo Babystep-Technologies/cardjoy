@@ -29,6 +29,13 @@ module Mutations
       invitation = Invitation.find_by(id: invitation_id) || Invitation.find_by(external_id: invitation_id)
       return { rsvp: nil, errors: [ "Invitation not found" ], calendar_links: nil } unless invitation
 
+      # A locked invitation takes no more RSVPs. This is the invitation half of
+      # Card's lock (#177): admin locks one when the guest list is the problem,
+      # so the guard belongs here rather than in the client that renders the form.
+      if invitation.locked
+        return { rsvp: nil, errors: [ "This invitation is no longer accepting RSVPs" ], calendar_links: nil }
+      end
+
       # Check for RSVP deadline
       if invitation.rsvp_deadline.present? && invitation.rsvp_deadline < Date.today
         return { rsvp: nil, errors: [ "RSVP deadline has passed" ], calendar_links: nil }

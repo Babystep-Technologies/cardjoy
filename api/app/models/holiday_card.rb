@@ -14,6 +14,8 @@
 # editing this model — slot and sticker ids are intentionally not validated
 # here.
 class HolidayCard < ApplicationRecord
+  include AdminListable
+
   belongs_to :user
   has_many :mail_orders, class_name: "HolidayCardMailOrder", dependent: :destroy
   has_many_attached :photos
@@ -101,7 +103,25 @@ class HolidayCard < ApplicationRecord
 
   def delete!; update!(deleted_at: Time.current); end
   def restore!; update!(deleted_at: nil); end
+  def flag!; update!(flagged_at: Time.current); end
+  def unflag!; update!(flagged_at: nil); end
+
   def deleted; deleted_at.present?; end
+  def flagged; flagged_at.present?; end
+
+  # Admin list configuration; the implementation is AdminListable (#178). There
+  # is no `locked` here — a holiday card takes no contributions, so there is
+  # nothing to lock — and no organization, because holiday cards are personal.
+  #
+  # `title` is the user's private name for the card ("Shen family 2026"), which
+  # is nil more often than not, so searching only it would find almost nothing.
+  def self.admin_filters
+    %w[size template_id]
+  end
+
+  def self.admin_sorts
+    super.merge("updated_at" => "holiday_cards.updated_at")
+  end
 
   # The blob ids `design_config` is allowed to reference: this card's own
   # photos, and nothing else.
