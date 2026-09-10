@@ -7,8 +7,11 @@ A platform for creating and sharing group cards and invitations. The hosted prod
 
 - `api/` — Rails backend (GraphQL API), developed inside Docker
 - `web/` — consumer-facing React/TypeScript frontend
-- `admin/` — admin dashboard (React/TypeScript)
 - `docs/` — product documentation
+
+The internal admin dashboard lives in a separate private repo. Its admin-scoped GraphQL queries and
+mutations are still part of `api/` here — they're authorization-checked, and the consumer app
+depends on the same schema.
 
 ## Getting started
 
@@ -22,12 +25,11 @@ A platform for creating and sharing group cards and invitations. The hosted prod
 git clone git@github.com:Babystep-Technologies/cardjoy.git
 cd cardjoy
 make setup   # build containers, install deps, create & seed the database
-make dev     # start the api, web, and admin dev servers
+make dev     # start the api and web dev servers
 ```
 
 Then open:
 - **Web** (consumer app): http://localhost:3001
-- **Admin**: http://localhost:3002
 - **API** (GraphQL): http://localhost:3000/graphql
 
 `make setup` seeds the database (card styles, etc.) so the app is usable right away. Run `make` on

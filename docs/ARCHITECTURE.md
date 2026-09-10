@@ -5,15 +5,14 @@ A high-level map of how CardJoy fits together. For how to *build* something, see
 
 ## Overview
 
-CardJoy is a Rails GraphQL API with two React/TypeScript frontends.
+CardJoy is a Rails GraphQL API with a React/TypeScript frontend.
 
 ```
-┌─────────────────┐     ┌─────────────────┐
-│  web (consumer) │     │ admin dashboard │      React + Vite + TypeScript
-│   :3001         │     │   :3002         │      Apollo Client, shadcn/ui
-└────────┬────────┘     └────────┬────────┘
-         │      GraphQL over HTTP │
-         └───────────┬────────────┘
+            ┌─────────────────┐
+            │  web (consumer) │                React + Vite + TypeScript
+            │   :3001         │                Apollo Client, shadcn/ui
+            └────────┬────────┘
+                     │ GraphQL over HTTP
                      ▼
          ┌───────────────────────┐
          │   api (Rails, :3000)  │            Rails 8.1, API-only
@@ -55,8 +54,12 @@ CardJoy is a Rails GraphQL API with two React/TypeScript frontends.
 - Optional integrations (GIPHY, Unsplash, PostHog) are feature-gated on their `VITE_*` env keys —
   blank key = feature hidden, no crash.
 
-### `admin/` — admin dashboard
-- Same stack as `web` (React + Vite + Apollo), a separate app on `:3002` for internal tooling.
+### Admin dashboard — separate private repo
+- The internal admin dashboard was extracted out of this repo. It's the same stack as `web`
+  (React + Vite + Apollo) and talks to the same `/graphql` endpoint as a second client.
+- The admin-scoped part of the schema stays here in `api/` — `types/admin_*`, `queries/admin_*`,
+  and the admin mutations. They're authorization-checked like any other field, so removing them
+  because "the admin app is gone" would break the dashboard.
 
 ## Request lifecycle (example)
 

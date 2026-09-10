@@ -25,7 +25,7 @@ turn it on.
    for an interactive edit)                        Opens a PR: "Closes #<issue>"
                                                            │
                                                            ▼
-                                        api/web/admin CI runs on the PR
+                                          api/web CI runs on the PR
                                                            │
                                                            ▼
                                         Maintainer reviews & merges
@@ -54,7 +54,7 @@ The feature-request form asks for **acceptance criteria** for exactly this reaso
 more concrete those criteria are, the better the result. Good issues:
 
 - State the outcome as a checklist of verifiable behaviors.
-- Name the area(s) affected (web / admin / api).
+- Name the area(s) affected (web / api).
 - Stay small enough to be one focused PR.
 
 ## Enabling the assistant

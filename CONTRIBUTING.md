@@ -12,14 +12,15 @@ common Docker commands.
 git clone git@github.com:Babystep-Technologies/cardjoy.git
 cd cardjoy
 make setup   # build containers, install deps, create & seed the database
-make dev     # start the api, web, and admin dev servers
+make dev     # start the api and web dev servers
 make logs    # follow the server logs
 ```
 
 Services:
 - Web (consumer): http://localhost:3001
-- Admin: http://localhost:3002
 - API (GraphQL): http://localhost:3000/graphql
+
+The internal admin dashboard is a separate app in a private repo; nothing here depends on it.
 
 `make setup` runs `db:seed`, which loads the card **styles** (background/font colors) the app needs
 to render the create-card page. Run `make` with no target to list every shortcut.
@@ -34,7 +35,6 @@ docker compose exec api ./bin/rails db:prepare   # create/migrate the database
 docker compose exec api ./bin/rails db:seed      # load seed data (styles, ...)
 docker compose exec api ./bin/server             # start the API (rails server)
 docker compose exec web yarn dev                 # start the web dev server
-docker compose exec admin yarn dev               # start the admin dev server
 ```
 
 ## Running tests & linters
@@ -43,7 +43,7 @@ Run these before opening a pull request (or just `make check`, which runs them a
 
 ```bash
 make test    # backend RSpec suite
-make lint    # RuboCop, Sorbet, and web/admin lint + format checks
+make lint    # RuboCop, Sorbet, and web lint + format checks
 make build   # type-check and build the frontends (mirrors CI)
 ```
 
@@ -53,10 +53,8 @@ Under the hood:
 docker compose exec api bundle exec rspec        # backend tests
 docker compose exec api bundle exec rubocop      # Ruby style
 docker compose exec api bundle exec srb tc       # Sorbet type check
-docker compose exec web   yarn lint              # web ESLint
-docker compose exec web   yarn format-check      # web Prettier
-docker compose exec admin yarn lint              # admin ESLint
-docker compose exec admin yarn format-check      # admin Prettier
+docker compose exec web yarn lint                # web ESLint
+docker compose exec web yarn format-check        # web Prettier
 ```
 
 ## Troubleshooting

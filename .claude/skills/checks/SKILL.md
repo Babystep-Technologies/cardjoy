@@ -1,6 +1,6 @@
 ---
 name: checks
-description: Run every quality gate CI runs — RuboCop, Sorbet, RSpec, and web/admin lint/format/build
+description: Run every quality gate CI runs — RuboCop, Sorbet, RSpec, and web lint/format/build
 allowed-tools: Bash, Read, Edit, Grep, Glob
 ---
 
@@ -19,15 +19,12 @@ docker compose exec api bundle exec srb tc         # Sorbet type check
 docker compose exec api bundle exec rspec          # tests
 ```
 
-Frontends (`web-ci`, `admin-ci`) — run for both `web` and `admin`:
+Frontend (`web-ci`):
 
 ```bash
-docker compose exec web   yarn lint
-docker compose exec web   yarn format-check
-docker compose exec web   yarn build
-docker compose exec admin yarn lint
-docker compose exec admin yarn format-check
-docker compose exec admin yarn build
+docker compose exec web yarn lint
+docker compose exec web yarn format-check
+docker compose exec web yarn build
 ```
 
 Or simply:
@@ -46,7 +43,7 @@ make check
   docker compose exec api bundle exec srb tc
   ```
 - **RuboCop** offenses: try `docker compose exec api bundle exec rubocop -a` for autocorrectable ones.
-- **Prettier** (`format-check`) failures: run `yarn format` in the affected app to fix.
+- **Prettier** (`format-check`) failures: run `docker compose exec web yarn format` to fix.
 - **RSpec / build** failures: read the failure, fix the code, and re-run just that gate before
   re-running the whole suite.
 
