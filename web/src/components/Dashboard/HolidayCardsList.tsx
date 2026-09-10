@@ -14,13 +14,15 @@
  * because that is the question being asked. Both are always reachable — the
  * secondary link is never removed, only demoted.
  *
- * There is no delete here. `deleteHolidayCard` exists, but a card with orders
- * against it is history that has already been mailed and paid for, and
- * disposing of it correctly is not something to bolt onto a list tile.
+ * Delete is offered on unsent cards only (#205). A card with orders against it
+ * is history that has already been mailed and paid for — the orders view and
+ * the postage ledger both read back through it — so the tile doesn't offer the
+ * control. `deleteHolidayCard` enforces the same rule server-side; hiding the
+ * button is the courtesy, not the check.
  */
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Gift, Mailbox, Pencil, Plus, Send } from 'lucide-react';
+import { AlertTriangle, Gift, Mailbox, Pencil, Plus, Send, Trash2 } from 'lucide-react';
 import * as motion from 'motion/react-client';
 import { format, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
@@ -76,7 +78,8 @@ function formatSentOn(iso: string | null): string | null {
 const HolidayCardTile: React.FC<{
   card: DashboardHolidayCard;
   template?: DashboardTemplate;
-}> = ({ card, template }) => {
+  onDelete: (externalId: string) => void;
+}> = ({ card, template, onDelete }) => {
   const summary = sendSummary(card.orderSummary);
   const sent = card.orderSummary.total > 0;
   const sentOn = formatSentOn(card.orderSummary.lastOrderedAt);
@@ -169,6 +172,15 @@ const HolidayCardTile: React.FC<{
                   <span className="sr-only">Send this card by post</span>
                 </Link>
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                onClick={() => onDelete(card.externalId)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span className="sr-only">Delete this card</span>
+              </Button>
             </>
           )}
         </div>
@@ -182,6 +194,8 @@ interface HolidayCardsListProps {
   templates: DashboardTemplate[];
   emptyTitle: string;
   emptyDescription: string;
+  /** Asked for, not done: the dashboard owns the confirmation and the mutation. */
+  onDelete: (externalId: string) => void;
 }
 
 export const HolidayCardsList: React.FC<HolidayCardsListProps> = ({
@@ -189,6 +203,7 @@ export const HolidayCardsList: React.FC<HolidayCardsListProps> = ({
   templates,
   emptyTitle,
   emptyDescription,
+  onDelete,
 }) => {
   const navigate = useNavigate();
   const templatesById = React.useMemo(
@@ -233,6 +248,7 @@ export const HolidayCardsList: React.FC<HolidayCardsListProps> = ({
             key={card.externalId}
             card={card}
             template={templatesById.get(card.templateId)}
+            onDelete={onDelete}
           />
         ))}
       </div>

@@ -20,7 +20,7 @@ import {
   type DashboardHolidayCard,
   type DashboardTemplate,
 } from '@/components/Dashboard/HolidayCardsList';
-import { GET_DASHBOARD_HOLIDAY_CARDS } from '@/pages/HolidayCard/queries';
+import { DELETE_HOLIDAY_CARD, GET_DASHBOARD_HOLIDAY_CARDS } from '@/pages/HolidayCard/queries';
 
 // `organizationId` is the context: null lists the signed-in user's personal cards,
 // an id lists everything that organization owns — including cards other members made.
@@ -139,7 +139,13 @@ const Dashboard: React.FC = () => {
   const [selectedItemType, setSelectedItemType] = useState<'card' | 'invitation'>('card');
   const [qrCardId, setQrCardId] = useState<string | null>(null);
 
+  // Held separately from `selectedCardId`, which is shared with the share and
+  // group-card-delete flows: a holiday card's id addresses a different mutation,
+  // and mixing them would let one dialog's Delete fire against the other's id.
+  const [holidayCardToDelete, setHolidayCardToDelete] = useState<string | null>(null);
+
   const [deleteCard] = useMutation(DELETE_CARD);
+  const [deleteHolidayCard] = useMutation(DELETE_HOLIDAY_CARD);
 
   // Wait for the context to resolve before asking: firing early would send
   // organizationId: null and flash the user's personal cards inside an organization.
@@ -172,11 +178,14 @@ const Dashboard: React.FC = () => {
    * so the tab is simply absent there rather than quietly showing the wrong
    * scope.
    */
-  const { data: holidayData } = useQuery(GET_DASHBOARD_HOLIDAY_CARDS, {
-    skip: skipQueries || organizationId !== null,
-    fetchPolicy: 'network-only',
-    nextFetchPolicy: 'network-only',
-  });
+  const { data: holidayData, refetch: refetchHolidayCards } = useQuery(
+    GET_DASHBOARD_HOLIDAY_CARDS,
+    {
+      skip: skipQueries || organizationId !== null,
+      fetchPolicy: 'network-only',
+      nextFetchPolicy: 'network-only',
+    }
+  );
 
   const cards: CardType[] = useMemo(() => data?.userCards || [], [data]);
   const invitations = invitationsData?.userInvitations || [];
@@ -240,6 +249,29 @@ const Dashboard: React.FC = () => {
       setOpenDeleteConfirm(false);
       setSelectedCardId(null);
     }
+  };
+
+  /**
+   * Only ever reached for a card with no orders — the tile hides the control
+   * otherwise — but the server's error is what gets shown rather than a message
+   * of our own, because it is the side that actually knows (#205).
+   */
+  const confirmDeleteHolidayCard = async () => {
+    if (!holidayCardToDelete) return;
+
+    try {
+      const result = await deleteHolidayCard({ variables: { externalId: holidayCardToDelete } });
+      const payload = result.data?.deleteHolidayCard;
+      if (payload?.success) {
+        await refetchHolidayCards();
+        toast.success('Holiday card deleted');
+      } else {
+        toast.error(payload?.errors?.[0] ?? 'Failed to delete holiday card');
+      }
+    } catch {
+      toast.error('Failed to delete holiday card');
+    }
+    setHolidayCardToDelete(null);
   };
 
   const handleCardShareClick = (cardId: string) => {
@@ -379,6 +411,7 @@ const Dashboard: React.FC = () => {
                   templates={holidayTemplates}
                   emptyTitle="You haven't made a holiday card yet"
                   emptyDescription="Design one, then have it printed and posted to everyone on your list."
+                  onDelete={setHolidayCardToDelete}
                 />
               </TabsContent>
             )}
@@ -411,6 +444,28 @@ const Dashboard: React.FC = () => {
       {qrCardId && (
         <CardQrCode cardExternalId={qrCardId} open={true} onClose={() => setQrCardId(null)} />
       )}
+
+      {/* Holiday card delete confirmation. Its own dialog rather than a shared one:
+          the copy differs — a holiday card is a design, not a link people signed. */}
+      <Dialog
+        open={!!holidayCardToDelete}
+        onOpenChange={open => !open && setHolidayCardToDelete(null)}
+      >
+        <DialogContent className="p-6 w-96 text-black">
+          <DialogHeader>
+            <DialogTitle>Delete this holiday card?</DialogTitle>
+          </DialogHeader>
+          <p>Its design and photos go with it. This action cannot be undone.</p>
+          <div className="flex justify-end space-x-4 mt-4">
+            <Button variant="outline" onClick={() => setHolidayCardToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteHolidayCard}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={openDeleteConfirm} onOpenChange={setOpenDeleteConfirm}>
