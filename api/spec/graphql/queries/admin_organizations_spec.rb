@@ -37,8 +37,8 @@ RSpec.describe "Admin organizations", type: :request do
   describe "the list" do
     let(:query) do
       <<~GRAPHQL
-        query AdminOrganizations($page: Int, $perPage: Int, $search: String) {
-          adminOrganizations(page: $page, perPage: $perPage, search: $search) {
+        query AdminOrganizations($page: Int, $perPage: Int, $search: String, $sort: String, $direction: String, $includeArchived: Boolean) {
+          adminOrganizations(page: $page, perPage: $perPage, search: $search, sort: $sort, direction: $direction, includeArchived: $includeArchived) {
             organizations { id name slug membersCount creditBalance createdAt }
             totalCount
             page
@@ -92,14 +92,74 @@ RSpec.describe "Admin organizations", type: :request do
     end
 
     # deleteOrganization is a soft delete; a deleted customer account is not
-    # something support acts on, so it stays out of the list entirely.
-    it "excludes archived organizations" do
+    # something support acts on, so it stays out of the list entirely unless
+    # asked for.
+    it "excludes archived organizations by default, and surfaces them with includeArchived" do
       organization.archive!
 
-      data = exec(query).dig("data", "adminOrganizations")
+      excluded = exec(query).dig("data", "adminOrganizations")
+      expect(excluded["totalCount"]).to eq 0
+      expect(excluded["organizations"]).to be_empty
 
-      expect(data["totalCount"]).to eq 0
-      expect(data["organizations"]).to be_empty
+      included = exec(query, variables: { includeArchived: true }).dig("data", "adminOrganizations")
+      expect(included["totalCount"]).to eq 1
+      expect(included["organizations"].first["id"]).to eq organization.id.to_s
+    end
+
+    describe "sort" do
+      it "sorts by member count" do
+        fewer = create(:organization, name: "Beta Inc", created_by: owner)
+        create(:organization_membership, organization: fewer, user: create(:user))
+
+        data = exec(query, variables: { sort: "members_count", direction: "asc" })
+          .dig("data", "adminOrganizations")
+
+        expect(data["organizations"].map { |org| org["id"] }).to eq [ fewer.id.to_s, organization.id.to_s ]
+      end
+
+      it "sorts by pool balance" do
+        poorer = create(:organization, name: "Beta Inc", created_by: owner)
+        create(:organization_credit, organization: poorer, amount: 1)
+
+        data = exec(query, variables: { sort: "credit_balance", direction: "asc" })
+          .dig("data", "adminOrganizations")
+
+        expect(data["organizations"].map { |org| org["id"] }).to eq [ poorer.id.to_s, organization.id.to_s ]
+      end
+
+      it "sorts by name" do
+        create(:organization, name: "Zeta LLC", created_by: owner)
+
+        data = exec(query, variables: { sort: "name", direction: "asc" })
+          .dig("data", "adminOrganizations")
+
+        expect(data["organizations"].map { |org| org["name"] }).to eq [ "Acme Corp", "Zeta LLC" ]
+      end
+
+      it "rejects an unknown sort" do
+        body = exec(query, variables: { sort: "bogus" })
+
+        expect(body["errors"].first["message"]).to eq "Invalid sort: bogus"
+      end
+    end
+
+    # membersCount and creditBalance used to fire a COUNT and a SUM per row —
+    # a page of organizations cost 1 + 2N queries. Batched via
+    # Sources::OrganizationMembersCount and Sources::OrganizationCreditBalance,
+    # it now costs the same regardless of how many rows are on the page.
+    it "costs a fixed number of queries however many organizations are listed" do
+      create_list(:organization, 4, created_by: owner)
+
+      queries = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*_, payload|
+        queries << payload[:sql] if payload[:sql].match?(/FROM "(organizations|organization_memberships|organization_credits)"/)
+      end
+      exec(query, variables: { perPage: 25 })
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+
+      # The count, the page, one grouped query for member counts, one for pool
+      # balances.
+      expect(queries.size).to eq 4
     end
 
     it "refuses a regular user's token outright rather than returning a partial result" do
@@ -119,7 +179,7 @@ RSpec.describe "Admin organizations", type: :request do
   describe "the detail view" do
     let(:query) do
       <<~GRAPHQL
-        query AdminOrganization($id: ID!) {
+        query AdminOrganization($id: ID!, $creditsLimit: Int, $creditsPage: Int) {
           adminOrganization(id: $id) {
             id
             name
@@ -128,14 +188,15 @@ RSpec.describe "Admin organizations", type: :request do
             membersCount
             creditBalance
             memberships { role user { id name email creditBalance } }
-            credits { amount reason actor { name } member { name } }
+            credits(limit: $creditsLimit, page: $creditsPage) { amount reason actor { name } member { name } }
+            creditsCount
           }
         }
       GRAPHQL
     end
 
-    def detail(token: admin_token)
-      exec(query, variables: { id: organization.id }, token: token)
+    def detail(token: admin_token, **extra_variables)
+      exec(query, variables: { id: organization.id, **extra_variables }, token: token)
     end
 
     before do
@@ -173,6 +234,21 @@ RSpec.describe "Admin organizations", type: :request do
         "actor" => { "name" => "Dana Host" },
         "member" => { "name" => "Sam Member" }
       )
+    end
+
+    it "pages the pool ledger rather than truncating it" do
+      create_list(:organization_credit, 5, organization: organization, amount: 1)
+
+      data = detail(creditsLimit: 2, creditsPage: 1).dig("data", "adminOrganization")
+      expect(data["creditsCount"]).to eq 5
+      expect(data["credits"].size).to eq 2
+
+      first_page = data["credits"]
+      second_page = detail(creditsLimit: 2, creditsPage: 2).dig("data", "adminOrganization")["credits"]
+      third_page = detail(creditsLimit: 2, creditsPage: 3).dig("data", "adminOrganization")["credits"]
+
+      # Three pages of 2, 2, 1 — no row repeated or skipped.
+      expect(first_page.size + second_page.size + third_page.size).to eq 5
     end
 
     it "returns null for an archived organization" do

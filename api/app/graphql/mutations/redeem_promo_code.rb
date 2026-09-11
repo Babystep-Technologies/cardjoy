@@ -23,6 +23,10 @@ module Mutations
         raise GraphQL::ExecutionError, "This promo code is not available for your account"
       end
 
+      if promo.disabled?
+        raise GraphQL::ExecutionError, "Promo code is disabled"
+      end
+
       if promo.expires_at&.< Time.current
         raise GraphQL::ExecutionError, "Promo code has expired"
       end

@@ -16,7 +16,14 @@ class Credit < ApplicationRecord
     promo_code_redeemed
     credit_reversed_due_to_chargeback
     org_credit_allocated
+    admin_adjustment
   ].freeze
+
+  # The free-text reason support typed for an admin_adjustment row (#180),
+  # mirroring OrganizationCredit#note.
+  def note
+    events&.first&.dig("event_data", "note")
+  end
 
   private
 

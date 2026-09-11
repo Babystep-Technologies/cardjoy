@@ -8,6 +8,7 @@ module Types
     field :admin_holiday_cards, resolver: Queries::AdminHolidayCards
     field :admin_holiday_card, resolver: Queries::AdminHolidayCard
     field :admin_users, resolver: Queries::AdminUsers
+    field :admin_user, resolver: Queries::AdminUser
     field :admin_promo_codes, resolver: Queries::AdminPromoCodes
     field :admin_organizations, resolver: Queries::AdminOrganizations
     field :admin_organization, resolver: Queries::AdminOrganization

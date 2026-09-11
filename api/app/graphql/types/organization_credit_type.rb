@@ -12,6 +12,9 @@ module Types
     # Signed: positive put credits into the pool, negative took them out.
     field :amount, Integer, null: false
     field :reason, String, null: true
+    # The free-text reason behind an admin_adjustment row (#180); null on every
+    # other kind, whose `reason` column already says enough.
+    field :note, String, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
 
     # Both nullable: a chargeback reversal names nobody, and a row can outlive
