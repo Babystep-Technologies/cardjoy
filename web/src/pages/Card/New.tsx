@@ -14,7 +14,7 @@ import { APP_TOKEN_KEY } from '@/lib/constants';
 import { isInsufficientCreditsError, INSUFFICIENT_CREDITS_REDIRECT } from '@/lib/credits';
 import { StyleType } from '@/types/app';
 import { cardTypeById } from '@/config/cardTypes';
-import { X, Sparkles, Upload, Users, Heart } from 'lucide-react';
+import { X, Sparkles, Upload, Users, Heart, Palette } from 'lucide-react';
 import {
   Select,
   SelectTrigger,
@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CoverImageDialog from './components/CoverImageDialog';
+import ImageWithSkeleton from '@/components/ImageWithSkeleton';
 import { captureError, captureInfo } from '@/lib/posthog-capture';
 
 const CREATE_CARD = gql`
@@ -59,6 +60,11 @@ const GET_STYLES = gql`
       value
     }
     textColorStyles: styles(kind: "text_color") {
+      id
+      name
+      value
+    }
+    coverStyles: styles(kind: "cover", limit: 4) {
       id
       name
       value
@@ -105,6 +111,7 @@ const CardNew: React.FC = () => {
   const { data: styleData } = useQuery(GET_STYLES);
   const backgroundColorStyles = useMemo(() => styleData?.backgroundColorStyles || [], [styleData]);
   const textColorStyles = useMemo(() => styleData?.textColorStyles || [], [styleData]);
+  const coverStyles = useMemo(() => styleData?.coverStyles || [], [styleData]);
 
   const isFormValid =
     newCard.title.trim() !== '' && newCard.recipients.some(name => name.trim() !== '');
@@ -342,6 +349,82 @@ const CardNew: React.FC = () => {
               </Button>
             </div>
 
+            {/* Background image. Promoted above the fold and given the same weight as
+                Card Settings — it's the first thing anyone sees when the card opens,
+                and buried at the bottom of the form most creators skipped it. */}
+            <div className="border-4 border-blue-300 rounded-2xl p-6 bg-gradient-to-br from-blue-50 to-purple-50 space-y-4">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <Palette className="w-5 h-5 text-blue-600" />
+                Make it beautiful
+              </h3>
+              <p className="text-sm text-gray-600">
+                The background image is the first thing people see when they open your card.
+              </p>
+
+              {coverImage ? (
+                <div className="space-y-3">
+                  <div className="relative w-full">
+                    <img
+                      src={
+                        coverImage instanceof Blob ? URL.createObjectURL(coverImage) : coverImage
+                      }
+                      alt="Selected Cover"
+                      className="w-full h-64 object-cover rounded-xl border-4 border-white shadow-lg"
+                    />
+                    <button
+                      type="button"
+                      className="absolute top-3 right-3 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110"
+                      onClick={() => setCoverImage(null)}
+                      aria-label="Remove cover image"
+                    >
+                      <X className="w-5 h-5 text-gray-700" />
+                    </button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCoverDialogOpen(true)}
+                    className="border-2 bg-white font-semibold hover:border-blue-400 hover:bg-blue-50"
+                  >
+                    Choose a different one
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Pick a background</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {coverStyles.map((style: StyleType, i: number) => (
+                      <ImageWithSkeleton
+                        key={style.id}
+                        src={style.value}
+                        // Style names are raw upload filenames, useless to a screen reader.
+                        alt={`Background option ${i + 1}`}
+                        className="aspect-[4/3] overflow-hidden rounded-lg border-2 border-white shadow-sm transition-all hover:scale-105 hover:border-blue-400"
+                        onClick={() => setCoverImage(style.value)}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setCoverDialogOpen(true)}
+                      className="aspect-[4/3] flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-blue-300 bg-white/70 text-blue-600 transition-all hover:border-blue-500 hover:bg-white"
+                    >
+                      <Upload className="w-6 h-6" />
+                      <span className="text-xs font-semibold">Use your own</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Cover Image Dialog */}
+            <CoverImageDialog
+              open={coverDialogOpen}
+              onOpenChange={setCoverDialogOpen}
+              onSelectCover={cover => {
+                setCoverImage(cover);
+                setCoverDialogOpen(false);
+              }}
+            />
+
             {/* Occasion Picker */}
             <div className="space-y-2">
               <Label className="text-base font-semibold">Occasion (Optional)</Label>
@@ -426,51 +509,6 @@ const CardNew: React.FC = () => {
                 <p className="text-xs text-gray-500 text-right">{contributorPrompt.length}/500</p>
               </div>
             </div>
-
-            {/* Cover Image Dialog Trigger */}
-            <div className="space-y-2">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Cover Image (Optional)
-              </Label>
-              {coverImage ? (
-                <div className="relative w-full">
-                  <img
-                    src={coverImage instanceof Blob ? URL.createObjectURL(coverImage) : coverImage}
-                    alt="Selected Cover"
-                    className="w-full h-64 object-cover rounded-xl border-4 border-white shadow-lg"
-                  />
-                  <button
-                    type="button"
-                    className="absolute top-3 right-3 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all hover:scale-110"
-                    onClick={() => setCoverImage(null)}
-                    aria-label="Remove cover image"
-                  >
-                    <X className="w-5 h-5 text-gray-700" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setCoverDialogOpen(true)}
-                  className="w-full h-48 border-4 border-dashed border-gray-300 rounded-xl hover:border-purple-400 hover:bg-purple-50/50 transition-all flex flex-col items-center justify-center gap-3 group"
-                >
-                  <Upload className="w-12 h-12 text-gray-400 group-hover:text-purple-500 transition-colors" />
-                  <span className="text-gray-500 group-hover:text-purple-600 font-medium">
-                    Click to add a cover image
-                  </span>
-                </button>
-              )}
-            </div>
-
-            {/* Cover Image Dialog */}
-            <CoverImageDialog
-              open={coverDialogOpen}
-              onOpenChange={setCoverDialogOpen}
-              onSelectCover={cover => {
-                setCoverImage(cover);
-                setCoverDialogOpen(false);
-              }}
-            />
 
             {/* Sign In Dialog */}
             <Dialog open={signInDialogOpen} onOpenChange={setSignInDialogOpen}>

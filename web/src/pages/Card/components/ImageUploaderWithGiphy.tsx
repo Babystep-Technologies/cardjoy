@@ -21,6 +21,8 @@ interface ImageUploaderProps {
   setZoom: (z: number) => void;
   showSheet?: boolean;
   setShowSheet?: (open: boolean) => void;
+  /** Tab to open on. Falls back to Upload when GIPHY has no key. */
+  initialTab?: 'giphy' | 'upload';
 }
 
 interface GiphyGif {
@@ -46,12 +48,15 @@ const ImageUploaderWithGiphy: React.FC<ImageUploaderProps> = ({
   setZoom,
   showSheet: showSheetProp,
   setShowSheet: setShowSheetProp,
+  initialTab,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [internalShowSheet, internalSetShowSheet] = useState(false);
   const showSheet = showSheetProp !== undefined ? showSheetProp : internalShowSheet;
   const setShowSheet = setShowSheetProp !== undefined ? setShowSheetProp : internalSetShowSheet;
-  const [tab, setTab] = useState<'giphy' | 'upload'>('giphy');
+  // GIPHY is optional — with no key the tab is hidden and Upload is all there is.
+  const giphyEnabled = Boolean(import.meta.env.VITE_GIPHY_API_KEY);
+  const [tab, setTab] = useState<'giphy' | 'upload'>(giphyEnabled ? 'giphy' : 'upload');
   const [giphySearch, setGiphySearch] = useState('');
 
   const [giphyResults, setGiphyResults] = useState<GiphyGif[]>([]);
@@ -138,12 +143,14 @@ const ImageUploaderWithGiphy: React.FC<ImageUploaderProps> = ({
     }
   }, [tab, giphyResults.length, giphyLoading]);
 
-  // Always default to GIPHY tab when the uploader is opened
+  // Open on the tab the caller asked for, so "Pick a GIF" and "Upload a photo" each
+  // land where the user expects.
   React.useEffect(() => {
     if (showSheet) {
-      setTab('giphy');
+      const requested = initialTab ?? 'giphy';
+      setTab(requested === 'giphy' && !giphyEnabled ? 'upload' : requested);
     }
-  }, [showSheet]);
+  }, [showSheet, initialTab, giphyEnabled]);
 
   return (
     <>
@@ -162,7 +169,7 @@ const ImageUploaderWithGiphy: React.FC<ImageUploaderProps> = ({
                 className="mt-2 flex-1"
               >
                 <TabsList className="flex gap-2 w-full">
-                  <TabsTrigger value="giphy">GIPHY</TabsTrigger>
+                  {giphyEnabled && <TabsTrigger value="giphy">GIPHY</TabsTrigger>}
                   <TabsTrigger value="upload">Upload</TabsTrigger>
                 </TabsList>
                 <div className="mt-4" style={{ minHeight: '20rem' }}>
@@ -321,7 +328,7 @@ const ImageUploaderWithGiphy: React.FC<ImageUploaderProps> = ({
               className="mt-2 flex-1"
             >
               <TabsList className="flex gap-2 w-full">
-                <TabsTrigger value="giphy">GIPHY</TabsTrigger>
+                {giphyEnabled && <TabsTrigger value="giphy">GIPHY</TabsTrigger>}
                 <TabsTrigger value="upload">Upload</TabsTrigger>
               </TabsList>
               <div className="mt-4" style={{ minHeight: '20rem' }}>
