@@ -60,4 +60,64 @@ RSpec.describe "GraphQL authentication gate", type: :request do
       expect(response).to have_http_status(:ok)
     end
   end
+
+  # DAU tracking (#182): every authenticated user request records at most one
+  # activity row per day, and a failure recording it can never fail the request
+  # it rides on.
+  context "user activity tracking" do
+    def user_headers(user)
+      token = JWT.encode({ user_id: user.id, exp: 1.hour.from_now.to_i }, Rails.configuration.x.jwt_secret)
+      { "Authorization" => "Bearer #{token}" }
+    end
+
+    def admin_headers(admin)
+      token = JWT.encode({ admin_id: admin.id, exp: 1.hour.from_now.to_i }, Rails.configuration.x.jwt_secret)
+      { "Authorization" => "Bearer #{token}" }
+    end
+
+    it "records exactly one row per user per day, even across repeated requests" do
+      user = create(:user)
+
+      3.times do
+        post_operation("Card", "query Card { __typename }", headers: user_headers(user))
+      end
+
+      expect(UserDailyActivity.where(user: user, activity_date: Date.current).count).to eq 1
+    end
+
+    it "does not record activity for an admin JWT" do
+      admin = create(:admin)
+
+      post_operation("Card", "query Card { __typename }", headers: admin_headers(admin))
+
+      expect(UserDailyActivity.count).to eq 0
+    end
+
+    it "still answers the request when recording activity raises" do
+      user = create(:user)
+      allow(UserDailyActivity).to receive(:record!).and_raise(ActiveRecord::StatementInvalid, "boom")
+
+      post_operation("Card", "query Card { __typename }", headers: user_headers(user))
+
+      expect(response).to have_http_status(:ok)
+      expect(UserDailyActivity.count).to eq 0
+    end
+
+    # The acceptance criterion is "no preceding read" — a wall-clock benchmark
+    # would be flaky in CI, but this asserts the actual shape: one INSERT, no
+    # SELECT against user_daily_activities before it.
+    it "writes with a single INSERT and no read beforehand" do
+      user = create(:user)
+      queries = []
+      subscriber = ActiveSupport::Notifications.subscribe("sql.active_record") do |*_, payload|
+        queries << payload[:sql] if payload[:sql].match?(/user_daily_activities/i)
+      end
+
+      post_operation("Card", "query Card { __typename }", headers: user_headers(user))
+
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+      expect(queries.size).to eq 1
+      expect(queries.first).to match(/\AINSERT/i)
+    end
+  end
 end

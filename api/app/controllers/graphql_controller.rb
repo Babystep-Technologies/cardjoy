@@ -81,6 +81,7 @@ class GraphqlController < ApiController
 
       if payload["user_id"]
         @current_user = User.find_by(id: payload["user_id"])
+        record_user_activity(@current_user) if @current_user
       elsif payload["admin_id"]
         @current_admin = Admin.find_by(id: payload["admin_id"])
       end
@@ -93,6 +94,20 @@ class GraphqlController < ApiController
       @current_user = nil
       @current_admin = nil
     end
+  end
+
+  # DAU tracking (#182): a user is "active" on any authenticated request, not
+  # just a sign-in. `UserDailyActivity.record!` is a single `INSERT ... ON
+  # CONFLICT DO NOTHING`, so this costs nothing after the first request of the
+  # user's day. Admin JWTs never reach here — this branch only runs for
+  # `payload["user_id"]` — so staff using the dashboard never inflate DAU.
+  #
+  # Guarded so a failure here can never fail or slow the request it rides on:
+  # activity tracking is not worth a 500.
+  def record_user_activity(user)
+    UserDailyActivity.record!(user.id)
+  rescue StandardError => e
+    Rails.logger.error("Failed to record user activity for user #{user.id}: #{e.class} #{e.message}")
   end
 
   def authenticate_user_with_graphql!
