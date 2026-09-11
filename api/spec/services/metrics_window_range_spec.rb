@@ -27,11 +27,13 @@ RSpec.describe MetricsWindowRange do
   end
 
   it "starts on the same day it ends when YEAR_TO_DATE is asked for on January 1st" do
-    travel_to(Time.utc(2027, 1, 1, 0, 30, 0)) do
-      range = described_class.new("YEAR_TO_DATE")
+    # Block form here would nest inside the outer `around`'s travel_to and
+    # raise; the non-block form just re-stubs, which is fine since the
+    # around hook's travel_back cleans up at the end of the example either way.
+    travel_to Time.utc(2027, 1, 1, 0, 30, 0)
+    range = described_class.new("YEAR_TO_DATE")
 
-      expect(range.start_date).to eq range.end_date
-    end
+    expect(range.start_date).to eq range.end_date
   end
 
   it "starts at the earliest tracked row for ALL_TIME" do

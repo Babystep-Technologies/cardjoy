@@ -571,6 +571,20 @@ class User
 
     sig { params(value: T::Enumerable[::OrganizationInvitation]).void }
     def sent_organization_invitations=(value); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :user_daily_activities`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::UserDailyActivity::PrivateCollectionProxy) }
+    def user_daily_activities; end
+
+    sig { params(value: T::Enumerable[::UserDailyActivity]).void }
+    def user_daily_activities=(value); end
+
+    sig { returns(T::Array[T.untyped]) }
+    def user_daily_activity_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def user_daily_activity_ids=(ids); end
   end
 
   module GeneratedAssociationRelationMethods

@@ -114,12 +114,14 @@ RSpec.describe Queries::AdminMetrics, type: :request do
 
   describe "the YEAR_TO_DATE window at the January 1st edge" do
     it "starts and ends on the same day when today is New Year's Day" do
-      travel_to(Time.utc(2027, 1, 1, 8, 0, 0)) do
-        result = data(window: "YEAR_TO_DATE")
+      # Block form here would nest inside the outer `around`'s travel_to and
+      # raise; the non-block form just re-stubs, which is fine since the
+      # around hook's travel_back cleans up at the end of the example either way.
+      travel_to Time.utc(2027, 1, 1, 8, 0, 0)
+      result = data(window: "YEAR_TO_DATE")
 
-        expect(result["startDate"]).to eq "2027-01-01"
-        expect(result["endDate"]).to eq "2027-01-01"
-      end
+      expect(result["startDate"]).to eq "2027-01-01"
+      expect(result["endDate"]).to eq "2027-01-01"
     end
 
     it "starts at January 1st on any later date in the year" do
