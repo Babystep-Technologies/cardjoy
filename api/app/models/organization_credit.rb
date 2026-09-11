@@ -18,6 +18,7 @@ class OrganizationCredit < ApplicationRecord
     org_credit_purchased
     org_credit_allocated
     admin_grant
+    admin_adjustment
     org_credit_reversed_due_to_chargeback
   ].freeze
 
@@ -38,6 +39,13 @@ class OrganizationCredit < ApplicationRecord
   # The member an allocation went to; nil on every other kind of row.
   def member_user_id
     user_id_from_event("user_id")
+  end
+
+  # The free-text reason support typed for an admin_adjustment row (#180).
+  # `reason` itself stays a categorical column shared across every ledger kind;
+  # this is where the actual sentence a staff member wrote lives.
+  def note
+    events&.first&.dig("event_data", "note")
   end
 
   private

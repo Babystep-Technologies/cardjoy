@@ -22,6 +22,10 @@ module Types
     field :name, String, null: false
     field :slug, String, null: false
     field :description, String, null: true
+    # Batch-loaded (#180) — see Sources::OrganizationMembersCount and
+    # Sources::OrganizationCreditBalance. Before this, the admin organizations
+    # list fired one COUNT and one SUM per row; a page of 20 organizations cost
+    # 41 queries instead of 3.
     field :members_count, Integer, null: false
     field :credit_balance, Integer, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
@@ -33,26 +37,44 @@ module Types
     field :memberships, [ Types::OrganizationMembershipType ], null: false
 
     # The pool ledger, newest first: the top is the purchase, allocation, or
-    # grant support is currently looking into.
+    # grant support is currently looking into. `page` makes this a real pager
+    # rather than a single capped window — before this the detail view could
+    # not reach anything past the first CREDITS_MAX_LIMIT rows.
     field :credits, [ Types::OrganizationCreditType ], null: false do
       argument :limit, Integer, required: false,
-        description: "How many of the most recent rows to return (default #{CREDITS_DEFAULT_LIMIT}, max #{CREDITS_MAX_LIMIT})."
+        description: "Rows per page (default #{CREDITS_DEFAULT_LIMIT}, max #{CREDITS_MAX_LIMIT})."
+      argument :page, Integer, required: false, description: "1-based. Defaults to 1."
     end
 
+    # So the client knows how many pages `credits` has.
+    field :credits_count, Integer, null: false
+
     def members_count
-      object.organization_memberships.count
+      dataloader.with(Sources::OrganizationMembersCount).load(object.id)
+    end
+
+    def credit_balance
+      dataloader.with(Sources::OrganizationCreditBalance).load(object.id)
     end
 
     def memberships
       object.organization_memberships.includes(:user).order(:created_at, :id)
     end
 
-    # `limit` arrives nil when the client passes an explicit null, which is not
-    # the same as omitting the argument — both mean "the default".
-    def credits(limit: nil)
+    # `limit`/`page` arrive nil when the client passes an explicit null, which
+    # is not the same as omitting the argument — both mean "the default".
+    def credits(limit: nil, page: nil)
+      limit = (limit || CREDITS_DEFAULT_LIMIT).clamp(1, CREDITS_MAX_LIMIT)
+      page = [ (page || 1).to_i, 1 ].max
+
       object.organization_credits
         .order(created_at: :desc, id: :desc)
-        .limit((limit || CREDITS_DEFAULT_LIMIT).clamp(1, CREDITS_MAX_LIMIT))
+        .offset((page - 1) * limit)
+        .limit(limit)
+    end
+
+    def credits_count
+      object.organization_credits.count
     end
   end
 end

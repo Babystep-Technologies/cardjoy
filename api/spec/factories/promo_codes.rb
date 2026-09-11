@@ -20,5 +20,9 @@ FactoryBot.define do
       usage_limit { 1 }
       times_redeemed { 1 }
     end
+
+    trait :disabled do
+      disabled_at { 1.day.ago }
+    end
   end
 end

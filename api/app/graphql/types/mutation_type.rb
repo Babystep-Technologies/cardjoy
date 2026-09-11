@@ -20,6 +20,8 @@ module Types
     field :redeem_promo_code, mutation: Mutations::RedeemPromoCode
     field :issue_user_promo_code, mutation: Mutations::IssueUserPromoCode
     field :create_general_promo_code, mutation: Mutations::CreateGeneralPromoCode
+    field :update_promo_code_by_admin, mutation: Mutations::UpdatePromoCodeByAdmin
+    field :edit_promo_code_by_admin, mutation: Mutations::EditPromoCodeByAdmin
     field :update_cover_style, mutation: Mutations::UpdateCoverStyle
     field :archive_cover_style, mutation: Mutations::ArchiveCoverStyle
     field :create_cover_style, mutation: Mutations::CreateCoverStyle
@@ -66,6 +68,8 @@ module Types
     field :leave_organization, mutation: Mutations::LeaveOrganization
     field :allocate_organization_credits, mutation: Mutations::AllocateOrganizationCredits
     field :grant_organization_credits, mutation: Mutations::GrantOrganizationCredits
+    field :adjust_organization_credits, mutation: Mutations::AdjustOrganizationCredits
+    field :adjust_user_credits, mutation: Mutations::AdjustUserCredits
     field :create_organization_style, mutation: Mutations::CreateOrganizationStyle
     field :archive_organization_style, mutation: Mutations::ArchiveOrganizationStyle
     field :create_holiday_card, mutation: Mutations::CreateHolidayCard
