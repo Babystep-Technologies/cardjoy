@@ -92,7 +92,5 @@ RSpec.describe Mutations::UpdatePromoCodeByAdmin, type: :request do
 
     expect(body["errors"].first["message"]).to eq "Not authorized"
     expect(body.dig("data", "updatePromoCodeByAdmin")).to be_nil
-
-    expect(body).to be_nil
   end
 end

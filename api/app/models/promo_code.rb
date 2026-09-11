@@ -90,11 +90,13 @@ class PromoCode < ApplicationRecord
   end
 
   def expired?
-    expires_at.present? && expires_at.past?
+    expiry = expires_at
+    expiry.present? && expiry.past?
   end
 
   def fully_redeemed?
-    usage_limit.present? && times_redeemed.to_i >= usage_limit
+    limit = usage_limit
+    limit.present? && times_redeemed.to_i >= limit
   end
 
   def disable!
