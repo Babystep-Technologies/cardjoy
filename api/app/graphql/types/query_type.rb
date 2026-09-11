@@ -11,6 +11,8 @@ module Types
     field :admin_promo_codes, resolver: Queries::AdminPromoCodes
     field :admin_organizations, resolver: Queries::AdminOrganizations
     field :admin_organization, resolver: Queries::AdminOrganization
+    field :admin_metrics, resolver: Queries::AdminMetrics
+    field :admin_annual_goals, resolver: Queries::AdminAnnualGoals
     field :user_cards, resolver: Queries::UserCards
     field :card, resolver: Queries::Card
     field :styles, resolver: Queries::Styles

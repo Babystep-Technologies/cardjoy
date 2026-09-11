@@ -148,6 +148,9 @@ module GeneratedUrlHelpersModule
   def viewable_card_preview_url(*args); end
 
   sig { params(args: T.untyped).returns(String) }
+  def webhooks_postgrid_url(*args); end
+
+  sig { params(args: T.untyped).returns(String) }
   def webhooks_slack_url(*args); end
 
   sig { params(args: T.untyped).returns(String) }

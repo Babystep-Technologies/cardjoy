@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_131100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "annual_goals", force: :cascade do |t|
+    t.integer "cards_and_invitations_target", null: false
+    t.datetime "created_at", null: false
+    t.integer "dau_target", null: false
+    t.datetime "updated_at", null: false
+    t.integer "year", null: false
+    t.index ["year"], name: "index_annual_goals_on_year", unique: true
+  end
+
   create_table "application_settings", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.jsonb "settings", default: {}, null: false
@@ -84,10 +93,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_cards_on_created_at"
     t.index ["deleted_at"], name: "index_cards_on_deleted_at"
     t.index ["external_id"], name: "index_cards_on_external_id", unique: true
     t.index ["organization_id"], name: "index_cards_on_organization_id"
     t.index ["slug"], name: "index_cards_on_slug", unique: true, where: "(slug IS NOT NULL)"
+    t.index ["user_id", "created_at"], name: "index_cards_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_cards_on_user_id"
   end
 
@@ -139,6 +150,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "stripe_session_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_credits_on_created_at"
+    t.index ["stripe_session_id"], name: "index_credits_on_stripe_session_id"
     t.index ["user_id"], name: "index_credits_on_user_id"
   end
 
@@ -301,8 +314,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_holiday_cards_on_created_at"
     t.index ["deleted_at"], name: "index_holiday_cards_on_deleted_at"
     t.index ["external_id"], name: "index_holiday_cards_on_external_id", unique: true
+    t.index ["user_id", "created_at"], name: "index_holiday_cards_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_holiday_cards_on_user_id"
   end
 
@@ -330,10 +345,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.jsonb "wish_list_items"
+    t.index ["created_at"], name: "index_invitations_on_created_at"
     t.index ["deleted_at"], name: "index_invitations_on_deleted_at"
     t.index ["external_id"], name: "index_invitations_on_external_id", unique: true
     t.index ["organization_id"], name: "index_invitations_on_organization_id"
     t.index ["slug"], name: "index_invitations_on_slug", unique: true, where: "(slug IS NOT NULL)"
+    t.index ["user_id", "created_at"], name: "index_invitations_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_invitations_on_user_id"
   end
 
@@ -349,6 +366,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["card_id"], name: "index_messages_on_card_id"
+    t.index ["created_at"], name: "index_messages_on_created_at"
     t.index ["deleted_at"], name: "index_messages_on_deleted_at"
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
@@ -374,7 +392,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "reason"
     t.string "stripe_session_id"
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_organization_credits_on_created_at"
     t.index ["organization_id"], name: "index_organization_credits_on_organization_id"
+    t.index ["stripe_session_id"], name: "index_organization_credits_on_stripe_session_id"
   end
 
   create_table "organization_invitations", force: :cascade do |t|
@@ -418,6 +438,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "name", null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_organizations_on_created_at"
     t.index ["created_by_id"], name: "index_organizations_on_created_by_id"
     t.index ["deleted_at"], name: "index_organizations_on_deleted_at"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
@@ -454,6 +475,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.integer "usage_limit"
     t.bigint "user_id"
     t.index ["code"], name: "index_promo_codes_on_code", unique: true
+    t.index ["created_at"], name: "index_promo_codes_on_created_at"
     t.index ["user_id"], name: "index_promo_codes_on_user_id"
   end
 
@@ -469,7 +491,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "status"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.index ["created_at"], name: "index_rsvps_on_created_at"
     t.index ["invitation_id"], name: "index_rsvps_on_invitation_id"
+    t.index ["status"], name: "index_rsvps_on_status"
     t.index ["user_id"], name: "index_rsvps_on_user_id"
   end
 
@@ -519,6 +543,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.index ["name"], name: "index_tags_on_name", unique: true
   end
 
+  create_table "user_daily_activities", force: :cascade do |t|
+    t.date "activity_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["activity_date"], name: "index_user_daily_activities_on_activity_date"
+    t.index ["user_id", "activity_date"], name: "index_user_daily_activities_on_user_id_and_activity_date", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.bigint "active_organization_id"
     t.string "confirmation_code"
@@ -536,6 +569,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
     t.string "uid"
     t.datetime "updated_at", null: false
     t.index ["active_organization_id"], name: "index_users_on_active_organization_id"
+    t.index ["created_at"], name: "index_users_on_created_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -620,6 +654,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_120000) do
   add_foreign_key "style_tags", "styles"
   add_foreign_key "style_tags", "tags"
   add_foreign_key "styles", "organizations", on_delete: :cascade
+  add_foreign_key "user_daily_activities", "users"
   add_foreign_key "users", "organizations", column: "active_organization_id", on_delete: :nullify
   add_foreign_key "wish_list_contributions", "wish_lists"
   add_foreign_key "wish_list_items", "wish_lists"

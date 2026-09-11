@@ -27,6 +27,10 @@ class User < ApplicationRecord
   has_many :cards, dependent: :destroy
   has_many :messages, dependent: :destroy
   has_many :credits, dependent: :destroy
+  # Written only via UserDailyActivity.record! (#182), never through this
+  # association — kept for the same reason every other has_many here is: a
+  # user destroy should take their activity history with them.
+  has_many :user_daily_activities, dependent: :destroy
   has_many :postage_credits, dependent: :destroy
   has_many :promo_codes, dependent: :destroy
   has_many :invitations, dependent: :destroy

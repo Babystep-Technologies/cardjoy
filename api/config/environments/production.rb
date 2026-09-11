@@ -45,8 +45,13 @@ Rails.application.configure do
   # Don't log any deprecations.
   config.active_support.report_deprecations = false
 
-  # Replace the default in-process memory cache store with a durable alternative.
-  # config.cache_store = :solid_cache_store
+  # Explicit rather than left to the implicit default (#183) — Queries::AdminMetrics
+  # is the first thing in this app to call Rails.cache. `:memory_store` means
+  # each process/dyno warms its own copy rather than sharing one; harmless for
+  # a 5-minute-TTL admin metrics cache with a handful of viewers, but revisit
+  # once there's a working `bundle install` to add `redis` (already provisioned
+  # in docker-compose.yml, unused) or `solid_cache` and switch to a shared store.
+  config.cache_store = :memory_store
 
   # Replace the default in-process and non-durable queuing backend for Active Job.
   # config.active_job.queue_adapter = :solid_queue
