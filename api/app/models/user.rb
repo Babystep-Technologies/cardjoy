@@ -39,6 +39,7 @@ class User < ApplicationRecord
   # orders) first and finds nothing left to do here.
   has_many :holiday_card_mail_orders, dependent: :destroy
   has_many :rsvps, dependent: :destroy
+  has_many :support_tickets, dependent: :destroy
   has_many :contacts, dependent: :destroy
   has_many :contact_lists, dependent: :destroy
   has_many :occasions, through: :contacts
