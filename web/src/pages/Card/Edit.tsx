@@ -17,11 +17,10 @@ import { Toaster, toast } from 'sonner';
 import { StyleType, UserMessageType, GuestMessageType } from '@/types/app';
 import { Area } from 'react-easy-crop';
 import GuestEntry from './components/GuestEntry';
-import ImageUploaderWithGiphy from './components/ImageUploaderWithGiphy';
+import MessageImageField from './components/MessageImageField';
 import EditCardSettings from './components/EditCardSettings';
 import CardOneOnOneEdit from './OneOnOneEdit';
 import { APP_TOKEN_KEY } from '@/lib/constants';
-import { X } from 'lucide-react';
 import { getGuestMessageIdKey } from '@/lib/utils';
 import { cardTypeById } from '@/config/cardTypes';
 
@@ -175,7 +174,6 @@ function PageEdit() {
 
   // Add state for cover image for settings
   const [coverImage, setCoverImage] = useState<string | Blob | null>(null);
-  const [showImageUploader, setShowImageUploader] = useState(false);
 
   // Card settings
   const [maxMessages, setMaxMessages] = useState<number>(20);
@@ -511,13 +509,6 @@ function PageEdit() {
                   >
                     Change Card Settings
                   </Button>
-                  <Button
-                    type="button"
-                    className="w-full sm:w-[220px] mb-2 sm:mb-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 font-semibold"
-                    onClick={() => setShowImageUploader(true)}
-                  >
-                    Add or Change Image
-                  </Button>
                 </div>
               </>
             ) : isCreator && editingSettings ? (
@@ -553,71 +544,18 @@ function PageEdit() {
                 setSlug={setSlug}
               />
             ) : (
-              <>
-                <h1
-                  className={`text-3xl font-bold cursor-pointer hover:underline transition bg-gradient-to-r ${cardTypeById.group.gradient} bg-clip-text text-transparent hover:opacity-90`}
-                  onClick={() => navigate(`/card/${cardExternalId}/editable`)}
-                >
-                  {cardTitle}
-                </h1>
-                {!editingSettings && (
-                  <div className="mt-4 flex flex-col sm:flex-row sm:items-start sm:gap-4">
-                    <Button
-                      type="button"
-                      className="w-full sm:w-[220px] mb-2 sm:mb-0 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 font-semibold"
-                      onClick={() => setShowImageUploader(true)}
-                    >
-                      Add or Change Image
-                    </Button>
-                  </div>
-                )}
-              </>
+              <h1
+                className={`text-3xl font-bold cursor-pointer hover:underline transition bg-gradient-to-r ${cardTypeById.group.gradient} bg-clip-text text-transparent hover:opacity-90`}
+                onClick={() => navigate(`/card/${cardExternalId}/editable`)}
+              >
+                {cardTitle}
+              </h1>
             )}
           </CardHeader>
 
           <CardContent>
             {!editingSettings && (
               <div>
-                {imagePreview && (
-                  <div className="w-full sm:w-[400px] lg:w-[480px] xl:w-[520px] relative mb-6">
-                    <img
-                      src={imagePreview}
-                      alt="Selected"
-                      className="w-full h-auto aspect-[3/2] object-cover rounded border"
-                      style={{ maxHeight: '266px' }}
-                    />
-                    <button
-                      type="button"
-                      className="absolute top-2 right-2 z-10 bg-white rounded-full p-1 shadow hover:bg-gray-100"
-                      onClick={() => {
-                        setImageFile(null);
-                        setImageUrl(null);
-                        setImagePreview(null);
-                        setCroppedAreaPixels(null);
-                        setUploadError('');
-                      }}
-                      aria-label="Remove image"
-                    >
-                      <X className="w-5 h-5 text-gray-800" />
-                    </button>
-                  </div>
-                )}
-                <ImageUploaderWithGiphy
-                  imagePreview={imagePreview}
-                  setImageFile={setImageFile}
-                  setImageUrl={setImageUrl}
-                  setImagePreview={setImagePreview}
-                  setCroppedAreaPixels={setCroppedAreaPixels}
-                  uploadError={uploadError}
-                  setUploadError={setUploadError}
-                  crop={crop}
-                  setCrop={setCrop}
-                  zoom={zoom}
-                  setZoom={setZoom}
-                  showSheet={showImageUploader}
-                  setShowSheet={setShowImageUploader}
-                />
-
                 {/* Message Text Area Section */}
                 <div className="mb-6 space-y-4">
                   <div className="space-y-2">
@@ -673,6 +611,19 @@ function PageEdit() {
                       style={{ height: '35vh' }}
                     />
                     {textError && <p className="text-sm text-red-500 mt-1">{textError}</p>}
+                    <MessageImageField
+                      imagePreview={imagePreview}
+                      setImageFile={setImageFile}
+                      setImageUrl={setImageUrl}
+                      setImagePreview={setImagePreview}
+                      setCroppedAreaPixels={setCroppedAreaPixels}
+                      uploadError={uploadError}
+                      setUploadError={setUploadError}
+                      crop={crop}
+                      setCrop={setCrop}
+                      zoom={zoom}
+                      setZoom={setZoom}
+                    />
                   </div>
                 </div>
 
