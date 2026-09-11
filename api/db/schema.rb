@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_131100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_140100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -536,6 +536,38 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_131100) do
     t.index ["organization_id"], name: "index_styles_on_organization_id"
   end
 
+  create_table "support_ticket_messages", force: :cascade do |t|
+    t.bigint "author_id"
+    t.string "author_kind", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.string "inbound_email_id"
+    t.bigint "support_ticket_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["support_ticket_id", "created_at"], name: "idx_on_support_ticket_id_created_at_0d70c2b287"
+    t.index ["support_ticket_id"], name: "index_support_ticket_messages_on_support_ticket_id"
+  end
+
+  create_table "support_tickets", force: :cascade do |t|
+    t.bigint "assigned_admin_id"
+    t.string "category", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.string "external_id", null: false
+    t.datetime "last_admin_reply_at"
+    t.datetime "last_customer_reply_at"
+    t.string "status", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["assigned_admin_id"], name: "index_support_tickets_on_assigned_admin_id"
+    t.index ["external_id"], name: "index_support_tickets_on_external_id", unique: true
+    t.index ["status", "last_customer_reply_at"], name: "index_support_tickets_on_status_and_last_customer_reply_at"
+    t.index ["user_id", "created_at"], name: "index_support_tickets_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_support_tickets_on_user_id"
+  end
+
   create_table "tags", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
@@ -654,6 +686,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_131100) do
   add_foreign_key "style_tags", "styles"
   add_foreign_key "style_tags", "tags"
   add_foreign_key "styles", "organizations", on_delete: :cascade
+  add_foreign_key "support_ticket_messages", "support_tickets"
+  add_foreign_key "support_tickets", "admins", column: "assigned_admin_id"
+  add_foreign_key "support_tickets", "users"
   add_foreign_key "user_daily_activities", "users"
   add_foreign_key "users", "organizations", column: "active_organization_id", on_delete: :nullify
   add_foreign_key "wish_list_contributions", "wish_lists"

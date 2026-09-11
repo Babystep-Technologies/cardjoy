@@ -32,7 +32,8 @@ module Types
     field :update_holiday_card_by_admin, mutation: Mutations::UpdateHolidayCardByAdmin
     field :flag_card_message, mutation: Mutations::FlagCardMessage
     field :generate_qr_code, mutation: Mutations::GenerateQrCode
-    field :create_support_request, mutation: Mutations::CreateSupportRequest
+    field :create_support_request, mutation: Mutations::CreateSupportRequest,
+      deprecation_reason: "Use createSupportTicket instead (#172)."
     field :react_to_message, mutation: Mutations::ReactToMessage
     field :remove_card_cover_image, mutation: Mutations::RemoveCardCoverImage
     field :create_invitation, mutation: Mutations::CreateInvitation
@@ -77,5 +78,7 @@ module Types
     field :generate_holiday_card_proof, mutation: Mutations::GenerateHolidayCardProof
     field :approve_holiday_card_proof, mutation: Mutations::ApproveHolidayCardProof
     field :send_holiday_card, mutation: Mutations::SendHolidayCard
+    field :create_support_ticket, mutation: Mutations::CreateSupportTicket
+    field :reply_to_support_ticket, mutation: Mutations::ReplyToSupportTicket
   end
 end
