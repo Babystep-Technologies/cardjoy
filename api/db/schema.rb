@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_140100) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_202301) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -558,12 +558,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_140100) do
     t.datetime "last_admin_reply_at"
     t.datetime "last_customer_reply_at"
     t.string "status", null: false
+    t.bigint "status_updated_by_admin_id"
     t.string "subject", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["assigned_admin_id"], name: "index_support_tickets_on_assigned_admin_id"
     t.index ["external_id"], name: "index_support_tickets_on_external_id", unique: true
     t.index ["status", "last_customer_reply_at"], name: "index_support_tickets_on_status_and_last_customer_reply_at"
+    t.index ["status_updated_by_admin_id"], name: "index_support_tickets_on_status_updated_by_admin_id"
     t.index ["user_id", "created_at"], name: "index_support_tickets_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_support_tickets_on_user_id"
   end
@@ -688,6 +690,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_140100) do
   add_foreign_key "styles", "organizations", on_delete: :cascade
   add_foreign_key "support_ticket_messages", "support_tickets"
   add_foreign_key "support_tickets", "admins", column: "assigned_admin_id"
+  add_foreign_key "support_tickets", "admins", column: "status_updated_by_admin_id"
   add_foreign_key "support_tickets", "users"
   add_foreign_key "user_daily_activities", "users"
   add_foreign_key "users", "organizations", column: "active_organization_id", on_delete: :nullify

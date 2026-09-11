@@ -56,6 +56,8 @@ module Types
     field :holiday_card_mailing_availability, resolver: Queries::HolidayCardMailingAvailability
     field :my_support_tickets, resolver: Queries::MySupportTickets
     field :support_ticket, resolver: Queries::SupportTicket
+    field :admin_support_tickets, resolver: Queries::AdminSupportTickets
+    field :admin_support_ticket, resolver: Queries::AdminSupportTicket
 
     def card_occasions
       ::Card::OCCASIONS
