@@ -23,46 +23,26 @@ module Mutations
         raise GraphQL::ExecutionError, "This promo code is not available for your account"
       end
 
-      if promo.expires_at&.< Time.current
-        raise GraphQL::ExecutionError, "Promo code has expired"
-      end
-
-      if promo.times_redeemed.to_i >= T.must(promo.usage_limit)
-        raise GraphQL::ExecutionError, "Promo code has reached its limit"
-      end
-
-      if PromoCodeRedemption.exists?(user: user, promo_code: promo)
-        raise GraphQL::ExecutionError, "You've already redeemed this promo code"
-      end
-
-      # Log redemption
-      PromoCodeRedemption.create!(user: user, promo_code: promo)
-      promo.increment!(:times_redeemed)
-
-      # Issue credits
-      Credit.create!(
-        user: user,
-        amount: promo.credit_amount,
-        reason: "promotion",
-        events: [
-          {
-            event_kind: "promo_code_redeemed",
-            event_happened_at: Time.now.utc.iso8601(3),
-            event_data: { promo_code: promo.code }
-          }
-        ]
-      )
+      credit_amount = promo.redeem!(user: user)
 
       {
         success: true,
-        credit_amount: promo.credit_amount
+        credit_amount: credit_amount
       }
-
-    rescue => e
-      {
-        success: false,
-        error: e.message
-      }
+    rescue PromoCode::ExpiredError
+      { success: false, error: "Promo code has expired" }
+    rescue PromoCode::UsageLimitReachedError
+      { success: false, error: "Promo code has reached its limit" }
+    rescue PromoCode::AlreadyRedeemedError
+      { success: false, error: "You've already redeemed this promo code" }
+    rescue GraphQL::ExecutionError => e
+      { success: false, error: e.message }
+    rescue StandardError => e
+      # Distinct from the GraphQL::ExecutionError branch above: everything
+      # here is an unanticipated failure, not a deliberate validation
+      # rejection, so it's worth logging (#186).
+      Rails.logger.error("RedeemPromoCode: #{e.class}: #{e.message}")
+      { success: false, error: e.message }
     end
   end
 end
