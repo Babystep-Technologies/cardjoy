@@ -80,5 +80,8 @@ module Types
     field :send_holiday_card, mutation: Mutations::SendHolidayCard
     field :create_support_ticket, mutation: Mutations::CreateSupportTicket
     field :reply_to_support_ticket, mutation: Mutations::ReplyToSupportTicket
+    field :reply_to_support_ticket_by_admin, mutation: Mutations::ReplyToSupportTicketByAdmin
+    field :update_support_ticket_status, mutation: Mutations::UpdateSupportTicketStatus
+    field :assign_support_ticket, mutation: Mutations::AssignSupportTicket
   end
 end
