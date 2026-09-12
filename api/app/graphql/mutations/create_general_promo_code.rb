@@ -3,22 +3,24 @@
 # app/graphql/mutations/create_general_promo_code.rb
 module Mutations
   class CreateGeneralPromoCode < Mutations::BaseMutation
-    # General codes grant a single credit each; the amount is not admin-configurable.
+    # The default when `creditAmount` is omitted, so an existing caller that
+    # doesn't yet pass it keeps getting the behavior it always has (#180).
     GENERAL_CREDIT_AMOUNT = 1
 
     argument :usage_limit, Integer, required: true
+    argument :credit_amount, Integer, required: false, default_value: GENERAL_CREDIT_AMOUNT
     argument :code, String, required: false
     argument :expires_at, GraphQL::Types::ISO8601DateTime, required: false
 
     field :promo_code, Types::PromoCodeType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(usage_limit:, code: nil, expires_at: nil)
+    def resolve(usage_limit:, credit_amount:, code: nil, expires_at: nil)
       admin = context[:current_admin]
-      raise GraphQL::ExecutionError, "Not authorized" unless admin
+      raise GraphQL::ExecutionError, NOT_AUTHORIZED_ERROR unless admin
 
       promo = PromoCode.create!(
-        credit_amount: GENERAL_CREDIT_AMOUNT,
+        credit_amount: credit_amount,
         usage_limit: usage_limit,
         times_redeemed: 0,
         code: code.presence || PromoCode.generate_unique_code,

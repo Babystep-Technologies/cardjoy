@@ -31,6 +31,8 @@ module Mutations
       }
     rescue PromoCode::ExpiredError
       { success: false, error: "Promo code has expired" }
+    rescue PromoCode::DisabledError
+      { success: false, error: "Promo code is no longer available" }
     rescue PromoCode::UsageLimitReachedError
       { success: false, error: "Promo code has reached its limit" }
     rescue PromoCode::AlreadyRedeemedError

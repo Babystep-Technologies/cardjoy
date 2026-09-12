@@ -135,6 +135,23 @@ RSpec.describe "Mutations::RedeemPromoCode", type: :request do
       end
     end
 
+    context 'when promo code has been disabled' do
+      before { promo_code.disable! }
+
+      it 'returns a disabled error' do
+        post '/graphql', params: {
+          query: mutation,
+          variables: { code: 'GENERAL10' }
+        }.to_json, headers: headers
+
+        expect(response).to have_http_status(:ok)
+        json_response = JSON.parse(response.body)
+        data = json_response['data']['redeemPromoCode']
+        expect(data["success"]).to be false
+        expect(data["error"]).to eq "Promo code is no longer available"
+      end
+    end
+
     context 'when promo code has reached usage limit' do
       before { promo_code.update!(times_redeemed: 100, usage_limit: 100) }
 

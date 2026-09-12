@@ -20,8 +20,8 @@ RSpec.describe Queries::AdminPromoCodes, type: :request do
 
   let(:query) do
     <<~GQL
-      query AdminPromoCodes($page: Int, $perPage: Int) {
-        adminPromoCodes(page: $page, perPage: $perPage) {
+      query AdminPromoCodes($page: Int, $perPage: Int, $search: String) {
+        adminPromoCodes(page: $page, perPage: $perPage, search: $search) {
           promoCodes { code creditAmount usageLimit timesRedeemed user { email } }
           totalCount
           totalPages
@@ -52,5 +52,36 @@ RSpec.describe Queries::AdminPromoCodes, type: :request do
     create(:promo_code)
     run(headers: user_headers)
     expect(JSON.parse(response.body)['errors'].first['message']).to eq 'Not authorized'
+  end
+
+  describe 'search' do
+    it 'matches the code' do
+      create(:promo_code, code: 'welcome2026')
+      create(:promo_code, code: 'summer2026')
+
+      run(variables: { search: 'welcome' })
+
+      data = JSON.parse(response.body)['data']['adminPromoCodes']
+      expect(data['promoCodes'].map { |p| p['code'] }).to eq [ 'welcome2026' ]
+    end
+
+    it "matches the assigned user's email" do
+      match = create(:promo_code, :user_specific, code: 'match', user: create(:user, email: 'target@example.com'))
+      create(:promo_code, :user_specific, code: 'nomatch', user: create(:user, email: 'other@example.com'))
+
+      run(variables: { search: 'target@example.com' })
+
+      data = JSON.parse(response.body)['data']['adminPromoCodes']
+      expect(data['promoCodes'].map { |p| p['code'] }).to eq [ match.code ]
+    end
+
+    it 'still finds a general code with no assigned user' do
+      create(:promo_code, code: 'general2026', user_id: nil)
+
+      run(variables: { search: 'general' })
+
+      data = JSON.parse(response.body)['data']['adminPromoCodes']
+      expect(data['promoCodes'].map { |p| p['code'] }).to eq [ 'general2026' ]
+    end
   end
 end

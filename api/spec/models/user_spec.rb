@@ -58,6 +58,60 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe "#adjust_credits!" do
+    let(:admin) { create(:admin) }
+
+    it "writes a positive row as an admin_grant, recording the admin" do
+      user = create(:user, :without_signup_credits)
+
+      credit = ActiveRecord::Base.transaction do
+        user.adjust_credits!(amount: 3, reason: "double-charged, refunding", admin: admin)
+      end
+
+      expect(credit.amount).to eq(3)
+      expect(credit.reason).to eq("double-charged, refunding")
+      expect(credit.events.first["event_kind"]).to eq("admin_grant")
+      expect(credit.events.first["event_data"]).to include("admin_id" => admin.id, "amount" => 3)
+      expect(user.credit_balance).to eq(3)
+    end
+
+    it "writes a negative row as an admin_correction" do
+      user = create(:user, :without_signup_credits)
+      create(:credit, user: user, amount: 5, reason: "promotion")
+
+      credit = ActiveRecord::Base.transaction do
+        user.adjust_credits!(amount: -2, reason: "mis-keyed promo", admin: admin)
+      end
+
+      expect(credit.amount).to eq(-2)
+      expect(credit.events.first["event_kind"]).to eq("admin_correction")
+      expect(user.credit_balance).to eq(3)
+    end
+
+    it "raises rather than driving the balance below zero" do
+      user = create(:user, :without_signup_credits)
+      create(:credit, user: user, amount: 2, reason: "promotion")
+
+      expect do
+        ActiveRecord::Base.transaction do
+          user.adjust_credits!(amount: -3, reason: "oops", admin: admin)
+        end
+      end.to raise_error(User::CreditAdjustmentWouldOverdraftError)
+      expect(user.reload.credit_balance).to eq(2)
+    end
+
+    it "allows a correction that zeroes the balance out exactly" do
+      user = create(:user, :without_signup_credits)
+      create(:credit, user: user, amount: 2, reason: "promotion")
+
+      ActiveRecord::Base.transaction do
+        user.adjust_credits!(amount: -2, reason: "correcting a double grant", admin: admin)
+      end
+
+      expect(user.reload.credit_balance).to eq(0)
+    end
+  end
+
   # Uses real threads on separate DB connections, so the data must be committed
   # (truncation, not a wrapping transaction) to be visible across them.
   describe "#spend_credit! concurrency", :truncation do

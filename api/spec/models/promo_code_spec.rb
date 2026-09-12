@@ -127,5 +127,66 @@ RSpec.describe PromoCode, type: :model do
         expect(user.reload.credit_balance).to eq(User::SIGNUP_CREDIT_GRANT + 10)
       end
     end
+
+    it "raises DisabledError without redeeming a disabled code" do
+      user = create(:user)
+      promo.disable!
+      credits_before = user.credits.count
+
+      expect { promo.redeem!(user: user) }.to raise_error(PromoCode::DisabledError)
+      expect(user.reload.credits.count).to eq credits_before
+    end
+  end
+
+  describe "#expire!" do
+    it "moves expires_at into the past" do
+      promo = create(:promo_code, expires_at: 1.week.from_now)
+
+      promo.expire!
+
+      expect(promo.reload.expires_at).to be < Time.current
+    end
+  end
+
+  describe "#disable!/#enable!" do
+    it "sets and clears disabled_at" do
+      promo = create(:promo_code)
+
+      promo.disable!
+      expect(promo.reload.disabled_at).to be_present
+
+      promo.enable!
+      expect(promo.reload.disabled_at).to be_nil
+    end
+  end
+
+  describe "#update_by_admin!" do
+    it "updates amount, usage limit, and expiry when unredeemed" do
+      promo = create(:promo_code, credit_amount: 5, usage_limit: 10, times_redeemed: 0)
+      new_expiry = 2.weeks.from_now
+
+      promo.update_by_admin!(credit_amount: 20, usage_limit: 50, expires_at: new_expiry)
+
+      promo.reload
+      expect(promo.credit_amount).to eq 20
+      expect(promo.usage_limit).to eq 50
+      expect(promo.expires_at).to be_within(1.second).of(new_expiry)
+    end
+
+    it "leaves an omitted field unchanged" do
+      promo = create(:promo_code, credit_amount: 5, usage_limit: 10)
+
+      promo.update_by_admin!(usage_limit: 50)
+
+      expect(promo.reload.credit_amount).to eq 5
+    end
+
+    it "raises AlreadyPartiallyRedeemedError and changes nothing once redeemed at all" do
+      promo = create(:promo_code, credit_amount: 5, usage_limit: 10, times_redeemed: 1)
+
+      expect { promo.update_by_admin!(credit_amount: 20) }
+        .to raise_error(PromoCode::AlreadyPartiallyRedeemedError)
+      expect(promo.reload.credit_amount).to eq 5
+    end
   end
 end

@@ -20,6 +20,14 @@ class PromoCode < ApplicationRecord
   # unique index on promo_code_redemptions(user_id, promo_code_id) is the
   # authoritative guard — this is what a losing concurrent request lands on.
   class AlreadyRedeemedError < StandardError; end
+  # Raised by #redeem! once an admin has disabled the code (#180). Distinct
+  # from ExpiredError: expiry is the code's own natural end, disabling is a
+  # staff override — a caller may want to say something different for each.
+  class DisabledError < StandardError; end
+  # Raised by #update! (via update_by_admin!) when a code has already been
+  # partially redeemed — editing amount or usage limit after real redemptions
+  # exist would make past redemptions inconsistent with the code's own terms.
+  class AlreadyPartiallyRedeemedError < StandardError; end
 
   # Generates a unique, human-friendly code not already in use.
   def self.generate_unique_code
@@ -39,6 +47,7 @@ class PromoCode < ApplicationRecord
       lock!
 
       raise ExpiredError if expires_at&.< Time.current
+      raise DisabledError if disabled_at.present?
       raise UsageLimitReachedError if times_redeemed.to_i >= T.must(usage_limit)
 
       begin
@@ -64,6 +73,41 @@ class PromoCode < ApplicationRecord
     end
 
     credit_amount
+  end
+
+  # Ends the code immediately (#180) by moving its expiry into the past — the
+  # same column #redeem! already checks, so this needs no new read path.
+  def expire!
+    update!(expires_at: Time.current)
+  end
+
+  # Staff kill switch (#180), distinct from expiring: a code can be disabled
+  # and later have `disabled_at` cleared, where an expired code's natural end
+  # is not meant to be undone the same way.
+  def disable!
+    update!(disabled_at: Time.current)
+  end
+
+  def enable!
+    update!(disabled_at: nil)
+  end
+
+  # Edits amount, usage limit, and/or expiry (#180) — everything about a code
+  # except its redemption history. Refuses once a code has been redeemed at
+  # all: changing the terms after real credits have already gone out under the
+  # old ones would make those redemptions inconsistent with what the code now
+  # says. Locked for the same reason #redeem! is — a concurrent redemption
+  # must not land between the read and the write.
+  def update_by_admin!(credit_amount: nil, usage_limit: nil, expires_at: nil)
+    transaction do
+      lock!
+      raise AlreadyPartiallyRedeemedError if times_redeemed.to_i.positive?
+
+      update!(
+        **{ credit_amount: credit_amount, usage_limit: usage_limit, expires_at: expires_at }
+          .compact
+      )
+    end
   end
 
   private

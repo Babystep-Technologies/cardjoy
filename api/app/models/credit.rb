@@ -16,6 +16,8 @@ class Credit < ApplicationRecord
     promo_code_redeemed
     credit_reversed_due_to_chargeback
     org_credit_allocated
+    admin_grant
+    admin_correction
   ].freeze
 
   private
