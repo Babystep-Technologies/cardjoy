@@ -19,7 +19,7 @@ RSpec.describe Mutations::GrantOrganizationCredits, type: :request do
           organization {
             id
             creditBalance
-            credits { amount reason }
+            credits { amount reason actor { id } adminActorName }
           }
           errors
         }
@@ -41,10 +41,20 @@ RSpec.describe Mutations::GrantOrganizationCredits, type: :request do
     create(:organization_credit, organization: organization, amount: 5, reason: "purchase")
 
     payload = exec(amount: 25).dig("data", "grantOrganizationCredits")
+    row = payload.dig("organization", "credits").first
 
     expect(payload["errors"]).to be_empty
     expect(payload.dig("organization", "creditBalance")).to eq 30
-    expect(payload.dig("organization", "credits").first).to eq("amount" => 25, "reason" => "admin_grant")
+    expect(row["amount"]).to eq 25
+    expect(row["reason"]).to eq "admin_grant"
+  end
+
+  it "names the acting admin instead of leaving the actor blank (#180)" do
+    payload = exec(amount: 25).dig("data", "grantOrganizationCredits")
+    row = payload.dig("organization", "credits").first
+
+    expect(row["actor"]).to be_nil
+    expect(row["adminActorName"]).to eq admin.name
   end
 
   it "records the grant on the ledger with its own reason and event kind" do

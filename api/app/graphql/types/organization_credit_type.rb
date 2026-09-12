@@ -21,6 +21,14 @@ module Types
     field :member, Types::UserType, null: true,
       description: "The member an allocation went to. Null on every other kind of row."
 
+    # An admin_grant or admin_correction row (#180) names an Admin, not a
+    # User, so `actor` resolves to nil for it — Types::UserType has no
+    # sensible way to represent staff. This is the escape hatch: the credits
+    # page reads it instead of `actor` on those two event kinds, rather than
+    # showing a blank "who".
+    field :admin_actor_name, String, null: true,
+      description: "Name of the admin behind this row, when the actor is staff rather than a customer."
+
     # `amount` is nullable in the table, as it is on the personal ledger; a row
     # without one moves no credits.
     def amount
@@ -33,6 +41,13 @@ module Types
 
     def member
       load_user(object.member_user_id)
+    end
+
+    def admin_actor_name
+      id = object.admin_actor_id
+      return nil unless id
+
+      dataloader.with(Sources::AdminById).load(id)&.name
     end
 
     private

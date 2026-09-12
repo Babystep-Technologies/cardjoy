@@ -55,6 +55,26 @@ RSpec.describe OrganizationCredit, type: :model do
     end
   end
 
+  describe "#admin_actor_id" do
+    it "reads the admin id off an admin_grant row" do
+      credit = build(:organization_credit, events: [ event("event_kind" => "admin_grant", "event_data" => { "granted_by_admin_id" => 7 }) ])
+
+      expect(credit.admin_actor_id).to eq 7
+    end
+
+    it "reads the admin id off an admin_correction row" do
+      credit = build(:organization_credit, events: [ event("event_kind" => "admin_correction", "event_data" => { "corrected_by_admin_id" => 9 }) ])
+
+      expect(credit.admin_actor_id).to eq 9
+    end
+
+    it "is nil for a row with no admin actor" do
+      credit = build(:organization_credit, events: [ event ])
+
+      expect(credit.admin_actor_id).to be_nil
+    end
+  end
+
   describe "scopes" do
     it "available returns only positive rows" do
       organization = create(:organization)

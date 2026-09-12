@@ -18,6 +18,11 @@ class User < ApplicationRecord
   # products, and a caller topping up postage should not be told to buy credits.
   class InsufficientPostageError < StandardError; end
 
+  # Raised by #adjust_credits! when a negative adjustment would take the
+  # balance below zero. A correction is allowed to zero the balance out, not
+  # overdraw it.
+  class CreditAdjustmentWouldOverdraftError < StandardError; end
+
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, :omniauthable,
@@ -93,6 +98,32 @@ class User < ApplicationRecord
           event_kind: event_kind,
           event_happened_at: Time.now.utc.iso8601(3),
           event_data: event_data
+        }
+      ]
+    )
+  end
+
+  # Staff correction to a customer's personal balance (#180): a goodwill grant
+  # (positive `amount`) or a correction for a mis-keyed one (negative), each
+  # requiring a free-text `reason` the admin must supply. Same contract as
+  # #spend_credit! — must run inside a transaction, locks the user row so a
+  # concurrent spend can't race the balance check — except a positive amount
+  # never fails the check, only a negative one that would overdraw.
+  sig { params(amount: Integer, reason: String, admin: Admin).returns(Credit) }
+  def adjust_credits!(amount:, reason:, admin:)
+    lock!
+    if amount.negative? && credit_balance + amount < 0
+      raise CreditAdjustmentWouldOverdraftError, "Amount would drive balance below zero"
+    end
+
+    credits.create!(
+      amount: amount,
+      reason: reason,
+      events: [
+        {
+          event_kind: amount.positive? ? "admin_grant" : "admin_correction",
+          event_happened_at: Time.now.utc.iso8601(3),
+          event_data: { admin_id: admin.id, amount: amount }
         }
       ]
     )

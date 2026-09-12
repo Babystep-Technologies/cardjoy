@@ -67,6 +67,11 @@ module Types
     field :leave_organization, mutation: Mutations::LeaveOrganization
     field :allocate_organization_credits, mutation: Mutations::AllocateOrganizationCredits
     field :grant_organization_credits, mutation: Mutations::GrantOrganizationCredits
+    field :correct_organization_credits, mutation: Mutations::CorrectOrganizationCredits
+    field :adjust_user_credits, mutation: Mutations::AdjustUserCredits
+    field :expire_promo_code, mutation: Mutations::ExpirePromoCode
+    field :disable_promo_code, mutation: Mutations::DisablePromoCode
+    field :update_promo_code, mutation: Mutations::UpdatePromoCode
     field :set_annual_goals, mutation: Mutations::SetAnnualGoals
     field :create_organization_style, mutation: Mutations::CreateOrganizationStyle
     field :archive_organization_style, mutation: Mutations::ArchiveOrganizationStyle

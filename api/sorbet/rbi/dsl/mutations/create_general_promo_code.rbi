@@ -6,6 +6,13 @@
 
 
 class Mutations::CreateGeneralPromoCode
-  sig { params(usage_limit: ::Integer, code: T.nilable(::String), expires_at: T.nilable(::Time)).returns(T.untyped) }
-  def resolve(usage_limit:, code: T.unsafe(nil), expires_at: T.unsafe(nil)); end
+  sig do
+    params(
+      usage_limit: ::Integer,
+      credit_amount: T.nilable(::Integer),
+      code: T.nilable(::String),
+      expires_at: T.nilable(::Time)
+    ).returns(T.untyped)
+  end
+  def resolve(usage_limit:, credit_amount:, code: T.unsafe(nil), expires_at: T.unsafe(nil)); end
 end

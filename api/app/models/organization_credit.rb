@@ -18,31 +18,43 @@ class OrganizationCredit < ApplicationRecord
     org_credit_purchased
     org_credit_allocated
     admin_grant
+    admin_correction
     org_credit_reversed_due_to_chargeback
   ].freeze
 
-  # The two people a ledger row can name, read back out of the audit trail so
+  # The people a ledger row can name, read back out of the audit trail so
   # the credits page can render "who" next to each line (#128). The `events`
-  # jsonb is the only record of them — the table itself carries no user column.
+  # jsonb is the only record of them — the table itself carries no user or
+  # admin column.
   #
   # Ids arrive as integers from our own writes and as strings from Stripe
   # metadata (`purchased_by_user_id`), so both are normalized here rather than
   # at every call site.
 
   # Whoever caused the row: the buyer of a purchase, the admin behind an
-  # allocation. Nil for a chargeback reversal, which no person initiated.
+  # allocation. Nil for a chargeback reversal, which no person initiated, and
+  # for an admin_grant/admin_correction row, whose actor is staff — see
+  # #admin_actor_id.
   def actor_user_id
-    user_id_from_event("purchased_by_user_id") || user_id_from_event("allocated_by_user_id")
+    id_from_event("purchased_by_user_id") || id_from_event("allocated_by_user_id")
   end
 
   # The member an allocation went to; nil on every other kind of row.
   def member_user_id
-    user_id_from_event("user_id")
+    id_from_event("user_id")
+  end
+
+  # The admin behind an admin_grant or admin_correction row (#180) — the two
+  # kinds `actor_user_id` cannot name, because they record an Admin, not a
+  # User. Types::OrganizationCreditType reads this to show the admin's name
+  # instead of leaving the actor blank.
+  def admin_actor_id
+    id_from_event("granted_by_admin_id") || id_from_event("corrected_by_admin_id")
   end
 
   private
 
-  def user_id_from_event(key)
+  def id_from_event(key)
     events&.first&.dig("event_data", key)&.to_i
   end
 

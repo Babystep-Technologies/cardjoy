@@ -20,8 +20,8 @@ RSpec.describe Mutations::CreateGeneralPromoCode, type: :request do
 
   let(:mutation) do
     <<~GQL
-      mutation CreateGeneralPromoCode($usageLimit: Int!, $code: String, $expiresAt: ISO8601DateTime) {
-        createGeneralPromoCode(input: { usageLimit: $usageLimit, code: $code, expiresAt: $expiresAt }) {
+      mutation CreateGeneralPromoCode($usageLimit: Int!, $creditAmount: Int, $code: String, $expiresAt: ISO8601DateTime) {
+        createGeneralPromoCode(input: { usageLimit: $usageLimit, creditAmount: $creditAmount, code: $code, expiresAt: $expiresAt }) {
           promoCode { code creditAmount usageLimit user { email } }
           errors
         }
@@ -53,6 +53,13 @@ RSpec.describe Mutations::CreateGeneralPromoCode, type: :request do
     it 'auto-generates a code when none is supplied' do
       create_code(variables: { usageLimit: 10 })
       expect(PromoCode.last.code).to match(/\Acj-[a-z0-9]{8}\z/)
+    end
+
+    it 'accepts a campaign-specific credit amount instead of the 1-credit default' do
+      create_code(variables: { usageLimit: 10, creditAmount: 5 })
+
+      data = JSON.parse(response.body)['data']['createGeneralPromoCode']
+      expect(data['promoCode']['creditAmount']).to eq 5
     end
   end
 
