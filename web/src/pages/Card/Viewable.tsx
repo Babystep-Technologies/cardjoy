@@ -229,10 +229,10 @@ const CardViewable: React.FC = () => {
           {/* Creator actions */}
           {isCardCreator && (
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={`/card/${cardExternalId}/editable`}>
+              <Link to={`/card/${cardExternalId}/editable`} className="w-full sm:w-auto">
                 <Button
                   variant="outline"
-                  className="px-8 py-6 text-lg font-semibold h-[64px] gap-2"
+                  className="w-full sm:w-auto px-8 py-6 text-lg font-semibold h-[64px] gap-2"
                 >
                   <Pencil className="w-5 h-5" />
                   Edit Card
@@ -240,7 +240,7 @@ const CardViewable: React.FC = () => {
               </Link>
               <Button
                 onClick={handleShareClick}
-                className="px-8 py-6 text-lg font-extrabold h-[64px] bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full sm:w-auto px-8 py-6 text-lg font-extrabold h-[64px] bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Send className="w-5 h-5 mr-2" />
                 Share Card
