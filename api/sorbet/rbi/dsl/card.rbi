@@ -356,6 +356,9 @@ class Card
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def build_qr_code_blob(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Occasion) }
+    def build_source_occasion(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_user(*args, &blk); end
 
@@ -414,6 +417,12 @@ class Card
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def create_qr_code_blob!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Occasion) }
+    def create_source_occasion(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Occasion) }
+    def create_source_occasion!(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user(*args, &blk); end
@@ -488,6 +497,9 @@ class Card
     sig { returns(T.nilable(::ActiveStorage::Blob)) }
     def reload_qr_code_blob; end
 
+    sig { returns(T.nilable(::Occasion)) }
+    def reload_source_occasion; end
+
     sig { returns(T.nilable(::User)) }
     def reload_user; end
 
@@ -507,7 +519,22 @@ class Card
     def reset_qr_code_blob; end
 
     sig { void }
+    def reset_source_occasion; end
+
+    sig { void }
     def reset_user; end
+
+    sig { returns(T.nilable(::Occasion)) }
+    def source_occasion; end
+
+    sig { params(value: T.nilable(::Occasion)).void }
+    def source_occasion=(value); end
+
+    sig { returns(T::Boolean) }
+    def source_occasion_changed?; end
+
+    sig { returns(T::Boolean) }
+    def source_occasion_previously_changed?; end
 
     sig { returns(T::Array[T.untyped]) }
     def style_ids; end
@@ -1503,6 +1530,9 @@ class Card
     def restore_slug!; end
 
     sig { void }
+    def restore_source_occasion_id!; end
+
+    sig { void }
     def restore_title!; end
 
     sig { void }
@@ -1613,6 +1643,12 @@ class Card
     sig { returns(T::Boolean) }
     def saved_change_to_slug?; end
 
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_source_occasion_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_source_occasion_id?; end
+
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_title; end
 
@@ -1675,6 +1711,51 @@ class Card
 
     sig { void }
     def slug_will_change!; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def source_occasion_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def source_occasion_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def source_occasion_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def source_occasion_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def source_occasion_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def source_occasion_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def source_occasion_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def source_occasion_id_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def source_occasion_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def source_occasion_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def source_occasion_id_previous_change; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def source_occasion_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def source_occasion_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def source_occasion_id_was; end
+
+    sig { void }
+    def source_occasion_id_will_change!; end
 
     sig { returns(T.nilable(::String)) }
     def title; end
@@ -1861,6 +1942,9 @@ class Card
 
     sig { returns(T::Boolean) }
     def will_save_change_to_slug?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_source_occasion_id?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_title?; end

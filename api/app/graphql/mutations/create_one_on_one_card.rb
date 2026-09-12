@@ -20,11 +20,16 @@ module Mutations
     # Blank means Personal. Validated below rather than read from the user's
     # active_organization_id: the client owns the context, the server checks it.
     argument :organization_id, ID, required: false
+    # Set when this create was reached via OccasionReminderMailer's deep link
+    # (#30's "reminder to card conversion" metric). Best-effort attribution: an
+    # id that doesn't resolve to one of the user's own occasions is silently
+    # dropped rather than erroring the create.
+    argument :source_occasion_id, ID, required: false
 
     field :card, Types::CardType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(title:, recipient:, text:, display_name: nil, style_ids: nil, occasion: nil, cover_image_url: nil, cover_image_file: nil, organization_id: nil)
+    def resolve(title:, recipient:, text:, display_name: nil, style_ids: nil, occasion: nil, cover_image_url: nil, cover_image_file: nil, organization_id: nil, source_occasion_id: nil)
       user = context[:current_user]
       return { card: nil, errors: [ "Not authenticated" ] } unless user
 
@@ -43,6 +48,7 @@ module Mutations
         styles = Style.where(id: style_ids)
         card.styles << styles if styles.any?
         card.occasion = occasion if occasion
+        card.source_occasion = user.occasions.find_by(id: source_occasion_id) if source_occasion_id
 
         if cover_image_file.present? && cover_image_file.respond_to?(:to_io)
           card.cover_image.attach(io: cover_image_file.to_io, filename: cover_image_file.original_filename)

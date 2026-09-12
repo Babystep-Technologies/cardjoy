@@ -12,6 +12,7 @@ module Types
     field :admin_organizations, resolver: Queries::AdminOrganizations
     field :admin_organization, resolver: Queries::AdminOrganization
     field :admin_metrics, resolver: Queries::AdminMetrics
+    field :admin_one_on_one_metrics, resolver: Queries::AdminOneOnOneMetrics
     field :admin_annual_goals, resolver: Queries::AdminAnnualGoals
     field :user_cards, resolver: Queries::UserCards
     field :card, resolver: Queries::Card

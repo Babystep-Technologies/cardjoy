@@ -24,6 +24,7 @@ RSpec.describe Mutations::CreateOneOnOneCard, type: :request do
         $styleIds: [ID!]
         $coverImageUrl: String
         $coverImageFile: Upload
+        $sourceOccasionId: ID
       ) {
         createOneOnOneCard(
           input: {
@@ -35,6 +36,7 @@ RSpec.describe Mutations::CreateOneOnOneCard, type: :request do
             styleIds: $styleIds
             coverImageUrl: $coverImageUrl
             coverImageFile: $coverImageFile
+            sourceOccasionId: $sourceOccasionId
           }
         ) {
           card {
@@ -153,6 +155,38 @@ RSpec.describe Mutations::CreateOneOnOneCard, type: :request do
     # is not a public operation, so it never reaches its own "Not authenticated" check.
     expect(response).to have_http_status(:unauthorized)
     expect(JSON.parse(response.body)["errors"]).to include("Unauthorized")
+  end
+
+  describe "sourceOccasionId attribution" do
+    let(:contact) { create(:contact, user: user) }
+    let(:occasion) { create(:occasion, contact: contact) }
+
+    it "attaches the caller's own occasion as the card's source_occasion" do
+      post_query(
+        title: "For You",
+        recipient: "Sam",
+        text: "Happy birthday!",
+        sourceOccasionId: occasion.id
+      )
+
+      expect(Card.last.source_occasion).to eq(occasion)
+    end
+
+    it "silently drops an occasion id that does not belong to the caller" do
+      other_users_occasion = create(:occasion, contact: create(:contact, user: create(:user)))
+
+      post_query(
+        title: "For You",
+        recipient: "Sam",
+        text: "Happy birthday!",
+        sourceOccasionId: other_users_occasion.id
+      )
+
+      json = JSON.parse(response.body)
+      data = json.dig("data", "createOneOnOneCard")
+      expect(data["errors"]).to be_empty
+      expect(Card.last.source_occasion).to be_nil
+    end
   end
 
   describe "credit deduction" do

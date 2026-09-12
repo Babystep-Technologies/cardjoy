@@ -5,6 +5,12 @@ class Card < ApplicationRecord
   include AdminListable
 
   belongs_to :user
+  # The occasion-reminder deep link this 1-on-1 card was created from, if any
+  # (#30's "reminder to card conversion" metric). Attribution only — never
+  # read for authorization — so a stale or foreign id just means the card
+  # renders with no source rather than blocking creation. Nullified, not
+  # cascaded, when the occasion is deleted (see the migration).
+  belongs_to :source_occasion, class_name: "Occasion", optional: true
   has_many :card_styles, dependent: :destroy
   has_many :styles, through: :card_styles
   has_many :messages, dependent: :destroy

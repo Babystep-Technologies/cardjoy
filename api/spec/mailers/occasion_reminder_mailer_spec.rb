@@ -39,6 +39,10 @@ RSpec.describe OccasionReminderMailer, type: :mailer do
       expect(body).to include("deliverAt=#{occasion.next_occurrence.iso8601}")
     end
 
+    it "includes the occasion id for reminder-to-card conversion attribution (#30)" do
+      expect(mail.body.encoded).to include("occasionId=#{occasion.id}")
+    end
+
     it "names the person in the reminder body" do
       expect(mail.body.encoded).to include("Jordan")
     end

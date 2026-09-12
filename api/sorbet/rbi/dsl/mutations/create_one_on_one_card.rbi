@@ -16,8 +16,9 @@ class Mutations::CreateOneOnOneCard
       occasion: T.nilable(::String),
       cover_image_url: T.nilable(::String),
       cover_image_file: T.untyped,
-      organization_id: T.nilable(::String)
+      organization_id: T.nilable(::String),
+      source_occasion_id: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(title:, recipient:, text:, display_name: T.unsafe(nil), style_ids: T.unsafe(nil), occasion: T.unsafe(nil), cover_image_url: T.unsafe(nil), cover_image_file: T.unsafe(nil), organization_id: T.unsafe(nil)); end
+  def resolve(title:, recipient:, text:, display_name: T.unsafe(nil), style_ids: T.unsafe(nil), occasion: T.unsafe(nil), cover_image_url: T.unsafe(nil), cover_image_file: T.unsafe(nil), organization_id: T.unsafe(nil), source_occasion_id: T.unsafe(nil)); end
 end

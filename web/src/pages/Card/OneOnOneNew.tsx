@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -62,6 +62,14 @@ const DELIVER_CARD = gql`
         externalId
       }
       errors
+    }
+  }
+`;
+
+const TRACK_ONE_ON_ONE_FLOW_START = gql`
+  mutation TrackOneOnOneFlowStart {
+    trackOneOnOneFlowStart(input: {}) {
+      success
     }
   }
 `;
@@ -138,6 +146,11 @@ const CardOneOnOneNew: React.FC = () => {
     [searchParams]
   );
 
+  // Attribution for the "reminder to card conversion" metric (#30): forwarded
+  // as-is to CreateOneOnOneCard's `sourceOccasionId`, which drops it silently
+  // if it doesn't resolve to one of the signer's own occasions.
+  const sourceOccasionId = searchParams.get('occasionId');
+
   const [title, setTitle] = useState('');
   const [titleEdited, setTitleEdited] = useState(false);
   const [recipient, setRecipient] = useState(() => searchParams.get('recipient') ?? '');
@@ -170,6 +183,20 @@ const CardOneOnOneNew: React.FC = () => {
 
   const [createOneOnOneCard] = useMutation(CREATE_ONE_ON_ONE_CARD);
   const [deliverCard] = useMutation(DELIVER_CARD);
+  const [trackOneOnOneFlowStart] = useMutation(TRACK_ONE_ON_ONE_FLOW_START);
+
+  // The denominator of the "creation completion rate" north-star metric
+  // (#30) — fired once per mount, only once user auth has resolved, so a
+  // signed-out visitor who never gets past the sign-in dialog isn't counted.
+  // The ref guards against React StrictMode's double-invoked effects in dev.
+  const flowStartTracked = useRef(false);
+  useEffect(() => {
+    if (!user || flowStartTracked.current) return;
+    flowStartTracked.current = true;
+    trackOneOnOneFlowStart().catch(() => {
+      // Best-effort metric only; a failure here must never block the flow.
+    });
+  }, [user, trackOneOnOneFlowStart]);
 
   const { data: occasionsData } = useQuery(GET_OCCASIONS);
   const occasions = useMemo(() => occasionsData?.cardOccasions || [], [occasionsData]);
@@ -252,6 +279,7 @@ const CardOneOnOneNew: React.FC = () => {
       organizationId: activeOrganization?.id ?? null,
     };
     if (displayName.trim()) input.displayName = displayName.trim();
+    if (sourceOccasionId) input.sourceOccasionId = sourceOccasionId;
 
     setCreating(true);
 
