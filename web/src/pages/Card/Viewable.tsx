@@ -4,19 +4,18 @@ import { gql, useQuery } from '@apollo/client';
 
 import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
+import CardMessage from './components/CardMessage';
 import CardNotFound from './components/CardNotFound';
 import EmptyCardState from './components/EmptyCardState';
 import OneOnOneCardView from './components/OneOnOneCardView';
-import ScrollStorySection from './components/ScrollStorySection';
 import { ScrollProgress } from '@/components/magicui/scroll-progress';
 import { SparklesText } from '@/components/magicui/sparkles-text';
 import { Button } from '@/components/ui/button';
 import { StyleType } from '@/types/app';
 import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
-import { Send, ArrowLeft, Settings, Pencil, LayoutGrid } from 'lucide-react';
+import { Send, ArrowLeft, Settings, Pencil } from 'lucide-react';
 import ShareDialog from '@/components/ShareDialog';
-import { CardEffect, isEffectSlug } from '@/components/effects';
 
 const GET_CARD = gql`
   query Card($cardId: ID!, $showFlaggedMessages: Boolean!) {
@@ -100,10 +99,6 @@ const CardViewable: React.FC = () => {
   // A logged-out visitor must sign in first when the creator requires it to contribute.
   const requiresLoginToContribute = cardData?.requireLoginToContribute && !user && !isCardCreator;
 
-  // Cards with no effect style — every group card — fall back to confetti.
-  const effectStyle = cardData?.styles?.find((style: StyleType) => style.kind === 'effect');
-  const effect = isEffectSlug(effectStyle?.value) ? effectStyle.value : null;
-
   const handleShareClick = () => {
     setShareDialogOpen(true);
   };
@@ -160,14 +155,6 @@ const CardViewable: React.FC = () => {
   return (
     <div className="relative" style={{ backgroundColor: backgroundColorStyle?.value || '#fff' }}>
       <Toaster />
-
-      {/* The sender's chosen effect — a fixed layer behind everything */}
-      <CardEffect
-        effect={effect}
-        scope="page"
-        backgroundColor={backgroundColorStyle?.value || '#fff'}
-        sectionCount={visibleMessages.length}
-      />
 
       <ScrollProgress />
 
@@ -286,51 +273,20 @@ const CardViewable: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/* Scroll hint */}
-        {visibleMessages.length > 0 && (
-          <div className="absolute bottom-10 z-[1] flex flex-col items-center gap-2 animate-bounce">
-            <span className="text-sm" style={{ color: textColor, opacity: 0.5 }}>
-              Scroll to read
-            </span>
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke={textColor}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ opacity: 0.5 }}
-            >
-              <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
-            </svg>
-          </div>
-        )}
       </div>
 
-      {/* ===== MESSAGE SECTIONS ===== */}
-      {visibleMessages.map((message, index) => (
-        <ScrollStorySection
-          key={message.id || index}
-          message={message}
-          textColor={textColor}
-          isLast={index === visibleMessages.length - 1}
-        />
-      ))}
-
-      {/* ===== FOOTER SPACER ===== */}
-      <div className="h-[30vh]" />
-
-      {/* Fixed toggle to group card view */}
-      <Link
-        to={`/card/${cardExternalId}/editable`}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/90 backdrop-blur shadow-lg border text-sm font-medium text-gray-700 hover:bg-white hover:text-gray-900 transition-colors"
-      >
-        <LayoutGrid className="w-4 h-4" />
-        <span className="hidden sm:inline">See all messages</span>
-      </Link>
+      {/* ===== MESSAGE GRID ===== */}
+      {hasMessages && (
+        <div className="pb-16 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+          <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
+            {visibleMessages.map((message, index) => (
+              <div key={message.id || index} className="break-inside-avoid w-full">
+                <CardMessage message={message} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Share Dialog */}
       <ShareDialog
