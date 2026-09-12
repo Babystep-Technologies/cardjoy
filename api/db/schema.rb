@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_12_185622) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_190100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -99,6 +99,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_185622) do
     t.jsonb "recipients", default: [], null: false
     t.boolean "require_login_to_contribute", default: false, null: false
     t.string "slug"
+    t.bigint "source_occasion_id"
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -107,6 +108,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_185622) do
     t.index ["external_id"], name: "index_cards_on_external_id", unique: true
     t.index ["organization_id"], name: "index_cards_on_organization_id"
     t.index ["slug"], name: "index_cards_on_slug", unique: true, where: "(slug IS NOT NULL)"
+    t.index ["source_occasion_id"], name: "index_cards_on_source_occasion_id"
     t.index ["user_id", "created_at"], name: "index_cards_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_cards_on_user_id"
   end
@@ -393,6 +395,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_185622) do
     t.index ["occurs_on"], name: "index_occasions_on_occurs_on"
   end
 
+  create_table "one_on_one_flow_starts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["created_at"], name: "index_one_on_one_flow_starts_on_created_at"
+    t.index ["user_id", "created_at"], name: "index_one_on_one_flow_starts_on_user_id_and_created_at"
+  end
+
   create_table "organization_credits", force: :cascade do |t|
     t.integer "amount"
     t.datetime "created_at", null: false
@@ -667,6 +677,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_185622) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "card_styles", "cards"
   add_foreign_key "card_styles", "styles"
+  add_foreign_key "cards", "occasions", column: "source_occasion_id", on_delete: :nullify
   add_foreign_key "cards", "organizations", on_delete: :nullify
   add_foreign_key "cards", "users"
   add_foreign_key "contact_list_memberships", "contact_lists"
@@ -685,6 +696,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_12_185622) do
   add_foreign_key "messages", "cards"
   add_foreign_key "messages", "users"
   add_foreign_key "occasions", "contacts"
+  add_foreign_key "one_on_one_flow_starts", "users"
   add_foreign_key "organization_credits", "organizations"
   add_foreign_key "organization_invitations", "organizations"
   add_foreign_key "organization_invitations", "users", column: "invited_by_id"

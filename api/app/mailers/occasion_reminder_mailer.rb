@@ -35,6 +35,11 @@ class OccasionReminderMailer < ApplicationMailer
   # `deliverAt` (the occasion's calendar date) to pre-select the design and
   # pre-fill the recipient, occasion, and scheduled send — the user only writes
   # the message and confirms. Every pre-filled field stays editable.
+  #
+  # `occasionId` (#30) rides along purely for attribution: the create flow
+  # passes it back as `sourceOccasionId` on CreateOneOnOneCard so the "reminder
+  # to card conversion" metric can count it, and is silently ignored if it
+  # doesn't resolve to one of the signer's own occasions.
   sig { params(occasion: Occasion).returns(String) }
   def create_flow_url(occasion)
     base = Rails.application.credentials.dig(:frontend_url)
@@ -42,7 +47,8 @@ class OccasionReminderMailer < ApplicationMailer
     query = {
       occasion: occasion.kind,
       recipient: T.must(occasion.contact).name,
-      deliverAt: occasion.next_occurrence.iso8601
+      deliverAt: occasion.next_occurrence.iso8601,
+      occasionId: occasion.id
     }
     query[:effect] = suggestion.effect if suggestion.effect
     "#{base}/one-on-one-card/new?#{query.to_query}"
