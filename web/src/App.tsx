@@ -56,6 +56,11 @@ import {
 // address + list surfaces made it big enough to push the main chunk past that limit.
 const Contacts = React.lazy(() => import('@/pages/Contacts/Index'));
 
+// Support is signed-in-only for the same reason as Contacts — nobody lands on the ticket
+// list or a thread first.
+const SupportIndex = React.lazy(() => import('@/pages/Support/Index'));
+const SupportThread = React.lazy(() => import('@/pages/Support/Thread'));
+
 // The holiday card editor is the biggest page in the app — a live print preview,
 // the template catalogue, and the sticker artwork as inline data URIs. Nobody
 // lands on it first, so it stays out of the initial bundle for the same reason
@@ -161,6 +166,22 @@ const App: React.FC = () => {
             element={
               <React.Suspense fallback={<LoadingScreen />}>
                 <Contacts />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/support"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <SupportIndex />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/support/:externalId"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <SupportThread />
               </React.Suspense>
             }
           />

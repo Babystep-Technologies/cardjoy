@@ -10,32 +10,13 @@ import { slackInstallUrl } from '@/lib/slack';
 import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
 import { LoaderCircle } from 'lucide-react';
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Toaster, toast } from 'sonner';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { isMobile } from '@/lib/utils';
+import { Toaster } from 'sonner';
 
 const CREATE_STRIPE_CHECKOUT_SESSION = gql`
   mutation CreateStripeCheckoutSession($input: CreateStripeCheckoutSessionInput!) {
     createStripeCheckoutSession(input: $input) {
       checkoutUrl
       error
-    }
-  }
-`;
-
-const CREATE_SUPPORT_REQUEST = gql`
-  mutation CreateSupportRequest($input: CreateSupportRequestInput!) {
-    createSupportRequest(input: $input) {
-      success
     }
   }
 `;
@@ -56,9 +37,6 @@ function Profile() {
   const { user, logout, loading } = useAuth();
   const [showPlans, setShowPlans] = useState(false);
   const [stripeLoading, setStripeLoading] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
-  const [supportReason, setSupportReason] = useState('');
-  const [supportMessage, setSupportMessage] = useState('');
 
   const {
     data: userData,
@@ -71,7 +49,6 @@ function Profile() {
   });
 
   const [createSession] = useMutation(CREATE_STRIPE_CHECKOUT_SESSION);
-  const [submitSupport, { loading: supportLoading }] = useMutation(CREATE_SUPPORT_REQUEST);
 
   const handleBuyCredits = async (priceId: string) => {
     setStripeLoading(true);
@@ -87,33 +64,6 @@ function Profile() {
     } catch (error) {
       console.error('Stripe checkout failed:', (error as Error).message);
       setStripeLoading(false);
-    }
-  };
-
-  const handleSubmitSupport = async () => {
-    if (!supportReason || !supportMessage.trim()) {
-      toast.error('Missing Information: Please select a reason and enter your message.');
-      return;
-    }
-
-    try {
-      await submitSupport({
-        variables: {
-          input: {
-            reason: supportReason,
-            message: supportMessage,
-            userEmail: user?.email || '',
-          },
-        },
-      });
-
-      toast.success('Support Request Sent: You will receive an email confirmation shortly.');
-      setSupportReason('');
-      setSupportMessage('');
-      setSupportOpen(false);
-    } catch (err) {
-      console.error('Error submitting support request:', (err as Error).message);
-      toast.error('Support Request Failed: Something went wrong. Please try again.');
     }
   };
 
@@ -229,7 +179,7 @@ function Profile() {
               <div className="flex flex-col items-center text-center space-y-4 py-6 border-t border-gray-200 mt-8">
                 <p className="text-xl font-semibold text-black">need help with something?</p>
                 <Button
-                  onClick={() => setSupportOpen(true)}
+                  onClick={() => navigate('/support?new=1')}
                   className="px-6 py-2 text-white bg-black hover:bg-gray-900 transition-colors rounded-md"
                 >
                   Contact Us
@@ -239,87 +189,7 @@ function Profile() {
           </Card>
         </div>
       </div>
-
-      {isMobile() ? (
-        <Sheet open={supportOpen} onOpenChange={setSupportOpen}>
-          <SheetContent
-            side="bottom"
-            className="bg-white text-black p-6 space-y-4 h-[95vh] overflow-y-auto rounded-t-xl"
-          >
-            <SupportForm
-              supportReason={supportReason}
-              supportMessage={supportMessage}
-              setSupportReason={setSupportReason}
-              setSupportMessage={setSupportMessage}
-              handleSubmitSupport={handleSubmitSupport}
-              loading={supportLoading}
-            />
-          </SheetContent>
-        </Sheet>
-      ) : (
-        <Dialog open={supportOpen} onOpenChange={setSupportOpen}>
-          <DialogContent className="bg-white text-black p-6 space-y-4">
-            <SupportForm
-              supportReason={supportReason}
-              supportMessage={supportMessage}
-              setSupportReason={setSupportReason}
-              setSupportMessage={setSupportMessage}
-              handleSubmitSupport={handleSubmitSupport}
-              loading={supportLoading}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
     </>
-  );
-}
-
-function SupportForm({
-  supportReason,
-  supportMessage,
-  setSupportReason,
-  setSupportMessage,
-  handleSubmitSupport,
-  loading,
-}: {
-  supportReason: string;
-  supportMessage: string;
-  setSupportReason: (val: string) => void;
-  setSupportMessage: (val: string) => void;
-  handleSubmitSupport: () => void;
-  loading: boolean;
-}) {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Contact Support</h3>
-      <div>
-        <p className="text-sm text-gray-600 mb-1">Reason</p>
-        <Select value={supportReason} onValueChange={setSupportReason}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select a reason" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Account question">Question about account</SelectItem>
-            <SelectItem value="Product features">Question about product features</SelectItem>
-            <SelectItem value="Credits & promos">Credits & promos</SelectItem>
-            <SelectItem value="Others">Others</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <p className="text-sm text-gray-600 mb-1">Message</p>
-        <Textarea
-          className="w-full"
-          value={supportMessage}
-          onChange={e => setSupportMessage(e.target.value)}
-          placeholder="How can we help?"
-          rows={8}
-        />
-      </div>
-      <Button onClick={handleSubmitSupport} disabled={loading} className="w-full">
-        {loading ? 'Sending...' : 'Submit Support Request'}
-      </Button>
-    </div>
   );
 }
 
