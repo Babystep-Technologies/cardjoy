@@ -2,6 +2,12 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.routes.default_url_options[:host] = "https://api.cardjoy.app"
 Rails.application.configure do
+  # Which inbound-mail provider (#174) is allowed to post to
+  # /rails/action_mailbox/*/inbound_emails — :sendgrid, :postmark, :mailgun, or
+  # :relay. Chosen by env with credential fallback (AppConfig.inbound_email_ingress);
+  # unset means every ingress request 404s instead of accepting mail from nowhere.
+  config.action_mailbox.ingress = AppConfig.inbound_email_ingress
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.

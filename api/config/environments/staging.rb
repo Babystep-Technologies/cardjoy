@@ -23,6 +23,11 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :staging
 
+  # Which inbound-mail provider (#174) is allowed to post to
+  # /rails/action_mailbox/*/inbound_emails. Same env-with-credential-fallback
+  # resolution as production; see the comment there.
+  config.action_mailbox.ingress = AppConfig.inbound_email_ingress
+
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
 
