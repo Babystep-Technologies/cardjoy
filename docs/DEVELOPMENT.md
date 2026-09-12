@@ -56,6 +56,24 @@ happens to boot as `production` must not start mailing postcards to real people.
 **This repo is public. Never commit a key, live or test** — not in a credentials file, not in a spec,
 not in a fixture. The specs use an obviously fake `test_sk_…` string.
 
+### Inbound email (ActionMailbox)
+
+A customer's emailed reply to a support ticket threads back onto it through ActionMailbox
+(`app/mailboxes/`). Outbound mail (Gmail SMTP, `config/environments/production.rb`) cannot receive
+mail, so this needs its own third-party ingress — SendGrid Inbound Parse, Postmark, or Mailgun — plus
+MX records pointing at it. **That provider account and the DNS records live outside this repo.** You
+do not need any of it to develop or run specs: `ActionMailbox::TestHelper` delivers directly into a
+mailbox, bypassing the HTTP ingress entirely.
+
+| Env var | Credential | Purpose |
+|---|---|---|
+| `RAILS_INBOUND_EMAIL_INGRESS` | `action_mailbox.ingress` | `sendgrid`, `postmark`, `mailgun`, or `relay`. Unset ⇒ every ingress endpoint 404s. |
+| `RAILS_INBOUND_EMAIL_PASSWORD` | `action_mailbox.ingress_password` | HTTP Basic password the ingress authenticates with (Rails' own convention, not this app's). |
+| `SUPPORT_INBOUND_EMAIL_DOMAIN` | — | Domain in a ticket's `support+<token>@` address. Defaults to `cardjoy.app`. |
+
+See `AppConfig.inbound_email_ingress`/`AppConfig.support_inbound_email_domain`,
+`SupportTicket#reply_to_address`, and `SupportTicketMailbox`.
+
 ### Holiday card print rendering
 
 `HolidayCard::PrintRenderer.new(card).render` turns a card into `{ front:, back: }` — the two HTML

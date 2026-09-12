@@ -10,9 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_11_202301) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_12_131200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "action_mailbox_inbound_emails", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "message_checksum", null: false
+    t.string "message_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id", "message_checksum"], name: "index_action_mailbox_inbound_emails_uniqueness", unique: true
+  end
 
   create_table "active_storage_attachments", force: :cascade do |t|
     t.bigint "blob_id", null: false
@@ -557,6 +566,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_202301) do
     t.string "external_id", null: false
     t.datetime "last_admin_reply_at"
     t.datetime "last_customer_reply_at"
+    t.string "reply_token"
+    t.datetime "reply_token_revoked_at"
     t.string "status", null: false
     t.bigint "status_updated_by_admin_id"
     t.string "subject", null: false
@@ -564,6 +575,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_11_202301) do
     t.bigint "user_id", null: false
     t.index ["assigned_admin_id"], name: "index_support_tickets_on_assigned_admin_id"
     t.index ["external_id"], name: "index_support_tickets_on_external_id", unique: true
+    t.index ["reply_token"], name: "index_support_tickets_on_reply_token", unique: true
     t.index ["status", "last_customer_reply_at"], name: "index_support_tickets_on_status_and_last_customer_reply_at"
     t.index ["status_updated_by_admin_id"], name: "index_support_tickets_on_status_updated_by_admin_id"
     t.index ["user_id", "created_at"], name: "index_support_tickets_on_user_id_and_created_at"

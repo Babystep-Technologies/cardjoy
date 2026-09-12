@@ -399,6 +399,9 @@ class SupportTicket
     sig { params(args: T.untyped, blk: T.untyped).returns(::Admin) }
     def build_assigned_admin(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Admin) }
+    def build_status_updated_by_admin(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_user(*args, &blk); end
 
@@ -407,6 +410,12 @@ class SupportTicket
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::Admin) }
     def create_assigned_admin!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Admin) }
+    def create_status_updated_by_admin(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::Admin) }
+    def create_status_updated_by_admin!(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user(*args, &blk); end
@@ -431,6 +440,9 @@ class SupportTicket
     sig { returns(T.nilable(::Admin)) }
     def reload_assigned_admin; end
 
+    sig { returns(T.nilable(::Admin)) }
+    def reload_status_updated_by_admin; end
+
     sig { returns(T.nilable(::User)) }
     def reload_user; end
 
@@ -438,7 +450,22 @@ class SupportTicket
     def reset_assigned_admin; end
 
     sig { void }
+    def reset_status_updated_by_admin; end
+
+    sig { void }
     def reset_user; end
+
+    sig { returns(T.nilable(::Admin)) }
+    def status_updated_by_admin; end
+
+    sig { params(value: T.nilable(::Admin)).void }
+    def status_updated_by_admin=(value); end
+
+    sig { returns(T::Boolean) }
+    def status_updated_by_admin_changed?; end
+
+    sig { returns(T::Boolean) }
+    def status_updated_by_admin_previously_changed?; end
 
     sig { returns(T.nilable(::User)) }
     def user; end
@@ -1034,6 +1061,106 @@ class SupportTicket
     sig { void }
     def last_customer_reply_at_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def reply_token; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def reply_token=(value); end
+
+    sig { returns(T::Boolean) }
+    def reply_token?; end
+
+    sig { returns(T.nilable(::String)) }
+    def reply_token_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def reply_token_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def reply_token_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def reply_token_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def reply_token_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def reply_token_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def reply_token_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def reply_token_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def reply_token_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def reply_token_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def reply_token_revoked_at; end
+
+    sig { params(value: T.nilable(::ActiveSupport::TimeWithZone)).returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def reply_token_revoked_at=(value); end
+
+    sig { returns(T::Boolean) }
+    def reply_token_revoked_at?; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def reply_token_revoked_at_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def reply_token_revoked_at_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def reply_token_revoked_at_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def reply_token_revoked_at_change; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def reply_token_revoked_at_change_to_be_saved; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def reply_token_revoked_at_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def reply_token_revoked_at_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def reply_token_revoked_at_previous_change; end
+
+    sig do
+      params(
+        from: T.nilable(::ActiveSupport::TimeWithZone),
+        to: T.nilable(::ActiveSupport::TimeWithZone)
+      ).returns(T::Boolean)
+    end
+    def reply_token_revoked_at_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def reply_token_revoked_at_previously_was; end
+
+    sig { returns(T.nilable(::ActiveSupport::TimeWithZone)) }
+    def reply_token_revoked_at_was; end
+
+    sig { void }
+    def reply_token_revoked_at_will_change!; end
+
+    sig { returns(T.nilable(::String)) }
+    def reply_token_was; end
+
+    sig { void }
+    def reply_token_will_change!; end
+
     sig { void }
     def restore_assigned_admin_id!; end
 
@@ -1062,7 +1189,16 @@ class SupportTicket
     def restore_last_customer_reply_at!; end
 
     sig { void }
+    def restore_reply_token!; end
+
+    sig { void }
+    def restore_reply_token_revoked_at!; end
+
+    sig { void }
     def restore_status!; end
+
+    sig { void }
+    def restore_status_updated_by_admin_id!; end
 
     sig { void }
     def restore_subject!; end
@@ -1127,11 +1263,29 @@ class SupportTicket
     sig { returns(T::Boolean) }
     def saved_change_to_last_customer_reply_at?; end
 
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_reply_token; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_reply_token?; end
+
+    sig { returns(T.nilable([T.nilable(::ActiveSupport::TimeWithZone), T.nilable(::ActiveSupport::TimeWithZone)])) }
+    def saved_change_to_reply_token_revoked_at; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_reply_token_revoked_at?; end
+
     sig { returns(T.nilable([::String, ::String])) }
     def saved_change_to_status; end
 
     sig { returns(T::Boolean) }
     def saved_change_to_status?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_status_updated_by_admin_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_status_updated_by_admin_id?; end
 
     sig { returns(T.nilable([::String, ::String])) }
     def saved_change_to_subject; end
@@ -1189,6 +1343,51 @@ class SupportTicket
 
     sig { returns(T.nilable(::String)) }
     def status_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def status_updated_by_admin_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def status_updated_by_admin_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def status_updated_by_admin_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def status_updated_by_admin_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def status_updated_by_admin_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def status_updated_by_admin_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def status_updated_by_admin_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def status_updated_by_admin_id_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def status_updated_by_admin_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def status_updated_by_admin_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def status_updated_by_admin_id_previous_change; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def status_updated_by_admin_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def status_updated_by_admin_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def status_updated_by_admin_id_was; end
+
+    sig { void }
+    def status_updated_by_admin_id_will_change!; end
 
     sig { returns(T.nilable(::String)) }
     def status_was; end
@@ -1359,7 +1558,16 @@ class SupportTicket
     def will_save_change_to_last_customer_reply_at?; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_reply_token?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_reply_token_revoked_at?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_status?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_status_updated_by_admin_id?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_subject?; end
