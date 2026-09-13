@@ -6,7 +6,15 @@ module Queries
 
     argument :days, Integer, required: false, default_value: 30
 
+    # `days` builds a Ruby-side date range and four grouped queries over it, so
+    # an unbounded value (`dailyMetrics(days: 100000)`) would zero-fill a
+    # 274-year range. 366 covers a full trailing year (with room for a leap
+    # year) — more than the current dashboard's hardcoded 30 ever asks for.
+    MAX_DAYS = 366
+
     def resolve(days:)
+      raise ArgumentError, "days must be between 1 and #{MAX_DAYS}" unless (1..MAX_DAYS).cover?(days)
+
       end_date = Date.today
       start_date = end_date - days.days
 
@@ -44,6 +52,8 @@ module Queries
           rsvps: rsvps_by_date[date] || 0
         }
       end
+    rescue ArgumentError => e
+      raise GraphQL::ExecutionError, e.message
     end
   end
 end
