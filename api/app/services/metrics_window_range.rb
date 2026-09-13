@@ -10,6 +10,18 @@
 # needs six days of lookback before the window begins, or its first in-window
 # point would be an average of fewer than 7 days rather than a real one. Every
 # other series only ever reads `start_date..end_date`.
+#
+# Reporting timezone (#223): every day boundary this class and every
+# `GROUP BY DATE(created_at)` query (Queries::AdminMetrics, Queries::DailyMetrics)
+# uses is a **UTC calendar day**. `config.time_zone` is unset in
+# `config/application.rb`, so `Time.zone` is Rails's UTC default; `created_at`
+# columns are `timestamp without time zone` holding UTC instants
+# (ActiveRecord's default), and Postgres's `DATE()` takes the date portion of
+# that raw value with no zone conversion — there is no separate "app timezone"
+# to drift from. `Date.current` (used for `end_date` and window starts) reads
+# through `Time.zone`, so it also lands on the UTC calendar day. A future
+# per-admin or per-organization display timezone would need to shift day
+# boundaries at read time; it must not change what these queries group by.
 class MetricsWindowRange
   ROLLING_AVERAGE_LOOKBACK_DAYS = 6
 
