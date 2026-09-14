@@ -2,6 +2,7 @@ import React from 'react';
 import { matchPath, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import SupportWidget from '@/pages/Support/SupportWidget';
 import { cn } from '@/lib/utils';
 
 /**
@@ -23,6 +24,10 @@ const HEADER_OFFSET_STAGING = 'pt-[104px]';
  */
 const FULL_BLEED_ROUTES = ['/holiday-card/:externalId/edit'];
 
+// The support widget is a shortcut to the /support pages themselves, so it stays hidden
+// there to avoid floating a duplicate entry point over the feature it links to.
+const SUPPORT_WIDGET_HIDDEN_ROUTES = ['/support', '/support/:externalId'];
+
 type Props = {
   children: React.ReactNode;
 };
@@ -31,6 +36,8 @@ const RootLayout: React.FC<Props> = ({ children }) => {
   const isStaging = import.meta.env.VITE_ENV === 'staging';
   const { pathname } = useLocation();
   const fullBleed = FULL_BLEED_ROUTES.some(pattern => matchPath(pattern, pathname));
+  const hideSupportWidget =
+    fullBleed || SUPPORT_WIDGET_HIDDEN_ROUTES.some(pattern => matchPath(pattern, pathname));
 
   return (
     <div
@@ -59,6 +66,7 @@ const RootLayout: React.FC<Props> = ({ children }) => {
         {children}
       </main>
       {!fullBleed && <Footer />}
+      {!hideSupportWidget && <SupportWidget />}
     </div>
   );
 };
