@@ -3,7 +3,10 @@
 
 module Mutations
   # Creates or replaces the wish list attached to an invitation. The host edits the whole list in
-  # one form, so items and contributions are sent in full and replace what was there.
+  # one form, so items and contributions are sent in full and replace what was there -- except that
+  # an item carrying its existing id is updated in place rather than destroyed and recreated, so a
+  # WishListReservation against it survives the edit. Items without an id (new ones, or a client that
+  # hasn't been updated to round-trip ids) are still created fresh, matching the old behavior.
   class UpsertWishList < BaseMutation
     argument :invitation_external_id, String, required: true
     argument :title, String, required: false
@@ -40,6 +43,8 @@ module Mutations
       { wish_list: wish_list.reload, errors: [] }
     rescue ActiveRecord::RecordInvalid => e
       failure(*e.record.errors.full_messages)
+    rescue ActiveRecord::RecordNotFound
+      failure("Item not found")
     end
 
     private
@@ -49,9 +54,16 @@ module Mutations
     end
 
     def replace_items(wish_list, items)
-      wish_list.items.destroy_all
+      kept_ids = items.filter_map { |item| item[:id] }
+      wish_list.items.where.not(id: kept_ids).destroy_all
+
       items.each_with_index do |item, index|
-        wish_list.items.create!(**item.to_h, position: index)
+        attrs = item.to_h.except(:id)
+        if item[:id].present?
+          wish_list.items.find(item[:id]).update!(**attrs, position: index)
+        else
+          wish_list.items.create!(**attrs, position: index)
+        end
       end
     end
 

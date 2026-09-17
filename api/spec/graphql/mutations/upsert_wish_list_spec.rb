@@ -36,7 +36,7 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
             intro
             visible
             surpriseMode
-            items { title url price note quantity position store }
+            items { id title url price note quantity position store }
             contributions { kind handle label suggestedAmount actionUrl position }
           }
           errors
@@ -105,6 +105,41 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
 
     expect(data["wishList"]["title"]).to eq("Renamed")
     expect(data["wishList"]["items"].map { |i| i["title"] }).to eq([ "Keep me" ])
+  end
+
+  it "preserves an item's identity (and its reservations) when the id is round-tripped" do
+    data = upsert({
+      invitationExternalId: invitation.external_id,
+      items: [ { title: "Play gym" }, { title: "Books" } ]
+    })
+    play_gym_id, books_id = data["wishList"]["items"].map { |i| i["id"] }
+    create(:wish_list_reservation, wish_list_item: WishListItem.find(play_gym_id))
+
+    data = upsert({
+      invitationExternalId: invitation.external_id,
+      items: [
+        { id: play_gym_id, title: "Play gym (updated)" },
+        { title: "New item" }
+      ]
+    })
+
+    expect(data["wishList"]["items"].map { |i| i["title"] }).to eq([ "Play gym (updated)", "New item" ])
+    expect(data["wishList"]["items"].first["id"]).to eq(play_gym_id)
+    expect(WishListReservation.count).to eq(1)
+    expect(WishListItem.exists?(books_id)).to be(false)
+  end
+
+  it "destroys reservations for an item that's dropped from the list" do
+    data = upsert({
+      invitationExternalId: invitation.external_id,
+      items: [ { title: "Play gym" } ]
+    })
+    item = WishListItem.find(data["wishList"]["items"].first["id"])
+    create(:wish_list_reservation, wish_list_item: item)
+
+    upsert({ invitationExternalId: invitation.external_id, items: [ { title: "Replacement" } ] })
+
+    expect(WishListReservation.count).to eq(0)
   end
 
   it "rejects an unsupported contribution kind" do

@@ -2,6 +2,7 @@
 
 class WishListItem < ApplicationRecord
   belongs_to :wish_list
+  has_many :reservations, class_name: "WishListReservation", dependent: :destroy
 
   validates :title, presence: true
   validates :quantity, numericality: { only_integer: true, greater_than: 0 }
@@ -10,6 +11,18 @@ class WishListItem < ApplicationRecord
 
   before_validation :normalize_url
   before_validation :derive_store
+
+  def reserved_quantity
+    reservations.sum(:quantity)
+  end
+
+  def remaining_quantity
+    [ quantity - reserved_quantity, 0 ].max
+  end
+
+  def claimed?
+    remaining_quantity <= 0
+  end
 
   private
 
