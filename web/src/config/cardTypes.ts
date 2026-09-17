@@ -1,13 +1,13 @@
 import { Mail, Heart, PartyPopper, Gift, type LucideIcon } from 'lucide-react';
 
 // Product identities shown in marketing surfaces. This is broader than the API's
-// Card::KINDS (group | one_on_one): invitation and holiday are separate models with
+// Card::KINDS (group | one_on_one): invitation and post_card are separate models with
 // their own flows, but all four share one brand identity here.
 //
-// Holiday is the odd one out in what it produces — it is printed and posted rather
+// Post Card is the odd one out in what it produces — it is printed and posted rather
 // than shared as a link — so copy about it belongs to physical mail. Anything here
-// promising a link or an email for a holiday card is wrong.
-export type CardTypeId = 'group' | 'one_on_one' | 'invitation' | 'holiday';
+// promising a link or an email for a post card is wrong.
+export type CardTypeId = 'group' | 'one_on_one' | 'invitation' | 'post_card';
 
 export interface CardTypeTheme {
   id: CardTypeId;
@@ -31,7 +31,7 @@ export interface CardTypeTheme {
 
 // Single source of truth for the per-type color scheme. Consumed by the marketing home
 // page, the Products dropdown, and the create/edit flows so the mapping lives in one place.
-// Mapping: group = pink, one_on_one = blue, invitation = green, holiday = yellow.
+// Mapping: group = pink, one_on_one = blue, invitation = green, post_card = yellow.
 export const cardTypes: CardTypeTheme[] = [
   {
     id: 'group',
@@ -73,15 +73,15 @@ export const cardTypes: CardTypeTheme[] = [
     gradient: 'from-[var(--color-brand-green)] to-[var(--color-brand-blue)]',
   },
   {
-    id: 'holiday',
-    label: 'Holiday Cards',
-    shortLabel: 'Holiday',
-    cta: 'Create a Holiday Card',
-    intent: 'Post holiday cards to your list',
-    route: '/holiday-card/new',
+    id: 'post_card',
+    label: 'Post Cards',
+    shortLabel: 'Post Card',
+    cta: 'Create a Post Card',
+    intent: 'Print and post a card to your list',
+    route: '/post-card/new',
     icon: Gift,
     description:
-      'Design a festive card once, then have it printed and posted to everyone on your list.',
+      'Design a card once, then have it printed and posted to everyone on your list — no holiday required.',
     colorVar: 'var(--color-brand-yellow)',
     gradient: 'from-[var(--color-brand-yellow)] to-[var(--color-brand-pink)]',
   },

@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-# PostGrid — the print-and-mail vendor that turns a holiday card into something
+# PostGrid — the print-and-mail vendor that turns a post card into something
 # a letter carrier delivers (issue #142).
 #
 # This module owns two things: credential resolution and the error hierarchy.

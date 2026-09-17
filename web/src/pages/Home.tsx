@@ -43,12 +43,12 @@ const invitationFeatures = [
   { icon: CalendarCheck, text: 'One-tap add to calendar' },
 ];
 
-// Written against what the flow actually does (#153). A holiday card is printed
+// Written against what the flow actually does (#153). A post card is printed
 // and posted; it is not shared by link and there is no email anywhere in it, so
 // the copy here promises print, an approval proof, and delivery tracking —
 // which are the three things the send flow really gives you.
-const holidayFeatures = [
-  { icon: Sparkles, text: 'Festive designs with your own photos' },
+const postCardFeatures = [
+  { icon: Sparkles, text: 'Custom designs with your own photos' },
   { icon: Check, text: 'Approve a print proof before anything is mailed' },
   { icon: Send, text: 'Printed and posted to your whole list' },
 ];
@@ -57,7 +57,7 @@ const featuresByType: Record<CardTypeId, { icon: typeof Users; text: string }[]>
   group: cardFeatures,
   one_on_one: oneOnOneFeatures,
   invitation: invitationFeatures,
-  holiday: holidayFeatures,
+  post_card: postCardFeatures,
 };
 
 const Home: React.FC = () => {
@@ -102,7 +102,7 @@ const Home: React.FC = () => {
                 'Get Everyone to Sign One Card',
                 'Send Someone a Heartfelt Note',
                 'Invite Everyone to Celebrate',
-                'Send Holiday Cheer to Your List',
+                'Post a Card to Your Whole List',
               ]}
               colors={[
                 'text-[var(--color-brand-pink)]',

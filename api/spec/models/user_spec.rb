@@ -188,7 +188,7 @@ RSpec.describe User, type: :model do
             cents: 86,
             reason: "postcard_6x4",
             event_kind: "postage_spent_on_mail",
-            event_data: { "holiday_card_id" => 7 }
+            event_data: { "post_card_id" => 7 }
           )
         end
       end.to change { user.postage_credits.count }.by(1)
@@ -197,7 +197,7 @@ RSpec.describe User, type: :model do
       expect(row.amount_cents).to eq(-86)
       expect(row.reason).to eq("postcard_6x4")
       expect(row.events.first["event_kind"]).to eq("postage_spent_on_mail")
-      expect(row.events.first["event_data"]).to eq({ "holiday_card_id" => 7 })
+      expect(row.events.first["event_data"]).to eq({ "post_card_id" => 7 })
       expect(user.postage_balance_cents).to eq(914)
     end
 

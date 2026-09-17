@@ -27,7 +27,7 @@ class PostgridWebhookJob < ApplicationJob
   queue_as :default
 
   def perform(postgrid_id:, postgrid_status: nil, tracking_number: nil)
-    order = HolidayCardMailOrder.find_by(postgrid_id: postgrid_id)
+    order = PostCardMailOrder.find_by(postgrid_id: postgrid_id)
 
     # Not an error. Proofs are created through the same account, as are the
     # orders of every other environment sharing it, and PostGrid reports on all

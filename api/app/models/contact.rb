@@ -40,7 +40,7 @@ class Contact < ApplicationRecord
   # Nullified, never destroyed. An order is a record of money spent and of a
   # card that is physically in the post; deleting the contact must not erase it.
   # `recipient_snapshot` is what keeps the order readable afterwards.
-  has_many :holiday_card_mail_orders, dependent: :nullify
+  has_many :post_card_mail_orders, dependent: :nullify
 
   # The SQL form of #mailable?, for callers that want to count or filter without
   # loading every row (see ContactList#mailable_contacts_count).

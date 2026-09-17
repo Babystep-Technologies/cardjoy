@@ -413,34 +413,6 @@ class User
     def credits=(value); end
 
     sig { returns(T::Array[T.untyped]) }
-    def holiday_card_ids; end
-
-    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
-    def holiday_card_ids=(ids); end
-
-    sig { returns(T::Array[T.untyped]) }
-    def holiday_card_mail_order_ids; end
-
-    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
-    def holiday_card_mail_order_ids=(ids); end
-
-    # This method is created by ActiveRecord on the `User` class because it declared `has_many :holiday_card_mail_orders`.
-    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
-    sig { returns(::HolidayCardMailOrder::PrivateCollectionProxy) }
-    def holiday_card_mail_orders; end
-
-    sig { params(value: T::Enumerable[::HolidayCardMailOrder]).void }
-    def holiday_card_mail_orders=(value); end
-
-    # This method is created by ActiveRecord on the `User` class because it declared `has_many :holiday_cards`.
-    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
-    sig { returns(::HolidayCard::PrivateCollectionProxy) }
-    def holiday_cards; end
-
-    sig { params(value: T::Enumerable[::HolidayCard]).void }
-    def holiday_cards=(value); end
-
-    sig { returns(T::Array[T.untyped]) }
     def invitation_ids; end
 
     sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
@@ -509,6 +481,34 @@ class User
 
     sig { params(value: T::Enumerable[::Organization]).void }
     def organizations=(value); end
+
+    sig { returns(T::Array[T.untyped]) }
+    def post_card_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def post_card_ids=(ids); end
+
+    sig { returns(T::Array[T.untyped]) }
+    def post_card_mail_order_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def post_card_mail_order_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :post_card_mail_orders`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::PostCardMailOrder::PrivateCollectionProxy) }
+    def post_card_mail_orders; end
+
+    sig { params(value: T::Enumerable[::PostCardMailOrder]).void }
+    def post_card_mail_orders=(value); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :post_cards`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::PostCard::PrivateCollectionProxy) }
+    def post_cards; end
+
+    sig { params(value: T::Enumerable[::PostCard]).void }
+    def post_cards=(value); end
 
     sig { returns(T::Array[T.untyped]) }
     def postage_credit_ids; end

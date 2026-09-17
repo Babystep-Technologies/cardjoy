@@ -22,7 +22,7 @@ const HEADER_OFFSET_STAGING = 'pt-[104px]';
  * Matched on the path rather than signalled up from the page, because a page
  * can only ask for this after the layout has already painted a scrollbar.
  */
-const FULL_BLEED_ROUTES = ['/holiday-card/:externalId/edit'];
+const FULL_BLEED_ROUTES = ['/post-card/:externalId/edit'];
 
 // The support widget is a shortcut to the /support pages themselves, so it stays hidden
 // there to avoid floating a duplicate entry point over the feature it links to.

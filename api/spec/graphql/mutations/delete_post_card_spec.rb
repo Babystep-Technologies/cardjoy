@@ -1,0 +1,95 @@
+require "rails_helper"
+
+RSpec.describe Mutations::DeletePostCard, type: :request do
+  let(:user) { create(:user) }
+  let(:secret) { Rails.application.credentials.dig(:jwt, :secret) }
+  let(:token) { JWT.encode({ user_id: user.id }, secret, "HS256") }
+  let(:headers) { { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" } }
+  let(:anonymous_headers) { { "Content-Type" => "application/json" } }
+
+  let(:card) { create(:post_card, user:) }
+
+  let(:query) do
+    <<~GRAPHQL
+      mutation DeletePostCard($externalId: String!) {
+        deletePostCard(input: { externalId: $externalId }) { success errors }
+      }
+    GRAPHQL
+  end
+
+  def exec(variables, request_headers: headers, gql: query, operation_name: nil)
+    body = { query: gql, variables: }
+    body[:operationName] = operation_name if operation_name
+    post "/graphql", params: body.to_json, headers: request_headers
+    JSON.parse(response.body)
+  end
+
+  it "soft-deletes the card and removes it from myPostCards" do
+    card
+
+    result = exec({ externalId: card.external_id }).dig("data", "deletePostCard")
+
+    expect(result).to eq("success" => true, "errors" => [])
+    # The row survives; only the default scope hides it.
+    expect(PostCard.unscoped.find(card.id).deleted_at).to be_present
+
+    mine = exec({}, gql: "query MyPostCards { myPostCards { externalId } }")
+      .dig("data", "myPostCards")
+    expect(mine).to be_empty
+  end
+
+  it "refuses a card that has been mailed, and leaves it in myPostCards" do
+    create(:post_card_mail_order, :submitted, post_card: card, user:)
+
+    result = exec({ externalId: card.external_id }).dig("data", "deletePostCard")
+
+    expect(result["success"]).to be false
+    expect(result["errors"]).to eq([ Mutations::DeletePostCard::MAILED_ERROR ])
+    expect(card.reload.deleted_at).to be_nil
+
+    mine = exec({}, gql: "query MyPostCards { myPostCards { externalId } }")
+      .dig("data", "myPostCards")
+    expect(mine.pluck("externalId")).to eq([ card.external_id ])
+  end
+
+  # A refunded piece is still an order: it is in the orders view and its refund
+  # is in the postage ledger, both of which read back through the card. So the
+  # rule is "has orders", not "has orders that arrived".
+  it "refuses a card whose only order failed and was refunded" do
+    create(:post_card_mail_order, :failed, post_card: card, user:)
+
+    result = exec({ externalId: card.external_id }).dig("data", "deletePostCard")
+
+    expect(result["errors"]).to eq([ Mutations::DeletePostCard::MAILED_ERROR ])
+    expect(card.reload.deleted_at).to be_nil
+  end
+
+  it "returns Not authorized for another user's card" do
+    other = create(:post_card)
+
+    result = exec({ externalId: other.external_id }).dig("data", "deletePostCard")
+
+    expect(result["errors"]).to eq([ "Not authorized" ])
+    expect(other.reload.deleted_at).to be_nil
+  end
+
+  it "returns not found for an unknown external id" do
+    result = exec({ externalId: "ZZZZZZZ" }).dig("data", "deletePostCard")
+
+    expect(result["errors"]).to eq([ "Post card not found" ])
+  end
+
+  it "rejects an unauthenticated caller smuggled into a public operation name" do
+    smuggled = <<~GRAPHQL
+      mutation Card($externalId: String!) {
+        deletePostCard(input: { externalId: $externalId }) { success errors }
+      }
+    GRAPHQL
+
+    result = exec({ externalId: card.external_id }, request_headers: anonymous_headers, gql: smuggled, operation_name: "Card")
+      .dig("data", "deletePostCard")
+
+    expect(result["errors"]).to eq([ "Not authenticated" ])
+    expect(card.reload.deleted_at).to be_nil
+  end
+end

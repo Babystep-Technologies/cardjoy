@@ -12,12 +12,12 @@ module Types
 
     # Per-product creation totals for the window. Cards are split by kind for
     # the first time (#177 added the column; nothing before this grouped on
-    # it), and holiday cards are counted at all for the first time.
+    # it), and post cards are counted at all for the first time.
     field :new_users, Integer, null: false
     field :group_cards, Integer, null: false
     field :one_on_one_cards, Integer, null: false
     field :invitations, Integer, null: false
-    field :holiday_cards, Integer, null: false
+    field :post_cards, Integer, null: false
 
     field :rsvps_going, Integer, null: false
     field :rsvps_maybe, Integer, null: false

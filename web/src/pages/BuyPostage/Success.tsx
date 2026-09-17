@@ -31,7 +31,7 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCents } from '@/lib/money';
 import { clearPostageCheckout, readPostageCheckout } from '@/lib/postage';
-import { clearPostageReturnTo, readPostageReturnTo } from '@/pages/HolidayCard/Send/state';
+import { clearPostageReturnTo, readPostageReturnTo } from '@/pages/PostCard/Send/state';
 
 const POSTAGE_BALANCE = gql`
   query PostageBalanceAfterTopUp {

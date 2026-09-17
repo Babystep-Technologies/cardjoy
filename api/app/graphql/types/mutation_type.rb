@@ -30,7 +30,7 @@ module Types
     field :reset_password, mutation: Mutations::ResetPassword
     field :update_card_by_admin, mutation: Mutations::UpdateCardByAdmin
     field :update_invitation_by_admin, mutation: Mutations::UpdateInvitationByAdmin
-    field :update_holiday_card_by_admin, mutation: Mutations::UpdateHolidayCardByAdmin
+    field :update_post_card_by_admin, mutation: Mutations::UpdatePostCardByAdmin
     field :flag_card_message, mutation: Mutations::FlagCardMessage
     field :generate_qr_code, mutation: Mutations::GenerateQrCode
     field :create_support_request, mutation: Mutations::CreateSupportRequest,
@@ -76,14 +76,14 @@ module Types
     field :set_annual_goals, mutation: Mutations::SetAnnualGoals
     field :create_organization_style, mutation: Mutations::CreateOrganizationStyle
     field :archive_organization_style, mutation: Mutations::ArchiveOrganizationStyle
-    field :create_holiday_card, mutation: Mutations::CreateHolidayCard
-    field :update_holiday_card, mutation: Mutations::UpdateHolidayCard
-    field :delete_holiday_card, mutation: Mutations::DeleteHolidayCard
-    field :upload_holiday_card_photo, mutation: Mutations::UploadHolidayCardPhoto
-    field :delete_holiday_card_photo, mutation: Mutations::DeleteHolidayCardPhoto
-    field :generate_holiday_card_proof, mutation: Mutations::GenerateHolidayCardProof
-    field :approve_holiday_card_proof, mutation: Mutations::ApproveHolidayCardProof
-    field :send_holiday_card, mutation: Mutations::SendHolidayCard
+    field :create_post_card, mutation: Mutations::CreatePostCard
+    field :update_post_card, mutation: Mutations::UpdatePostCard
+    field :delete_post_card, mutation: Mutations::DeletePostCard
+    field :upload_post_card_photo, mutation: Mutations::UploadPostCardPhoto
+    field :delete_post_card_photo, mutation: Mutations::DeletePostCardPhoto
+    field :generate_post_card_proof, mutation: Mutations::GeneratePostCardProof
+    field :approve_post_card_proof, mutation: Mutations::ApprovePostCardProof
+    field :send_post_card, mutation: Mutations::SendPostCard
     field :create_support_ticket, mutation: Mutations::CreateSupportTicket
     field :reply_to_support_ticket, mutation: Mutations::ReplyToSupportTicket
     field :reply_to_support_ticket_by_admin, mutation: Mutations::ReplyToSupportTicketByAdmin

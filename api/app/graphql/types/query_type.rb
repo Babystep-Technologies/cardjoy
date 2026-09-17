@@ -5,8 +5,8 @@ module Types
   class QueryType < Types::BaseObject
     field :admin_cards, resolver: Queries::AdminCards
     field :admin_invitations, resolver: Queries::AdminInvitations
-    field :admin_holiday_cards, resolver: Queries::AdminHolidayCards
-    field :admin_holiday_card, resolver: Queries::AdminHolidayCard
+    field :admin_post_cards, resolver: Queries::AdminPostCards
+    field :admin_post_card, resolver: Queries::AdminPostCard
     field :admin_users, resolver: Queries::AdminUsers
     field :admin_promo_codes, resolver: Queries::AdminPromoCodes
     field :admin_organizations, resolver: Queries::AdminOrganizations
@@ -37,11 +37,11 @@ module Types
     field :contact_list, resolver: Queries::ContactList
     field :upcoming_occasions, resolver: Queries::UpcomingOccasions
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
-    field :my_holiday_cards, resolver: Queries::MyHolidayCards
-    field :holiday_card, resolver: Queries::HolidayCard
-    field :holiday_card_templates, resolver: Queries::HolidayCardTemplates
-    field :holiday_card_stickers, resolver: Queries::HolidayCardStickers
-    field :holiday_card_editor_options, resolver: Queries::HolidayCardEditorOptions
+    field :my_post_cards, resolver: Queries::MyPostCards
+    field :post_card, resolver: Queries::PostCard
+    field :post_card_templates, resolver: Queries::PostCardTemplates
+    field :post_card_stickers, resolver: Queries::PostCardStickers
+    field :post_card_editor_options, resolver: Queries::PostCardEditorOptions
     field :my_postage_ledger, resolver: Queries::MyPostageLedger
     # The top-up amounts the postage wallet sells, so the page offering them and
     # the mutation validating them read the same list (#152) rather than the
@@ -52,9 +52,9 @@ module Types
     # that asks is the signed-in wallet page.
     field :postage_top_up_tiers_cents, [ Integer ], null: false,
       description: "Allowed postage top-up amounts, in US cents, cheapest first."
-    field :quote_holiday_card_mailing, resolver: Queries::QuoteHolidayCardMailing
-    field :my_holiday_card_orders, resolver: Queries::MyHolidayCardOrders
-    field :holiday_card_mailing_availability, resolver: Queries::HolidayCardMailingAvailability
+    field :quote_post_card_mailing, resolver: Queries::QuotePostCardMailing
+    field :my_post_card_orders, resolver: Queries::MyPostCardOrders
+    field :post_card_mailing_availability, resolver: Queries::PostCardMailingAvailability
     field :my_support_tickets, resolver: Queries::MySupportTickets
     field :support_ticket, resolver: Queries::SupportTicket
     field :admin_support_tickets, resolver: Queries::AdminSupportTickets

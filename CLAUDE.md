@@ -56,7 +56,7 @@ docker compose exec web yarn build         # tsc type-check + build
   - `product: group card`
   - `product: 1-on-1 card`
   - `product: invitation card`
-  - `product: holiday card`
+  - `product: post card`
 - If the answer isn't already clear from the request, ask the user before opening the issue.
 
 ## Conventions & gotchas

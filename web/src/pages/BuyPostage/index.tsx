@@ -27,7 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatCents } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import { describeLedgerEntry, rememberPostageCheckout } from '@/lib/postage';
-import { readPostageReturnTo } from '@/pages/HolidayCard/Send/state';
+import { readPostageReturnTo } from '@/pages/PostCard/Send/state';
 
 const POSTAGE_WALLET = gql`
   query PostageWallet {

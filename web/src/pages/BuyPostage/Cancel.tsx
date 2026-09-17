@@ -11,7 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { clearPostageCheckout } from '@/lib/postage';
-import { clearPostageReturnTo, readPostageReturnTo } from '@/pages/HolidayCard/Send/state';
+import { clearPostageReturnTo, readPostageReturnTo } from '@/pages/PostCard/Send/state';
 
 const BuyPostageCancel: React.FC = () => {
   const navigate = useNavigate();

@@ -16,7 +16,7 @@ namespace :user_daily_activities do
     sources = {
       Card => Card.unscoped,
       Invitation => Invitation.unscoped,
-      HolidayCard => HolidayCard.unscoped,
+      PostCard => PostCard.unscoped,
       Message => Message.unscoped,
       Rsvp => Rsvp.where.not(user_id: nil)
     }

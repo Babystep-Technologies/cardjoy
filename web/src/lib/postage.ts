@@ -18,7 +18,7 @@
  * What a ledger row says to the person who earned it.
  *
  * The API sends `eventKind` — `postage_spent_on_mail` — plus a `reason` slug
- * like `holiday_card_mail`. Neither is English, and showing either one raw is
+ * like `post_card_mail`. Neither is English, and showing either one raw is
  * how a wallet becomes unauditable. Mapping happens here, on the client, because
  * the server's kinds are an enum for the ledger's integrity, not display copy.
  *
@@ -55,7 +55,7 @@ export function describeLedgerEntry(
   const slug = eventKind ?? reason;
   if (!slug) return 'Wallet activity';
 
-  // "holiday_card_mail_refund" → "Holiday card mail refund". Not as good as a
+  // "post_card_mail_refund" → "Post card mail refund". Not as good as a
   // written string, but honest and readable, which beats showing the slug.
   const words = slug
     .replace(/^postage_/, '')
