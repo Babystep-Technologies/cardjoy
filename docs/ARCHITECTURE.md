@@ -51,6 +51,15 @@ CardJoy is a Rails GraphQL API with a React/TypeScript frontend.
   and `Date.current` are both UTC, and `created_at` is stored as a UTC instant with no
   zone conversion applied by `GROUP BY DATE(created_at)`. See the comment atop
   `app/services/metrics_window_range.rb` for the full reasoning.
+- **`pg_trgm` is deliberately not enabled (#185).** Admin search (`AdminListable#admin_search_scope`)
+  matches `title` / `external_id` / owner `name` / `email` with a leading-wildcard `ILIKE`, which
+  cannot use a plain btree index — only a trigram GIN index would help. Benchmarked against 200k
+  synthetic cards, that search costs ~50ms as a parallel seq scan regardless of which btree indexes
+  exist, while every production table today is a small fraction of that size, so the seq scan is
+  effectively free. Revisit once `cards` (or another searched table) approaches the tens-of-thousands
+  of rows where this stops being true — add the extension and GIN trigram indexes on
+  `cards.title` / `invitations.title` / `users.name` / `organizations.name` at that point rather than
+  paying the write-amplification cost now for a table too small to need it.
 
 ### `web/` — consumer app
 - React + Vite + TypeScript. Routes are declared in `src/App.tsx`; pages live in `src/pages/`.

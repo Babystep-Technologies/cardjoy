@@ -131,6 +131,13 @@ module AdminListable
     # Matches the model's own text columns or the owner's name or email. The
     # owner half is why this left-joins rather than filtering in Ruby: the
     # matching rows have to be countable and pageable in one query.
+    #
+    # Leading-wildcard ILIKE, so no btree index can serve it — only a `pg_trgm`
+    # GIN index would. Deliberately not added (#185): benchmarked at 200k
+    # synthetic rows this still costs only ~50ms as a parallel seq scan, and
+    # every real table here is a small fraction of that size today. Revisit
+    # once a searched table's row count approaches that range — see the
+    # `pg_trgm` note in docs/ARCHITECTURE.md.
     def admin_search_scope(scope, search)
       return scope if search.blank?
 
