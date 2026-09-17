@@ -74,14 +74,14 @@ mailbox, bypassing the HTTP ingress entirely.
 See `AppConfig.inbound_email_ingress`/`AppConfig.support_inbound_email_domain`,
 `SupportTicket#reply_to_address`, and `SupportTicketMailbox`.
 
-### Holiday card print rendering
+### Post card print rendering
 
-`HolidayCard::PrintRenderer.new(card).render` turns a card into `{ front:, back: }` — the two HTML
+`PostCard::PrintRenderer.new(card).render` turns a card into `{ front:, back: }` — the two HTML
 documents PostGrid prints. It takes a card and returns two strings; it is deliberately **not**
 coupled to PostGrid, makes no HTTP calls, and can be exercised with nothing stubbed.
 
-It combines two things that know nothing about each other: `HolidayCardCatalogue` owns the geometry
-(where `photo_2` sits, in inches), and `HolidayCard#design_config` owns the content (which photo,
+It combines two things that know nothing about each other: `PostCardCatalogue` owns the geometry
+(where `photo_2` sits, in inches), and `PostCard#design_config` owns the content (which photo,
 panned and zoomed how). Rules worth knowing before you touch it:
 
 - **Inches and points, never pixels.** A pixel value bakes in an assumed DPI, and PostGrid renders
@@ -90,7 +90,7 @@ panned and zoomed how). Rules worth knowing before you touch it:
   no grid — those are where our renderer and PostGrid's would diverge.
 - **Everything is clipped.** Photo slots and text regions are `overflow: hidden`, so nothing can
   spill into the reserved address block on the back panel.
-- **Fonts are vendored and inlined as base64** from `app/assets/holiday_card_fonts` — only the ones
+- **Fonts are vendored and inlined as base64** from `app/assets/post_card_fonts` — only the ones
   a panel actually paints with. See that directory's README before adding a font.
 - **`design_config` is untrusted.** Text is escaped; font, size, alignment, and colour are checked
   against allow-lists before they reach the CSS.
@@ -98,12 +98,12 @@ panned and zoomed how). Rules worth knowing before you touch it:
 The pan/zoom CSS the renderer emits is the contract the editor preview has to reuse verbatim. Two
 implementations of the cropping maths is how the on-screen proof stops matching the printed card.
 
-### Holiday card proofs
+### Post card proofs
 
 Before a card is printed the user approves a **proof**: the PDF PostGrid gets from rendering the
-card, produced by the same renderer that will print it. `HolidayCard::ProofGenerator` submits the
+card, produced by the same renderer that will print it. `PostCard::ProofGenerator` submits the
 rendered HTML to `/postcards` with the **test** key — a real PDF, no mail, no cost — and stores the
-returned `url`. `generateHolidayCardProof` and `approveHolidayCardProof` are the two mutations; the
+returned `url`. `generatePostCardProof` and `approvePostCardProof` are the two mutations; the
 type exposes `proofUrl`, `proofGeneratedAt`, `proofCurrent`, and `proofApproved`.
 
 Three rules hold this together, and the send flow (#148) depends on all of them:
@@ -112,11 +112,11 @@ Three rules hold this together, and the send flow (#148) depends on all of them:
   A proof must never be a live order, and that must not depend on how a box is configured.
 - **`proof_design_digest` is the mechanism.** It hashes `design_config`, `template_id`, and `size`
   — canonicalized, so key order and symbol-vs-string keys don't move it. `#proof_current?` compares
-  it against the card's current digest, so *any* edit invalidates the proof. `HolidayCard` also
+  it against the card's current digest, so *any* edit invalidates the proof. `PostCard` also
   clears `proof_approved_at` in a `before_save` whenever one of those three changes, the same way
   `Contact` clears its address verification.
 - **Proofs expire.** PostGrid's PDF links are not permanent, so a proof older than
-  `HolidayCard::PROOF_MAX_AGE` reports as not current even if nothing was edited — regenerate rather
+  `PostCard::PROOF_MAX_AGE` reports as not current even if nothing was edited — regenerate rather
   than serve a dead link.
 
 Generation runs inline in the mutation, not in a job: the user is waiting on it and the client is
@@ -146,22 +146,22 @@ Four rules, and the send flow (#148) depends on all of them:
 - **The markup rounds up, always,** and lives only on the server. `MARKUP_BASIS_POINTS` is basis
   points over cost so the arithmetic stays in integers. `base_cents` and the markup are absent from
   every GraphQL type — the user is quoted one number per card.
-- **A quote is advisory.** `quoteHolidayCardMailing` prices a card against a list of contacts (and
+- **A quote is advisory.** `quotePostCardMailing` prices a card against a list of contacts (and
   verifies any contact that has no cached verdict, so bad addresses surface before anyone pays), but
   the send flow re-prices inside the transaction that debits the postage wallet. A client never
   sends a price back, and no mutation argument accepts one.
 
-`HolidayCard::MailingQuote` is the shared orchestration — every contact asked about comes back
+`PostCard::MailingQuote` is the shared orchestration — every contact asked about comes back
 either priced or flagged with a reason, never dropped, so a quote can't tell someone "42 cards" and
 then send 38.
 
 ### Sending cards by post
 
-`sendHolidayCard` is where the proof, the addresses, the rate card, and the wallet meet a service
+`sendPostCard` is where the proof, the addresses, the rate card, and the wallet meet a service
 that prints things — the one place in the app where money and an irreversible physical action are in
-the same request. `myHolidayCardOrders` is the read side.
+the same request. `myPostCardOrders` is the read side.
 
-**One row per piece, not per send.** `HolidayCardMailOrder` is a single postcard to a single
+**One row per piece, not per send.** `PostCardMailOrder` is a single postcard to a single
 address. Forty recipients is forty rows, forty PostGrid ids, forty statuses, and forty separate
 debits. Partial failure is the normal case: 38 pieces can go out while 2 are rejected and refund
 themselves. There is no batch to be atomic about — an external print service cannot be enrolled in
@@ -170,13 +170,13 @@ our transaction — and the schema admits that rather than pretending.
 Five rules hold the money side together:
 
 - **Nothing is submitted inside the transaction.** The mutation re-prices, locks the user, debits,
-  and writes the order rows; `HolidayCardMailSubmissionJob` is enqueued per order only after the
+  and writes the order rows; `PostCardMailSubmissionJob` is enqueued per order only after the
   commit. An HTTP call inside a transaction holds a connection open for a network round trip and
   cannot be rolled back — a `ROLLBACK` after PostGrid accepted the postcard un-charges a card that
   is already printing. There is a spec that asserts the transaction is closed by the time PostGrid
   is called.
 - **The price is re-quoted server-side, always.** `MailPricing` is consulted again inside the debit
-  transaction, and `SendHolidayCard` has no argument that could carry a price — a spec asserts the
+  transaction, and `SendPostCard` has no argument that could carry a price — a spec asserts the
   input type's full argument list, so one can't be added by accident.
 - **`idempotency_key` is minted once per order and never regenerated.** It goes out as PostGrid's
   `Idempotency-Key` header on every attempt, which is what makes a retry return the original
@@ -186,7 +186,7 @@ Five rules hold the money side together:
   and mails nothing: the wallet is debited, every order looks successful, and nothing arrives. A
   deploy with no live key refuses to send at all rather than risk it.
 - **A refund is guarded by the status transition, not by a flag.**
-  `HolidayCardMailOrder#fail_and_refund!` claims the order with `UPDATE … WHERE status =
+  `PostCardMailOrder#fail_and_refund!` claims the order with `UPDATE … WHERE status =
   'pending'` and only refunds if it won the row, so a job that runs twice refunds once.
 
 The job's three outcomes: success records `postgrid_id` and moves to `submitted`; a retryable
@@ -195,7 +195,7 @@ retired template, or exhausted retries mark it `failed` with a reason and refund
 `charged_cents`.
 
 The order stores `base_cents`, `zone`, `mailing_class`, and `rate_card_version` alongside
-`charged_cents` so a past charge stays reconstructable — and `Types::HolidayCardMailOrderType`
+`charged_cents` so a past charge stays reconstructable — and `Types::PostCardMailOrderType`
 exposes none of them. `recipient_snapshot` holds the name and address as they were at send time, so
 editing or deleting the contact afterwards leaves the record of where the card went intact.
 
@@ -205,7 +205,7 @@ Once an order is submitted, PostGrid owns it — it moves `ready` → `printing`
 `processed_for_delivery` → `completed`, picks up a `trackingNumber` on the way, and can be cancelled.
 `POST /webhooks/postgrid` is how any of that reaches us; polling every open order would be slow and
 rude. `PostgridWebhooksController` verifies and enqueues, `PostgridWebhookJob` applies, and
-`HolidayCardMailOrder#apply_postgrid_update!` is where the rules live.
+`PostCardMailOrder#apply_postgrid_update!` is where the rules live.
 
 - **Every request is verified.** `PostGrid-Signature` is `t=…,v1=…` — HMAC-SHA256 over
   `"<t>.<raw body>"` with `POSTGRID_WEBHOOK_SECRET`, the same scheme Stripe uses. Anything that

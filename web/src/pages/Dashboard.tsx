@@ -16,11 +16,11 @@ import ShareDialog from '@/components/ShareDialog';
 import { CardsList } from '@/components/Dashboard/CardsList';
 import { InvitationsList } from '@/components/Dashboard/InvitationsList';
 import {
-  HolidayCardsList,
-  type DashboardHolidayCard,
+  PostCardsList,
+  type DashboardPostCard,
   type DashboardTemplate,
-} from '@/components/Dashboard/HolidayCardsList';
-import { DELETE_HOLIDAY_CARD, GET_DASHBOARD_HOLIDAY_CARDS } from '@/pages/HolidayCard/queries';
+} from '@/components/Dashboard/PostCardsList';
+import { DELETE_POST_CARD, GET_DASHBOARD_POST_CARDS } from '@/pages/PostCard/queries';
 
 // `organizationId` is the context: null lists the signed-in user's personal cards,
 // an id lists everything that organization owns — including cards other members made.
@@ -78,7 +78,7 @@ const DELETE_CARD = gql`
   }
 `;
 
-// One entry per card kind, in tab order. Adding a kind (e.g. holiday) means adding an
+// One entry per card kind, in tab order. Adding a kind (e.g. post_card) means adding an
 // entry here — the first entry doubles as the fallback bucket, see cardsByKind below.
 //
 // The empty-state copy takes the active organization's name (null in Personal) because an
@@ -140,12 +140,12 @@ const Dashboard: React.FC = () => {
   const [qrCardId, setQrCardId] = useState<string | null>(null);
 
   // Held separately from `selectedCardId`, which is shared with the share and
-  // group-card-delete flows: a holiday card's id addresses a different mutation,
+  // group-card-delete flows: a post card's id addresses a different mutation,
   // and mixing them would let one dialog's Delete fire against the other's id.
-  const [holidayCardToDelete, setHolidayCardToDelete] = useState<string | null>(null);
+  const [postCardToDelete, setPostCardToDelete] = useState<string | null>(null);
 
   const [deleteCard] = useMutation(DELETE_CARD);
-  const [deleteHolidayCard] = useMutation(DELETE_HOLIDAY_CARD);
+  const [deletePostCard] = useMutation(DELETE_POST_CARD);
 
   // Wait for the context to resolve before asking: firing early would send
   // organizationId: null and flash the user's personal cards inside an organization.
@@ -170,34 +170,31 @@ const Dashboard: React.FC = () => {
   });
 
   /**
-   * Holiday cards (#153). No `organizationId` and no tab inside an
-   * organization, because `myHolidayCards` has no organization argument —
-   * holiday cards are deliberately personal for now (see `Queries::
-   * MyHolidayCards`). Listing someone's personal cards under a heading that
+   * Post cards (#153). No `organizationId` and no tab inside an
+   * organization, because `myPostCards` has no organization argument —
+   * post cards are deliberately personal for now (see `Queries::
+   * MyPostCards`). Listing someone's personal cards under a heading that
    * says "shared with everyone in Acme" would be a lie about who can see them,
    * so the tab is simply absent there rather than quietly showing the wrong
    * scope.
    */
-  const { data: holidayData, refetch: refetchHolidayCards } = useQuery(
-    GET_DASHBOARD_HOLIDAY_CARDS,
-    {
-      skip: skipQueries || organizationId !== null,
-      fetchPolicy: 'network-only',
-      nextFetchPolicy: 'network-only',
-    }
-  );
+  const { data: postCardData, refetch: refetchPostCards } = useQuery(GET_DASHBOARD_POST_CARDS, {
+    skip: skipQueries || organizationId !== null,
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'network-only',
+  });
 
   const cards: CardType[] = useMemo(() => data?.userCards || [], [data]);
   const invitations = invitationsData?.userInvitations || [];
-  const holidayCards: DashboardHolidayCard[] = useMemo(
-    () => holidayData?.myHolidayCards ?? [],
-    [holidayData]
+  const postCards: DashboardPostCard[] = useMemo(
+    () => postCardData?.myPostCards ?? [],
+    [postCardData]
   );
-  const holidayTemplates: DashboardTemplate[] = useMemo(
-    () => holidayData?.holidayCardTemplates ?? [],
-    [holidayData]
+  const postCardTemplates: DashboardTemplate[] = useMemo(
+    () => postCardData?.postCardTemplates ?? [],
+    [postCardData]
   );
-  const showHolidayTab = organizationId === null;
+  const showPostCardTab = organizationId === null;
 
   // Bucket cards by kind for the per-kind tabs. A kind the API knows about but this UI
   // doesn't have a tab for yet falls back to the first tab, so no card ever goes missing.
@@ -215,15 +212,15 @@ const Dashboard: React.FC = () => {
   // Land on the first kind the user actually has, so someone who only sends 1-on-1 cards
   // doesn't open the dashboard on an empty Group tab. A manual choice always wins.
   //
-  // Holiday is last in that search rather than absent from it: someone whose only
-  // content is a holiday card would otherwise open the dashboard on an empty Group
+  // Post Card is last in that search rather than absent from it: someone whose only
+  // content is a post card would otherwise open the dashboard on an empty Group
   // tab and conclude they had lost it.
   const firstPopulatedKind = CARD_TABS.find(tab => cardsByKind[tab.kind].length > 0)?.kind;
-  const holidayFallback =
-    organizationId === null && holidayCards.length > 0 && invitations.length === 0
-      ? 'holiday'
+  const postCardFallback =
+    organizationId === null && postCards.length > 0 && invitations.length === 0
+      ? 'post_card'
       : undefined;
-  const selectedTab = activeTab ?? firstPopulatedKind ?? holidayFallback ?? CARD_TABS[0].kind;
+  const selectedTab = activeTab ?? firstPopulatedKind ?? postCardFallback ?? CARD_TABS[0].kind;
 
   // Listen for delete events from child components
   useEffect(() => {
@@ -256,22 +253,22 @@ const Dashboard: React.FC = () => {
    * otherwise — but the server's error is what gets shown rather than a message
    * of our own, because it is the side that actually knows (#205).
    */
-  const confirmDeleteHolidayCard = async () => {
-    if (!holidayCardToDelete) return;
+  const confirmDeletePostCard = async () => {
+    if (!postCardToDelete) return;
 
     try {
-      const result = await deleteHolidayCard({ variables: { externalId: holidayCardToDelete } });
-      const payload = result.data?.deleteHolidayCard;
+      const result = await deletePostCard({ variables: { externalId: postCardToDelete } });
+      const payload = result.data?.deletePostCard;
       if (payload?.success) {
-        await refetchHolidayCards();
-        toast.success('Holiday card deleted');
+        await refetchPostCards();
+        toast.success('Post card deleted');
       } else {
-        toast.error(payload?.errors?.[0] ?? 'Failed to delete holiday card');
+        toast.error(payload?.errors?.[0] ?? 'Failed to delete post card');
       }
     } catch {
-      toast.error('Failed to delete holiday card');
+      toast.error('Failed to delete post card');
     }
-    setHolidayCardToDelete(null);
+    setPostCardToDelete(null);
   };
 
   const handleCardShareClick = (cardId: string) => {
@@ -291,8 +288,8 @@ const Dashboard: React.FC = () => {
 
   const hasCards = cards.length > 0;
   const hasInvitations = invitations.length > 0;
-  const hasHolidayCards = showHolidayTab && holidayCards.length > 0;
-  const hasAnyContent = hasCards || hasInvitations || hasHolidayCards;
+  const hasPostCards = showPostCardTab && postCards.length > 0;
+  const hasAnyContent = hasCards || hasInvitations || hasPostCards;
 
   return (
     <div className="flex flex-col flex-grow min-h-[calc(100vh-4rem)] p-4">
@@ -308,7 +305,7 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-500 text-lg">
               {organizationName
                 ? `Create a card or an invitation — everyone in ${organizationName} will see it here.`
-                : 'Create a group card, send a 1-on-1 card, plan an event invitation, or post a holiday card to get started'}
+                : 'Create a group card, send a 1-on-1 card, plan an event invitation, or post a post card to get started'}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -321,9 +318,9 @@ const Dashboard: React.FC = () => {
             <Button asChild size="lg" variant="outline">
               <Link to="/invitation/new">Create an invitation</Link>
             </Button>
-            {showHolidayTab && (
+            {showPostCardTab && (
               <Button asChild size="lg" variant="outline">
-                <Link to="/holiday-card/new">Make a holiday card</Link>
+                <Link to="/post-card/new">Make a post card</Link>
               </Button>
             )}
           </div>
@@ -360,12 +357,12 @@ const Dashboard: React.FC = () => {
               >
                 Invites{hasInvitations && ` (${invitations.length})`}
               </TabsTrigger>
-              {showHolidayTab && (
+              {showPostCardTab && (
                 <TabsTrigger
-                  value="holiday"
+                  value="post_card"
                   className="rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
                 >
-                  Holiday{hasHolidayCards && ` (${holidayCards.length})`}
+                  Post Card{hasPostCards && ` (${postCards.length})`}
                 </TabsTrigger>
               )}
             </TabsList>
@@ -404,14 +401,14 @@ const Dashboard: React.FC = () => {
               />
             </TabsContent>
 
-            {showHolidayTab && (
-              <TabsContent value="holiday" className="mt-0">
-                <HolidayCardsList
-                  cards={holidayCards}
-                  templates={holidayTemplates}
-                  emptyTitle="You haven't made a holiday card yet"
+            {showPostCardTab && (
+              <TabsContent value="post_card" className="mt-0">
+                <PostCardsList
+                  cards={postCards}
+                  templates={postCardTemplates}
+                  emptyTitle="You haven't made a post card yet"
                   emptyDescription="Design one, then have it printed and posted to everyone on your list."
-                  onDelete={setHolidayCardToDelete}
+                  onDelete={setPostCardToDelete}
                 />
               </TabsContent>
             )}
@@ -445,22 +442,19 @@ const Dashboard: React.FC = () => {
         <CardQrCode cardExternalId={qrCardId} open={true} onClose={() => setQrCardId(null)} />
       )}
 
-      {/* Holiday card delete confirmation. Its own dialog rather than a shared one:
-          the copy differs — a holiday card is a design, not a link people signed. */}
-      <Dialog
-        open={!!holidayCardToDelete}
-        onOpenChange={open => !open && setHolidayCardToDelete(null)}
-      >
+      {/* Post card delete confirmation. Its own dialog rather than a shared one:
+          the copy differs — a post card is a design, not a link people signed. */}
+      <Dialog open={!!postCardToDelete} onOpenChange={open => !open && setPostCardToDelete(null)}>
         <DialogContent className="p-6 w-96 text-black">
           <DialogHeader>
-            <DialogTitle>Delete this holiday card?</DialogTitle>
+            <DialogTitle>Delete this post card?</DialogTitle>
           </DialogHeader>
           <p>Its design and photos go with it. This action cannot be undone.</p>
           <div className="flex justify-end space-x-4 mt-4">
-            <Button variant="outline" onClick={() => setHolidayCardToDelete(null)}>
+            <Button variant="outline" onClick={() => setPostCardToDelete(null)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDeleteHolidayCard}>
+            <Button variant="destructive" onClick={confirmDeletePostCard}>
               Delete
             </Button>
           </div>

@@ -128,7 +128,7 @@ RSpec.describe MailPricing do
         PostGrid::AddressVerification::ZONE_INTERNATIONAL
       ]
 
-      HolidayCard::VALID_SIZES.each do |size|
+      PostCard::VALID_SIZES.each do |size|
         zones.each { |zone| expect { described_class.quote(size:, zone:) }.not_to raise_error }
       end
     end

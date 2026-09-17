@@ -73,7 +73,7 @@ class MetricsWindowRange
       ::User.minimum(:created_at),
       ::Card.unscoped.minimum(:created_at),
       ::Invitation.unscoped.minimum(:created_at),
-      ::HolidayCard.unscoped.minimum(:created_at)
+      ::PostCard.unscoped.minimum(:created_at)
     ].compact.min&.to_date || end_date
   end
 end

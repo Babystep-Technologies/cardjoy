@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 # The one search / filter / sort / paginate implementation behind every admin
-# product list (#177). Card, Invitation, and HolidayCard include it, so the
+# product list (#177). Card, Invitation, and PostCard include it, so the
 # three lists in the admin dashboard answer the same arguments the same way and
 # a new product gets a working admin list by declaring four class methods.
 #

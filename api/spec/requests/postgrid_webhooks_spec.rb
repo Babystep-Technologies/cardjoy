@@ -15,7 +15,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
   # A wallet with a top-up and this order's send already debited out of it, so
   # a refund shows up as a change rather than as the only row in the ledger.
   let(:debit) do
-    user.spend_postage!(cents: 112, reason: "holiday_card_mail", event_kind: "postage_spent_on_mail")
+    user.spend_postage!(cents: 112, reason: "post_card_mail", event_kind: "postage_spent_on_mail")
   end
 
   before do
@@ -24,7 +24,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
   end
 
   let!(:order) do
-    create(:holiday_card_mail_order, :submitted, user:, postgrid_id:, postage_credit: debit, charged_cents: 112)
+    create(:post_card_mail_order, :submitted, user:, postgrid_id:, postage_credit: debit, charged_cents: 112)
   end
 
   def balance = user.reload.postage_balance_cents
@@ -58,7 +58,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "cancelled"), signature: "t=1,v1=deadbeef")
 
       expect(response).to have_http_status(:unauthorized)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
       expect(balance).to eq(388)
     end
 
@@ -66,14 +66,14 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "cancelled"), secret: "whsec_notoursecret")
 
       expect(response).to have_http_status(:unauthorized)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
     end
 
     it "rejects a request with no signature header at all" do
       deliver(data: postcard(status: "completed"), signature: nil)
 
       expect(response).to have_http_status(:unauthorized)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
     end
 
     it "rejects a malformed signature header" do
@@ -90,7 +90,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "completed"))
 
       expect(response).to have_http_status(:unauthorized)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
     end
   end
 
@@ -100,7 +100,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(order.reload).to have_attributes(
-        status: HolidayCardMailOrder::PRINTING,
+        status: PostCardMailOrder::PRINTING,
         tracking_number: tracking_number
       )
     end
@@ -112,7 +112,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "printing", tracking: tracking_number))
 
       expect(order.reload).to have_attributes(
-        status: HolidayCardMailOrder::PRINTING,
+        status: PostCardMailOrder::PRINTING,
         tracking_number: tracking_number
       )
     end
@@ -123,7 +123,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "completed", id: "postcard_belongstosomeoneelse"))
 
       expect(response).to have_http_status(:ok)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
       expect(ledger_size).to eq(2)
     end
 
@@ -131,7 +131,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "entered_mail_stream"))
 
       expect(response).to have_http_status(:ok)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
     end
 
     # MVP only sends postcards; the other three product events arrive on the
@@ -150,7 +150,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
         .to have_enqueued_job(PostgridWebhookJob)
 
       expect(response).to have_http_status(:ok)
-      expect(order.reload.status).to eq(HolidayCardMailOrder::SUBMITTED)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
     end
   end
 
@@ -161,7 +161,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
 
       deliver(data: postcard(status: "printing"))
 
-      expect(order.reload).to have_attributes(status: HolidayCardMailOrder::PRINTING, updated_at: updated_at)
+      expect(order.reload).to have_attributes(status: PostCardMailOrder::PRINTING, updated_at: updated_at)
       expect(ledger_size).to eq(2)
     end
 
@@ -171,14 +171,14 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "completed"))
       deliver(data: postcard(status: "printing"))
 
-      expect(order.reload.status).to eq(HolidayCardMailOrder::COMPLETED)
+      expect(order.reload.status).to eq(PostCardMailOrder::COMPLETED)
     end
 
     it "ignores a `ready` event arriving after the order has moved on" do
       deliver(data: postcard(status: "printing"))
       deliver(data: postcard(status: "ready"))
 
-      expect(order.reload.status).to eq(HolidayCardMailOrder::PRINTING)
+      expect(order.reload.status).to eq(PostCardMailOrder::PRINTING)
     end
   end
 
@@ -198,7 +198,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
       deliver(data: postcard(status: "processed_for_delivery"))
       deliver(data: postcard(status: "completed"))
 
-      expect(order.reload).to have_attributes(status: HolidayCardMailOrder::COMPLETED, mailed_at: mailed_at)
+      expect(order.reload).to have_attributes(status: PostCardMailOrder::COMPLETED, mailed_at: mailed_at)
     end
   end
 
@@ -206,19 +206,19 @@ RSpec.describe "PostgridWebhooks", type: :request do
     it "refunds exactly charged_cents when PostGrid cancels the order" do
       deliver(data: postcard(status: "cancelled"))
 
-      expect(order.reload.status).to eq(HolidayCardMailOrder::CANCELLED)
+      expect(order.reload.status).to eq(PostCardMailOrder::CANCELLED)
       expect(balance).to eq(388 + 112)
 
       refund = user.postage_credits.order(:id).last
-      expect(refund).to have_attributes(amount_cents: 112, reason: "holiday_card_mail_refund")
+      expect(refund).to have_attributes(amount_cents: 112, reason: "post_card_mail_refund")
       expect(refund.events.first["event_kind"]).to eq("postage_refunded")
-      expect(refund.events.first["event_data"]).to include("holiday_card_mail_order_id" => order.id)
+      expect(refund.events.first["event_data"]).to include("post_card_mail_order_id" => order.id)
     end
 
     it "refunds on a failure event too" do
       deliver(data: postcard(status: "failed"))
 
-      expect(order.reload.status).to eq(HolidayCardMailOrder::FAILED)
+      expect(order.reload.status).to eq(PostCardMailOrder::FAILED)
       expect(balance).to eq(388 + 112)
     end
 
@@ -241,7 +241,7 @@ RSpec.describe "PostgridWebhooks", type: :request do
 
       deliver(data: postcard(status: "cancelled"))
 
-      expect(order.reload.status).to eq(HolidayCardMailOrder::COMPLETED)
+      expect(order.reload.status).to eq(PostCardMailOrder::COMPLETED)
       expect(balance).to eq(388)
       expect(ledger_size).to eq(2)
     end
@@ -250,13 +250,13 @@ RSpec.describe "PostgridWebhooks", type: :request do
     # refund would mint postage out of nothing.
     it "does not write a refund row for an order that was never charged" do
       uncharged = create(
-        :holiday_card_mail_order, :submitted,
+        :post_card_mail_order, :submitted,
         user:, postgrid_id: "postcard_neverchargedspec", postage_credit: nil
       )
 
       deliver(data: postcard(status: "cancelled", id: uncharged.postgrid_id))
 
-      expect(uncharged.reload.status).to eq(HolidayCardMailOrder::CANCELLED)
+      expect(uncharged.reload.status).to eq(PostCardMailOrder::CANCELLED)
       expect(balance).to eq(388)
       expect(ledger_size).to eq(2)
     end

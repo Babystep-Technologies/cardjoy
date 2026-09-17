@@ -61,16 +61,16 @@ const Contacts = React.lazy(() => import('@/pages/Contacts/Index'));
 const SupportIndex = React.lazy(() => import('@/pages/Support/Index'));
 const SupportThread = React.lazy(() => import('@/pages/Support/Thread'));
 
-// The holiday card editor is the biggest page in the app — a live print preview,
+// The post card editor is the biggest page in the app — a live print preview,
 // the template catalogue, and the sticker artwork as inline data URIs. Nobody
 // lands on it first, so it stays out of the initial bundle for the same reason
 // Contacts does.
-const HolidayCardNew = React.lazy(() => import('@/pages/HolidayCard/New'));
-const HolidayCardEdit = React.lazy(() => import('@/pages/HolidayCard/Edit'));
+const PostCardNew = React.lazy(() => import('@/pages/PostCard/New'));
+const PostCardEdit = React.lazy(() => import('@/pages/PostCard/Edit'));
 // The send flow and the order list are only ever reached from the editor, so
 // they ride the same code-split as it rather than the initial bundle.
-const HolidayCardSend = React.lazy(() => import('@/pages/HolidayCard/Send'));
-const HolidayCardOrders = React.lazy(() => import('@/pages/HolidayCard/Orders'));
+const PostCardSend = React.lazy(() => import('@/pages/PostCard/Send'));
+const PostCardOrders = React.lazy(() => import('@/pages/PostCard/Orders'));
 
 // The postage wallet pages, split for the same reason: signed-in-only, reached
 // from the send flow or from Stripe's redirect, and the main chunk has around
@@ -233,34 +233,34 @@ const App: React.FC = () => {
           <Route path="/card/:cardExternalId/editable" element={<CardEditable />} />
 
           <Route
-            path="/holiday-card/new"
+            path="/post-card/new"
             element={
               <React.Suspense fallback={<LoadingScreen />}>
-                <HolidayCardNew />
+                <PostCardNew />
               </React.Suspense>
             }
           />
           <Route
-            path="/holiday-card/:externalId/edit"
+            path="/post-card/:externalId/edit"
             element={
               <React.Suspense fallback={<LoadingScreen />}>
-                <HolidayCardEdit />
+                <PostCardEdit />
               </React.Suspense>
             }
           />
           <Route
-            path="/holiday-card/:externalId/send"
+            path="/post-card/:externalId/send"
             element={
               <React.Suspense fallback={<LoadingScreen />}>
-                <HolidayCardSend />
+                <PostCardSend />
               </React.Suspense>
             }
           />
           <Route
-            path="/holiday-card/:externalId/orders"
+            path="/post-card/:externalId/orders"
             element={
               <React.Suspense fallback={<LoadingScreen />}>
-                <HolidayCardOrders />
+                <PostCardOrders />
               </React.Suspense>
             }
           />

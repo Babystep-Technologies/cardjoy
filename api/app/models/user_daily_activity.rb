@@ -8,7 +8,7 @@ class UserDailyActivity < ApplicationRecord
   belongs_to :user
 
   # Everything before this date is backfilled from creation timestamps on
-  # cards/invitations/holiday_cards/messages/rsvps (see
+  # cards/invitations/post_cards/messages/rsvps (see
   # lib/tasks/user_daily_activities.rake) rather than recorded live — a
   # narrower, different metric ("made something" vs. "showed up"). Exposed on
   # Types::AdminMetricsType so the dashboard can mark that range as

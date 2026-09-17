@@ -28,14 +28,14 @@ RSpec.describe Queries::AdminMetrics, type: :request do
           groupCards
           oneOnOneCards
           invitations
-          holidayCards
+          postCards
           rsvpsGoing
           rsvpsMaybe
           rsvpsNotGoing
           totalAttendees
           currentDauRolling7d
           dauBackfillBoundary
-          dailySeries { date dau dauRolling7d groupCards oneOnOneCards invitations holidayCards rsvps }
+          dailySeries { date dau dauRolling7d groupCards oneOnOneCards invitations postCards rsvps }
         }
       }
     GRAPHQL
@@ -75,7 +75,7 @@ RSpec.describe Queries::AdminMetrics, type: :request do
       create(:card, created_at: 1.day.ago) # group, the factory default
       create(:card, :one_on_one, created_at: 1.day.ago)
       create(:invitation, created_at: 1.day.ago)
-      create(:holiday_card, created_at: 1.day.ago)
+      create(:post_card, created_at: 1.day.ago)
 
       result = data(window: "THIRTY_DAYS")
 
@@ -83,7 +83,7 @@ RSpec.describe Queries::AdminMetrics, type: :request do
         "groupCards" => 1,
         "oneOnOneCards" => 1,
         "invitations" => 1,
-        "holidayCards" => 1
+        "postCards" => 1
       )
     end
 

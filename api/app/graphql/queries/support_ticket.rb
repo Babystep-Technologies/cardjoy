@@ -3,7 +3,7 @@
 module Queries
   # Fetch one of the caller's own support tickets by its `external_id`.
   #
-  # Mirrors Queries::HolidayCard: someone else's ticket and one that never
+  # Mirrors Queries::PostCard: someone else's ticket and one that never
   # existed both return nil, so a caller can't use this to learn which
   # external ids are real.
   class SupportTicket < BaseQuery

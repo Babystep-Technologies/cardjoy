@@ -39,10 +39,10 @@ class User < ApplicationRecord
   has_many :postage_credits, dependent: :destroy
   has_many :promo_codes, dependent: :destroy
   has_many :invitations, dependent: :destroy
-  has_many :holiday_cards, dependent: :destroy
-  # Declared after :holiday_cards so a user destroy takes the cards (and their
+  has_many :post_cards, dependent: :destroy
+  # Declared after :post_cards so a user destroy takes the cards (and their
   # orders) first and finds nothing left to do here.
-  has_many :holiday_card_mail_orders, dependent: :destroy
+  has_many :post_card_mail_orders, dependent: :destroy
   has_many :rsvps, dependent: :destroy
   has_many :support_tickets, dependent: :destroy
   has_many :contacts, dependent: :destroy

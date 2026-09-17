@@ -35,7 +35,7 @@ module Queries
 
       cards = day_kind_counts(::Card.where(created_at: range.sql_range))
       invitations = day_counts(::Invitation.where(created_at: range.sql_range))
-      holiday_cards = day_counts(::HolidayCard.where(created_at: range.sql_range))
+      post_cards = day_counts(::PostCard.where(created_at: range.sql_range))
       users = day_counts(::User.where(created_at: range.sql_range))
       rsvps = day_counts(::Rsvp.where(created_at: range.sql_range))
       rsvps_by_status = day_status_counts(::Rsvp.where(created_at: range.sql_range))
@@ -51,7 +51,7 @@ module Queries
           group_cards: cards[[ date, "group" ]] || 0,
           one_on_one_cards: cards[[ date, "one_on_one" ]] || 0,
           invitations: invitations[date] || 0,
-          holiday_cards: holiday_cards[date] || 0,
+          post_cards: post_cards[date] || 0,
           rsvps: rsvps[date] || 0
         }
       end
@@ -68,7 +68,7 @@ module Queries
         group_cards: daily_series.sum { |d| d[:group_cards] },
         one_on_one_cards: daily_series.sum { |d| d[:one_on_one_cards] },
         invitations: invitations.values.sum,
-        holiday_cards: holiday_cards.values.sum,
+        post_cards: post_cards.values.sum,
         rsvps_going: going,
         rsvps_maybe: maybe,
         rsvps_not_going: not_going,

@@ -17,7 +17,7 @@ module PostGridHelpers
   WEBHOOK_SECRET = "whsec_specsuitefakesecretdonotuse"
 
   VERIFY_URL ="#{PostGrid::Client::ADDRESS_VERIFICATION_BASE_URL}#{PostGrid::AddressVerification::VERIFY_PATH}"
-  POSTCARDS_URL = "#{PostGrid::Client::BASE_URL}#{HolidayCard::ProofGenerator::POSTCARDS_PATH}"
+  POSTCARDS_URL = "#{PostGrid::Client::BASE_URL}#{PostCard::ProofGenerator::POSTCARDS_PATH}"
 
   def post_grid_fixture(name)
     FIXTURE_DIR.join("#{name}.json").read

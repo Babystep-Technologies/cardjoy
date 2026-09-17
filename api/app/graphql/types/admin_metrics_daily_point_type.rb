@@ -18,7 +18,7 @@ module Types
     field :group_cards, Integer, null: false
     field :one_on_one_cards, Integer, null: false
     field :invitations, Integer, null: false
-    field :holiday_cards, Integer, null: false
+    field :post_cards, Integer, null: false
     field :rsvps, Integer, null: false
   end
 end
