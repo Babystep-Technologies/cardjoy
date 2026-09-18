@@ -40,4 +40,39 @@ RSpec.describe WishListItem, type: :model do
     item = create(:wish_list_item, url: nil, store: nil)
     expect(item.store).to be_nil
   end
+
+  describe "reservation claim state" do
+    it "is unclaimed with no reservations" do
+      item = create(:wish_list_item, quantity: 2)
+      expect(item.reserved_quantity).to eq(0)
+      expect(item.remaining_quantity).to eq(2)
+      expect(item.claimed?).to be(false)
+    end
+
+    it "is claimed once reservations cover the full quantity" do
+      item = create(:wish_list_item, quantity: 2)
+      create(:wish_list_reservation, wish_list_item: item, quantity: 2)
+
+      expect(item.reserved_quantity).to eq(2)
+      expect(item.remaining_quantity).to eq(0)
+      expect(item.claimed?).to be(true)
+    end
+
+    it "never reports negative remaining quantity" do
+      item = create(:wish_list_item, quantity: 1)
+      create(:wish_list_reservation, wish_list_item: item, quantity: 1)
+      # A second reservation should never happen in practice (the mutation checks remaining
+      # quantity first), but the display math must still degrade sanely if it ever did.
+      create(:wish_list_reservation, wish_list_item: item, quantity: 1, guest_email: "other@example.com")
+
+      expect(item.remaining_quantity).to eq(0)
+    end
+
+    it "destroys reservations when the item is destroyed" do
+      item = create(:wish_list_item)
+      create(:wish_list_reservation, wish_list_item: item)
+
+      expect { item.destroy! }.to change(WishListReservation, :count).by(-1)
+    end
+  end
 end

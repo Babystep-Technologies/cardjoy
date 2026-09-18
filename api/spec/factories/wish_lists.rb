@@ -23,4 +23,11 @@ FactoryBot.define do
     label { "Toward the crib fund" }
     suggested_amount { "$25" }
   end
+
+  factory :wish_list_reservation do
+    wish_list_item { association :wish_list_item }
+    guest_name { "Alex Guest" }
+    guest_email { "alex.guest@example.com" }
+    quantity { 1 }
+  end
 end

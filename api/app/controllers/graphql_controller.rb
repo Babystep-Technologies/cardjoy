@@ -3,13 +3,13 @@
 
 class GraphqlController < ApiController
   # Operations that must work without authentication (sign-in/sign-up, the public
-  # card reveal + guest messaging, RSVP, the cover-style/occasion pickers used
-  # before login, the post card template/sticker catalogue the marketing page
-  # previews, and the organization-invitation preview an invited person sees
-  # before they have an account). Matched exactly against the incoming
-  # operationName — a substring match would let any operation whose name merely
-  # *contains* one of these (e.g. "UpdateCard" contains "Card") skip the
-  # controller-level auth gate.
+  # card reveal + guest messaging, RSVP, wish-list guest reservations, the
+  # cover-style/occasion pickers used before login, the post card
+  # template/sticker catalogue the marketing page previews, and the
+  # organization-invitation preview an invited person sees before they have an
+  # account). Matched exactly against the incoming operationName — a substring
+  # match would let any operation whose name merely *contains* one of these
+  # (e.g. "UpdateCard" contains "Card") skip the controller-level auth gate.
   #
   # Everything listed here must be safe to serve to a stranger on its own terms.
   # The post card catalogue is: it is reference data compiled into the
@@ -18,6 +18,7 @@ class GraphqlController < ApiController
     SignIn SignUp GoogleOauthSignIn SendPasswordReset GoogleAdminSignIn
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
     GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
+    ReserveWishListItem ReleaseWishListReservation
     OrganizationInvitationPreview PostCardTemplates PostCardStickers
     PostCardEditorOptions
   ].freeze

@@ -24,6 +24,10 @@ export function getGuestMessageIdKey(cardExternalId: string): string {
   return `${import.meta.env.VITE_ENV}_guestMessageId:${cardExternalId}`;
 }
 
+export function getWishListReservationTokenKey(wishListItemId: string): string {
+  return `${import.meta.env.VITE_ENV}_wishListReservationToken:${wishListItemId}`;
+}
+
 export function getInitials(name?: string | null, email?: string | null): string {
   const source = name?.trim() || email?.trim() || '';
   if (!source) return '?';

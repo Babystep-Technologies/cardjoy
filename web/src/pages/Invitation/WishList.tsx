@@ -1,13 +1,35 @@
-import React from 'react';
-import { gql, useQuery } from '@apollo/client';
+import React, { useState } from 'react';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Gift, Wallet, ArrowLeft, ExternalLink, Copy, Share2, Info } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Gift,
+  Wallet,
+  ArrowLeft,
+  ExternalLink,
+  Copy,
+  Share2,
+  Info,
+  CheckCircle2,
+} from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import LoadingScreen from '@/components/Loading';
+import { getWishListReservationTokenKey } from '@/lib/utils';
 import {
   contributionKindMeta,
+  RELEASE_WISH_LIST_RESERVATION_MUTATION,
+  RESERVE_WISH_LIST_ITEM_MUTATION,
   TRUMP_ACCOUNT_INFO_URL,
   WISH_LIST_FIELDS,
   type WishListContribution,
@@ -29,36 +51,191 @@ const GET_INVITATION_WISH_LIST = gql`
   }
 `;
 
-const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => (
-  <Card className="border-2 border-gray-200 bg-white/95">
-    <CardContent className="p-4 flex gap-4">
-      {item.imageUrl && (
-        <img
-          src={item.imageUrl}
-          alt=""
-          className="w-20 h-20 object-cover rounded-lg border border-gray-200 shrink-0"
-        />
-      )}
-      <div className="flex-1 min-w-0 space-y-1">
-        <h3 className="font-bold text-lg leading-tight">{item.title}</h3>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-          {item.price && <span className="font-semibold text-gray-900">{item.price}</span>}
-          {item.quantity > 1 && <span>Wants {item.quantity}</span>}
-          {item.store && <span className="truncate">{item.store}</span>}
+const RESERVE_WISH_LIST_ITEM = gql(RESERVE_WISH_LIST_ITEM_MUTATION);
+const RELEASE_WISH_LIST_RESERVATION = gql(RELEASE_WISH_LIST_RESERVATION_MUTATION);
+
+const ReserveDialog: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (name: string, email: string) => Promise<void>;
+}> = ({ open, onOpenChange, onConfirm }) => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!name.trim() || !email.trim()) {
+      toast.error('Please enter your name and email');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onConfirm(name.trim(), email.trim());
+      onOpenChange(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>I'm getting this</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <p className="text-sm text-gray-600">
+            Just your name and email so we can mark it claimed. Nobody else will see your contact
+            info.
+          </p>
+          <div className="space-y-1.5">
+            <Label htmlFor="reserve-name">Your name</Label>
+            <Input id="reserve-name" value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="reserve-email">Your email</Label>
+            <Input
+              id="reserve-email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
+          </div>
         </div>
-        {item.note && <p className="text-sm text-gray-600">{item.note}</p>}
-        {item.url && (
-          <Button asChild variant="outline" size="sm" className="mt-2 border-2">
-            <a href={item.url} target="_blank" rel="noopener noreferrer">
-              {item.store ? `Buy on ${item.store}` : 'View item'}
-              <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-            </a>
+        <DialogFooter>
+          <Button
+            onClick={handleConfirm}
+            disabled={submitting}
+            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold w-full disabled:opacity-50"
+          >
+            {submitting ? 'Claiming...' : 'Confirm'}
           </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
+  const tokenKey = item.id ? getWishListReservationTokenKey(item.id) : null;
+  const [myToken, setMyToken] = useState<string | null>(() =>
+    tokenKey ? localStorage.getItem(tokenKey) : null
+  );
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [reserveWishListItem] = useMutation(RESERVE_WISH_LIST_ITEM);
+  const [releaseWishListReservation] = useMutation(RELEASE_WISH_LIST_RESERVATION);
+
+  const claimed = item.claimed ?? false;
+  const remaining = item.remainingQuantity ?? item.quantity;
+
+  const handleReserve = async (guestName: string, guestEmail: string) => {
+    try {
+      const { data } = await reserveWishListItem({
+        variables: { input: { wishListItemId: item.id, guestName, guestEmail, quantity: 1 } },
+      });
+      const result = data?.reserveWishListItem;
+      const errors: string[] = result?.errors ?? [];
+      if (errors.length > 0) {
+        toast.error(errors.join(', '));
+        return;
+      }
+      if (result?.token && tokenKey) {
+        localStorage.setItem(tokenKey, result.token);
+        setMyToken(result.token);
+      }
+      toast.success("You're all set — marked as claimed!");
+    } catch (error) {
+      console.error('Failed to reserve wish list item', error);
+      toast.error('Could not claim this item. Please try again.');
+    }
+  };
+
+  const handleRelease = async () => {
+    if (!myToken) return;
+    try {
+      const { data } = await releaseWishListReservation({
+        variables: { input: { token: myToken } },
+      });
+      const errors: string[] = data?.releaseWishListReservation?.errors ?? [];
+      if (errors.length > 0) {
+        toast.error(errors.join(', '));
+        return;
+      }
+      if (tokenKey) localStorage.removeItem(tokenKey);
+      setMyToken(null);
+      toast.success('Reservation released');
+    } catch (error) {
+      console.error('Failed to release wish list reservation', error);
+      toast.error('Could not release this item. Please try again.');
+    }
+  };
+
+  return (
+    <Card className="border-2 border-gray-200 bg-white/95">
+      <CardContent className="p-4 flex gap-4">
+        {item.imageUrl && (
+          <img
+            src={item.imageUrl}
+            alt=""
+            className="w-20 h-20 object-cover rounded-lg border border-gray-200 shrink-0"
+          />
         )}
-      </div>
-    </CardContent>
-  </Card>
-);
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-bold text-lg leading-tight">{item.title}</h3>
+            {myToken ? (
+              <Badge className="bg-green-100 text-green-800 border border-green-300 shrink-0">
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                You're getting this
+              </Badge>
+            ) : claimed ? (
+              <Badge variant="outline" className="border-gray-300 text-gray-500 shrink-0">
+                Claimed
+              </Badge>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+            {item.price && <span className="font-semibold text-gray-900">{item.price}</span>}
+            {item.quantity > 1 && (
+              <span>
+                {remaining} of {item.quantity} still wanted
+              </span>
+            )}
+            {item.store && <span className="truncate">{item.store}</span>}
+          </div>
+          {item.note && <p className="text-sm text-gray-600">{item.note}</p>}
+          <div className="flex flex-wrap gap-2 mt-2">
+            {item.url && (
+              <Button asChild variant="outline" size="sm" className="border-2">
+                <a href={item.url} target="_blank" rel="noopener noreferrer">
+                  {item.store ? `Buy on ${item.store}` : 'View item'}
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                </a>
+              </Button>
+            )}
+            {myToken ? (
+              <Button variant="outline" size="sm" className="border-2" onClick={handleRelease}>
+                Undo
+              </Button>
+            ) : (
+              !claimed && (
+                <Button
+                  size="sm"
+                  className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold"
+                  onClick={() => setDialogOpen(true)}
+                >
+                  <Gift className="w-3.5 h-3.5 mr-1.5" />
+                  I'm getting this
+                </Button>
+              )
+            )}
+          </div>
+        </div>
+      </CardContent>
+      <ReserveDialog open={dialogOpen} onOpenChange={setDialogOpen} onConfirm={handleReserve} />
+    </Card>
+  );
+};
 
 const ContributionCard: React.FC<{ contribution: WishListContribution }> = ({ contribution }) => {
   const meta = contributionKindMeta(contribution.kind);

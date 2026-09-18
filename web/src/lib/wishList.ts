@@ -68,6 +68,8 @@ export interface WishListItem {
   store?: string | null;
   note?: string | null;
   quantity: number;
+  remainingQuantity?: number;
+  claimed?: boolean;
 }
 
 export interface WishListContribution {
@@ -130,6 +132,7 @@ export const wishListToDraft = (wishList: WishList): WishListDraft => ({
   visible: wishList.visible,
   surpriseMode: wishList.surpriseMode,
   items: wishList.items.map(item => ({
+    id: item.id,
     title: item.title,
     url: item.url || '',
     price: item.price || '',
@@ -164,6 +167,7 @@ export const wishListDraftToInput = (draft: WishListDraft) => ({
   visible: draft.visible,
   surpriseMode: draft.surpriseMode,
   items: draft.items.map(item => ({
+    id: item.id || null,
     title: item.title.trim(),
     url: item.url?.trim() || null,
     price: item.price?.trim() || null,
@@ -205,6 +209,8 @@ export const WISH_LIST_FIELDS = `
     note
     quantity
     position
+    remainingQuantity
+    claimed
   }
   contributions {
     id
@@ -215,5 +221,34 @@ export const WISH_LIST_FIELDS = `
     note
     actionUrl
     position
+  }
+`;
+
+export const RESERVE_WISH_LIST_ITEM_MUTATION = `
+  mutation ReserveWishListItem($input: ReserveWishListItemInput!) {
+    reserveWishListItem(input: $input) {
+      token
+      wishListItem {
+        id
+        quantity
+        remainingQuantity
+        claimed
+      }
+      errors
+    }
+  }
+`;
+
+export const RELEASE_WISH_LIST_RESERVATION_MUTATION = `
+  mutation ReleaseWishListReservation($input: ReleaseWishListReservationInput!) {
+    releaseWishListReservation(input: $input) {
+      wishListItem {
+        id
+        quantity
+        remainingQuantity
+        claimed
+      }
+      errors
+    }
   }
 `;
