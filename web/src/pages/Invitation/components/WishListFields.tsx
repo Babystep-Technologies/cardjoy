@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { gql, useMutation } from '@apollo/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,18 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Gift, Plus, Trash2, Wallet, Info } from 'lucide-react';
+import { Gift, Plus, Trash2, Wallet, Info, Loader2 } from 'lucide-react';
 import {
   CONTRIBUTION_KINDS,
   contributionKindMeta,
   emptyWishListContribution,
   emptyWishListItem,
+  PREVIEW_WISH_LIST_LINK_MUTATION,
   TRUMP_ACCOUNT_INFO_URL,
   type ContributionKind,
   type WishListContribution,
   type WishListDraft,
   type WishListItem,
 } from '@/lib/wishList';
+
+const PREVIEW_WISH_LIST_LINK = gql(PREVIEW_WISH_LIST_LINK_MUTATION);
 
 interface Props {
   value: WishListDraft;
@@ -44,6 +48,39 @@ const WishListFields: React.FC<Props> = ({
     patch({
       items: value.items.map((item, i) => (i === index ? { ...item, ...changes } : item)),
     });
+
+  const [previewWishListLink] = useMutation(PREVIEW_WISH_LIST_LINK);
+  const [fetchingPreviewIndex, setFetchingPreviewIndex] = useState<number | null>(null);
+  const [previewedUrls, setPreviewedUrls] = useState<Record<number, string>>({});
+
+  const fetchLinkPreview = async (index: number) => {
+    const item = value.items[index];
+    const url = item?.url?.trim();
+    if (!url || previewedUrls[index] === url) return;
+
+    setPreviewedUrls(prev => ({ ...prev, [index]: url }));
+    setFetchingPreviewIndex(index);
+    try {
+      const { data } = await previewWishListLink({ variables: { input: { url } } });
+      const preview = data?.previewWishListLink?.preview;
+      if (!preview) return;
+
+      // Never clobber anything the host already typed -- the preview only fills blanks.
+      const current = value.items[index];
+      if (!current || current.url?.trim() !== url) return;
+
+      updateItem(index, {
+        title: current.title.trim() ? current.title : preview.title,
+        imageUrl: current.imageUrl?.trim() ? current.imageUrl : preview.imageUrl,
+        price: current.price?.trim() ? current.price : preview.price,
+        store: current.store?.trim() ? current.store : preview.store,
+      });
+    } catch (error) {
+      console.error('Failed to preview wish list link', error);
+    } finally {
+      setFetchingPreviewIndex(null);
+    }
+  };
 
   const updateContribution = (index: number, changes: Partial<WishListContribution>) =>
     patch({
@@ -120,12 +157,30 @@ const WishListFields: React.FC<Props> = ({
                 <Trash2 className="w-4 h-4 text-red-500" />
               </Button>
             </div>
-            <Input
-              value={item.url ?? ''}
-              onChange={e => updateItem(index, { url: e.target.value })}
-              placeholder="https://store.com/product (optional)"
-              aria-label={`Gift idea ${index + 1} link`}
-            />
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                {item.imageUrl && (
+                  <img
+                    src={item.imageUrl}
+                    alt=""
+                    className="w-8 h-8 object-cover rounded border border-gray-200 shrink-0"
+                  />
+                )}
+                <Input
+                  value={item.url ?? ''}
+                  onChange={e => updateItem(index, { url: e.target.value })}
+                  onBlur={() => fetchLinkPreview(index)}
+                  placeholder="https://store.com/product (optional)"
+                  aria-label={`Gift idea ${index + 1} link`}
+                />
+              </div>
+              {fetchingPreviewIndex === index && (
+                <p className="text-xs text-gray-500 flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Fetching a preview...
+                </p>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <Input
                 value={item.price ?? ''}
