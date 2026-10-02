@@ -135,7 +135,9 @@ export const wishListToDraft = (wishList: WishList): WishListDraft => ({
     id: item.id,
     title: item.title,
     url: item.url || '',
+    imageUrl: item.imageUrl || '',
     price: item.price || '',
+    store: item.store || '',
     note: item.note || '',
     quantity: item.quantity ?? 1,
   })),
@@ -170,7 +172,9 @@ export const wishListDraftToInput = (draft: WishListDraft) => ({
     id: item.id || null,
     title: item.title.trim(),
     url: item.url?.trim() || null,
+    imageUrl: item.imageUrl?.trim() || null,
     price: item.price?.trim() || null,
+    store: item.store?.trim() || null,
     note: item.note?.trim() || null,
     quantity: item.quantity || 1,
   })),
@@ -187,6 +191,20 @@ export const UPSERT_WISH_LIST_MUTATION = `
     upsertWishList(input: $input) {
       wishList {
         id
+      }
+      errors
+    }
+  }
+`;
+
+export const PREVIEW_WISH_LIST_LINK_MUTATION = `
+  mutation PreviewWishListLink($input: PreviewWishListLinkInput!) {
+    previewWishListLink(input: $input) {
+      preview {
+        title
+        imageUrl
+        price
+        store
       }
       errors
     }
