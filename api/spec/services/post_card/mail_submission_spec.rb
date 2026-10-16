@@ -8,7 +8,10 @@ RSpec.describe PostCard::MailSubmission do
   let(:card) { create(:post_card, user:) }
   let(:order) { create(:post_card_mail_order, user:, post_card: card, recipient: contact) }
 
-  before { with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY) }
+  before do
+    with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY)
+    with_cardjoy_return_address
+  end
 
   describe "#submit!" do
     it "records the PostGrid id, the time, and the status" do
@@ -100,6 +103,31 @@ RSpec.describe PostCard::MailSubmission do
       stub_postcard_create(body: post_grid_fixture("error_invalid_request"), status: 400)
 
       expect { described_class.new(order).submit! }.to raise_error(PostGrid::InvalidRequestError)
+      expect(order.reload.status).to eq(PostCardMailOrder::PENDING)
+    end
+
+    # The actual defect this class existed to fix (#233): every live order
+    # used to carry a USPS-reserved placeholder — never CardJoy's own address
+    # — as its return address.
+    it "addresses the piece from CardJoy's own configured return address, not a placeholder" do
+      stub = stub_postcard_create
+
+      described_class.new(order).submit!
+
+      expect(stub.with { |request|
+        from = JSON.parse(request.body)["from"]
+        from["addressLine1"] == PostGridHelpers::RETURN_ADDRESS_LINE1 &&
+          from["city"] == PostGridHelpers::RETURN_ADDRESS_CITY &&
+          from["firstName"] == "Ada Lovelace"
+      }).to have_been_made
+    end
+
+    it "raises a ConfigurationError and makes no request when no return address is configured" do
+      with_cardjoy_return_address(line1: nil)
+      stub = stub_postcard_create
+
+      expect { described_class.new(order).submit! }.to raise_error(PostGrid::ConfigurationError)
+      expect(stub).not_to have_been_made
       expect(order.reload.status).to eq(PostCardMailOrder::PENDING)
     end
   end

@@ -34,14 +34,6 @@ class PostCard::MailSubmission
   # Never `PostGrid.default_mode`. See the class note.
   MODE = :live
 
-  # PostGrid requires a return address on every piece, and a post card
-  # carries no sender address of its own yet — the same gap
-  # `ProofGenerator::PLACEHOLDER_ADDRESS` documents. Reusing that constant keeps
-  # the proof the user approved and the piece we print addressed identically,
-  # which is the whole point of the proof. When a real return address lands on
-  # the card, both should follow it together.
-  RETURN_ADDRESS = ::PostCard::ProofGenerator::PLACEHOLDER_ADDRESS
-
   sig { params(order: ::PostCardMailOrder, client: T.nilable(PostGrid::Client)).void }
   def initialize(order, client: nil)
     @order = order
@@ -67,7 +59,7 @@ class PostCard::MailSubmission
   def body_for(panels)
     {
       to: recipient_address,
-      from: RETURN_ADDRESS.merge(firstName: order.user.name.presence || "CardJoy"),
+      from: return_address.merge(firstName: order.user.name.presence || "CardJoy"),
       frontHTML: panels.fetch(:front),
       backHTML: panels.fetch(:back),
       size: order.size,
@@ -76,6 +68,18 @@ class PostCard::MailSubmission
       # the description is metadata, and metadata is not where an address goes.
       description: "CardJoy post card #{order.post_card.external_id} order #{order.id}"
     }
+  end
+
+  # CardJoy's own address, configured once for every order (#233). Raises
+  # rather than mailing a card with a blank return-address field — PostGrid
+  # would likely reject it anyway, but this is a clearer, faster failure than
+  # waiting on that 400.
+  def return_address
+    unless ::PostCard::ReturnAddress.configured?
+      raise PostGrid::ConfigurationError, "CardJoy return address is not configured"
+    end
+
+    ::PostCard::ReturnAddress.address
   end
 
   # Built from `recipient_snapshot`, never from `order.contact`. The contact may

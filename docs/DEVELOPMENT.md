@@ -56,6 +56,26 @@ happens to boot as `production` must not start mailing postcards to real people.
 **This repo is public. Never commit a key, live or test** — not in a credentials file, not in a spec,
 not in a fixture. The specs use an obviously fake `test_sk_…` string.
 
+#### Return address
+
+`PostCard::ReturnAddress` is CardJoy's own mailing address — the `from` on every postcard, proof or
+live order. The same env-with-credentials-fallback convention, under `credentials.cardjoy.return_address.*`:
+
+| Env var | Credential | Purpose |
+|---|---|---|
+| `CARDJOY_RETURN_ADDRESS_LINE1` | `cardjoy.return_address.address_line1` | Required. |
+| `CARDJOY_RETURN_ADDRESS_LINE2` | `cardjoy.return_address.address_line2` | Optional. |
+| `CARDJOY_RETURN_ADDRESS_CITY` | `cardjoy.return_address.city` | Required. |
+| `CARDJOY_RETURN_ADDRESS_REGION` | `cardjoy.return_address.region` | Required. |
+| `CARDJOY_RETURN_ADDRESS_POSTAL_CODE` | `cardjoy.return_address.postal_code` | Required. |
+| `CARDJOY_RETURN_ADDRESS_COUNTRY` | `cardjoy.return_address.country` | Required. |
+
+Unset ⇒ `PostCard::ReturnAddress.configured?` is false and both `ProofGenerator` and
+`MailSubmission` raise `PostGrid::ConfigurationError` rather than printing a card with a blank
+return-address line — `PostCardMailSubmissionJob` treats that as terminal and refunds. This repo is
+public, so — like the PostGrid keys — the real address is never committed; specs set an obviously
+fake one via `with_cardjoy_return_address`.
+
 ### Inbound email (ActionMailbox)
 
 A customer's emailed reply to a support ticket threads back onto it through ActionMailbox

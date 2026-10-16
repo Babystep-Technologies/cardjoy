@@ -42,7 +42,10 @@ RSpec.describe Mutations::SendPostCard, type: :request do
     GRAPHQL
   end
 
-  before { with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY) }
+  before do
+    with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY)
+    with_cardjoy_return_address
+  end
 
   # What ProofGenerator and approvePostCardProof leave behind, written
   # directly so this spec never renders or submits a proof.

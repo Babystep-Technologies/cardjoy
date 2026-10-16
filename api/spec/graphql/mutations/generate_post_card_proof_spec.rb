@@ -20,7 +20,10 @@ RSpec.describe Mutations::GeneratePostCardProof, type: :request do
     GRAPHQL
   end
 
-  before { with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY) }
+  before do
+    with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY)
+    with_cardjoy_return_address
+  end
 
   def generate(external_id: card.external_id, request_headers: headers)
     post "/graphql", params: { query:, variables: { externalId: external_id } }.to_json, headers: request_headers
