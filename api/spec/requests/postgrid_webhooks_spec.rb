@@ -92,6 +92,39 @@ RSpec.describe "PostgridWebhooks", type: :request do
       expect(response).to have_http_status(:unauthorized)
       expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
     end
+
+    # The HMAC alone proves someone held the secret at *some* point, not when
+    # — an intercepted request would otherwise stay valid forever (#233).
+    it "rejects a correctly-signed request whose timestamp is outside the tolerance window" do
+      payload = { type: "postcard.updated", data: postcard(status: "cancelled") }.to_json
+      stale = post_grid_signature(payload, timestamp: 6.minutes.ago.to_i)
+
+      post "/webhooks/postgrid", params: payload,
+        headers: { "Content-Type" => "application/json", "PostGrid-Signature" => stale }
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
+    end
+
+    it "accepts a correctly-signed request right at the edge of the tolerance window" do
+      payload = { type: "postcard.updated", data: postcard(status: "cancelled") }.to_json
+      fresh = post_grid_signature(payload, timestamp: 5.minutes.ago.to_i)
+
+      perform_enqueued_jobs do
+        post "/webhooks/postgrid", params: payload,
+          headers: { "Content-Type" => "application/json", "PostGrid-Signature" => fresh }
+      end
+
+      expect(response).to have_http_status(:ok)
+      expect(order.reload.status).to eq(PostCardMailOrder::CANCELLED)
+    end
+
+    it "rejects a timestamp that isn't a plain integer" do
+      deliver(data: postcard(status: "cancelled"), signature: "t=not-a-number,v1=deadbeef")
+
+      expect(response).to have_http_status(:unauthorized)
+      expect(order.reload.status).to eq(PostCardMailOrder::SUBMITTED)
+    end
   end
 
   describe "postcard.updated" do

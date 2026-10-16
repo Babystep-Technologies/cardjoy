@@ -228,6 +228,10 @@ rude. `PostgridWebhooksController` verifies and enqueues, `PostgridWebhookJob` a
   `"<t>.<raw body>"` with `POSTGRID_WEBHOOK_SECRET`, the same scheme Stripe uses. Anything that
   doesn't verify is a 401, and **an unset secret rejects everything**. This endpoint moves order
   state and issues refunds; "the URL is unguessable" is not an access control.
+- **`t` has to be recent**, not just present — within 5 minutes, the same tolerance
+  `Stripe::Webhook.construct_event` enforces by default. The HMAC alone proves someone held the
+  secret at *some* point, not when; without a tolerance check an intercepted request would stay
+  valid forever.
 - **Answer fast, 2xx nearly always.** The transition goes to a job, and an unknown `postgrid_id`, an
   unhandled type (`letter.updated` and friends land on the same endpoint), an unmapped status, or an
   unparseable body are all logged no-ops. PostGrid redelivers anything that isn't promptly 2xx, so a
