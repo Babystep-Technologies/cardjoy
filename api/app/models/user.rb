@@ -2,6 +2,7 @@
 
 class User < ApplicationRecord
   extend T::Sig
+  include HasReturnAddress
 
   # Free credits every new user receives on creation so they can try the
   # product before buying. See #grant_signup_credits.

@@ -42,20 +42,18 @@ class PostCard::ProofGenerator
   # Never `PostGrid.default_mode`. See the class note.
   MODE = :test
 
-  # PostGrid will not create a postcard without both addresses, and this card
-  # has neither: a post card has no return address of its own yet, and a
-  # proof by definition has no recipient — it is rendered before the user has
-  # picked one.
+  # PostGrid will not create a postcard without a `to`, and a proof by
+  # definition has no recipient — it is rendered before the user has picked
+  # one. `from` uses the card owner's own return address (#233), the same one
+  # the live order prints, so the proof shows the sender the recipient will
+  # actually see.
   #
-  # These are the USPS-reserved example addresses, chosen so that anyone reading
-  # a proof PDF or a PostGrid dashboard row can tell at a glance that no real
-  # person is involved. The address block is PostGrid's own region on the back
-  # panel (`PostCardCatalogue::RESERVED_ADDRESS_BLOCKS`), so what these change
-  # in the proof is only the text inside a block the user's design never touches.
-  #
-  # TODO(#148): the send flow renders per recipient and has a real `to`. When a
-  # return address lands on the card, `from` here should follow it so the proof
-  # shows the sender the user will actually print.
+  # This is the USPS-reserved example address, chosen so that anyone reading a
+  # proof PDF or a PostGrid dashboard row can tell at a glance that no real
+  # recipient is involved. The address block is PostGrid's own region on the
+  # back panel (`PostCardCatalogue::RESERVED_ADDRESS_BLOCKS`), so what this
+  # changes in the proof is only the text inside a block the user's design
+  # never touches.
   PLACEHOLDER_ADDRESS = {
     addressLine1: "1600 Pennsylvania Ave NW",
     city: "Washington",
@@ -97,10 +95,19 @@ class PostCard::ProofGenerator
 
   attr_reader :card
 
+  # Same source and the same failure mode as `MailSubmission#return_address`
+  # — see there for why this raises rather than rendering with a blank field.
+  def return_address
+    user = card.user
+    raise PostGrid::ConfigurationError, "User has no return address configured" unless user.return_address_complete?
+
+    user.return_address_for_postgrid
+  end
+
   def body_for(panels)
     {
       to: PLACEHOLDER_ADDRESS.merge(firstName: PLACEHOLDER_RECIPIENT_NAME),
-      from: PLACEHOLDER_ADDRESS.merge(firstName: card.user.name.presence || "CardJoy"),
+      from: return_address.merge(firstName: card.user.name.presence || "CardJoy"),
       frontHTML: panels.fetch(:front),
       backHTML: panels.fetch(:back),
       # Passed through from `PostCard::VALID_SIZES`, which is also what the

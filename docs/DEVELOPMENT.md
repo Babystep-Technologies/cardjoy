@@ -56,6 +56,23 @@ happens to boot as `production` must not start mailing postcards to real people.
 **This repo is public. Never commit a key, live or test** — not in a credentials file, not in a spec,
 not in a fixture. The specs use an obviously fake `test_sk_…` string.
 
+#### Return address
+
+The `from` on every postcard, proof or live order, is the *sender's own* mailing address (#233) —
+not CardJoy's, and not a shared config value. `User` (via the `HasReturnAddress` concern) carries six
+loose columns, `return_address_line1`/`_line2`/`_city`/`_region`/`_postal_code`/`_country_code`,
+mirroring how `Contact` carries a mailing address: the moment any field is set, line1/city/postal
+code/country are all required (`User#return_address_complete?`).
+
+`Mutations::SendPostCard` refuses outright, before any money moves, for a user whose return address
+isn't complete — same spot as the `PostGrid.configured?` check. `ProofGenerator` and `MailSubmission`
+both raise `PostGrid::ConfigurationError` if they're ever reached without one (defense-in-depth;
+`SendPostCard`'s gate should make this unreachable in practice), which `PostCardMailSubmissionJob`
+already treats as terminal-and-refund.
+
+Set it from `Mutations::UpdateReturnAddress`, surfaced in the frontend as the "Return address"
+section of the profile page. In specs, `create(:user, :with_return_address)` gives a complete one.
+
 ### Inbound email (ActionMailbox)
 
 A customer's emailed reply to a support ticket threads back onto it through ActionMailbox

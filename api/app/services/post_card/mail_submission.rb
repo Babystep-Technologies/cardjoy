@@ -34,14 +34,6 @@ class PostCard::MailSubmission
   # Never `PostGrid.default_mode`. See the class note.
   MODE = :live
 
-  # PostGrid requires a return address on every piece, and a post card
-  # carries no sender address of its own yet — the same gap
-  # `ProofGenerator::PLACEHOLDER_ADDRESS` documents. Reusing that constant keeps
-  # the proof the user approved and the piece we print addressed identically,
-  # which is the whole point of the proof. When a real return address lands on
-  # the card, both should follow it together.
-  RETURN_ADDRESS = ::PostCard::ProofGenerator::PLACEHOLDER_ADDRESS
-
   sig { params(order: ::PostCardMailOrder, client: T.nilable(PostGrid::Client)).void }
   def initialize(order, client: nil)
     @order = order
@@ -67,7 +59,7 @@ class PostCard::MailSubmission
   def body_for(panels)
     {
       to: recipient_address,
-      from: RETURN_ADDRESS.merge(firstName: order.user.name.presence || "CardJoy"),
+      from: return_address.merge(firstName: order.user.name.presence || "CardJoy"),
       frontHTML: panels.fetch(:front),
       backHTML: panels.fetch(:back),
       size: order.size,
@@ -76,6 +68,18 @@ class PostCard::MailSubmission
       # the description is metadata, and metadata is not where an address goes.
       description: "CardJoy post card #{order.post_card.external_id} order #{order.id}"
     }
+  end
+
+  # The sender's own address (#233) — never CardJoy's, never a placeholder.
+  # Raises rather than mailing a card with a blank return-address field;
+  # `Mutations::SendPostCard` already refuses a send with no return address up
+  # front, so reaching here with one incomplete would mean it disappeared
+  # between send and submission.
+  def return_address
+    user = order.user
+    raise PostGrid::ConfigurationError, "User has no return address configured" unless user.return_address_complete?
+
+    user.return_address_for_postgrid
   end
 
   # Built from `recipient_snapshot`, never from `order.contact`. The contact may

@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe PostCardMailSubmissionJob do
   include ActiveJob::TestHelper
 
-  let(:user) { create(:user) }
+  let(:user) { create(:user, :with_return_address) }
   let(:contact) { create(:contact, :mailable, user:) }
   let(:card) { create(:post_card, user:) }
   let(:order) { create(:post_card_mail_order, user:, post_card: card, recipient: contact, charged_cents: 112) }
@@ -114,6 +114,23 @@ RSpec.describe PostCardMailSubmissionJob do
 
       described_class.perform_now(order.id)
 
+      expect(order.reload.status).to eq(PostCardMailOrder::FAILED)
+      expect(order.failure_reason).to eq(described_class::UNAVAILABLE_REASON)
+      expect(balance).to eq(500)
+    end
+
+    # Same path as a bad key: a missing return address is not going to fix
+    # itself on retry, and must not leave the user's money sitting against a
+    # card nobody will ever print (#233). `SendPostCard` already refuses a send
+    # with no return address up front — this is the defense-in-depth case
+    # where one disappeared between send and submission.
+    it "fails and refunds without calling PostGrid when the user has no return address" do
+      user.update!(HasReturnAddress::ADDRESS_FIELDS.index_with { nil })
+      stub = stub_postcard_create
+
+      described_class.perform_now(order.id)
+
+      expect(stub).not_to have_been_made
       expect(order.reload.status).to eq(PostCardMailOrder::FAILED)
       expect(order.failure_reason).to eq(described_class::UNAVAILABLE_REASON)
       expect(balance).to eq(500)

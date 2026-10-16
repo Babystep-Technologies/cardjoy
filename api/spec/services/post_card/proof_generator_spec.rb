@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe PostCard::ProofGenerator do
-  let(:card) { create(:post_card) }
+  let(:card) { create(:post_card, user: create(:user, :with_return_address)) }
 
   before { with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY) }
 
@@ -124,6 +124,27 @@ RSpec.describe PostCard::ProofGenerator do
       card.update!(template_id: "a_template_that_was_removed")
 
       expect { described_class.new(card).generate! }.to raise_error(PostCard::PrintRenderer::UnknownTemplateError)
+      expect(stub).not_to have_been_made
+    end
+
+    # The proof's `from` has to match what a real order prints (#233), or
+    # approving it proves nothing about the card that actually gets mailed.
+    it "sends the card owner's own configured return address as `from`, not the placeholder" do
+      stub = stub_postcard_create
+
+      described_class.new(card).generate!
+
+      expect(stub.with { |request|
+        from = JSON.parse(request.body)["from"]
+        from["addressLine1"] == "123 Market St" && from["city"] == "San Francisco"
+      }).to have_been_made
+    end
+
+    it "raises a ConfigurationError and makes no request when the card's owner has no return address" do
+      bare_card = create(:post_card, user: create(:user))
+      stub = stub_postcard_create
+
+      expect { described_class.new(bare_card).generate! }.to raise_error(PostGrid::ConfigurationError)
       expect(stub).not_to have_been_made
     end
   end

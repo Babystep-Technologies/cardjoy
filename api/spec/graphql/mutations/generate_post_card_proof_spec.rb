@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Mutations::GeneratePostCardProof, type: :request do
-  let(:user) { create(:user) }
+  let(:user) { create(:user, :with_return_address) }
   let(:secret) { Rails.application.credentials.dig(:jwt, :secret) }
   let(:token) { JWT.encode({ user_id: user.id }, secret, "HS256") }
   let(:headers) { { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" } }

@@ -10,8 +10,9 @@ module Mutations
   #
   # 1. **Preconditions, before any money moves.** The card is the caller's, its
   #    proof is approved *and* still current, every contact is the caller's and
-  #    has a complete address, and a live PostGrid key exists. Each of these
-  #    rejects the whole request and debits nothing.
+  #    has a complete address, the caller has their own complete return address
+  #    (#233), and a live PostGrid key exists. Each of these rejects the whole
+  #    request and debits nothing.
   # 2. **Verification, outside the transaction.** Any contact with no cached
   #    PostGrid verdict is verified now, through the same
   #    `PostCard::MailingQuote` the quote query uses. This is a network call,
@@ -61,6 +62,10 @@ module Mutations
     # it switches off rather than raising out of the client.
     UNAVAILABLE_ERROR = "Sending cards by post is unavailable right now. Please try again later."
     UNKNOWN_MAILING_CLASS_ERROR = "That's not a mailing class we offer."
+    # Every card needs a sender address printed on it; there is no CardJoy-wide
+    # fallback (#233). Checked per-user, not per-deploy, so it has to live here
+    # rather than alongside the PostGrid-configured check above.
+    NO_RETURN_ADDRESS_ERROR = "Add your return address before sending a card by post."
 
     argument :post_card_id, ID, required: true,
       description: "The card's `externalId`."
@@ -89,6 +94,9 @@ module Mutations
       # card lookup so an unconfigured deploy gives one honest answer rather
       # than a not-found for a card that exists.
       return failure(UNAVAILABLE_ERROR) unless PostGrid.configured?(mode: ::PostCard::MailSubmission::MODE)
+      # Every piece needs a sender address, and there is no CardJoy-wide one to
+      # fall back to. Checked before the card lookup, same reasoning as above.
+      return failure(NO_RETURN_ADDRESS_ERROR) unless user.return_address_complete?
 
       card = authorized_card(user, post_card_id)
       return failure(NOT_AUTHORIZED_ERROR) unless card

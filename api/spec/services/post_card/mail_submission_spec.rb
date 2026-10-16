@@ -3,7 +3,7 @@ require "rails_helper"
 # Handing one charged order to PostGrid (#148). Every call here is
 # webmock-stubbed; nothing reaches the network.
 RSpec.describe PostCard::MailSubmission do
-  let(:user) { create(:user, name: "Ada Lovelace") }
+  let(:user) { create(:user, :with_return_address, name: "Ada Lovelace") }
   let(:contact) { create(:contact, :mailable, user:, name: "Grace Hopper") }
   let(:card) { create(:post_card, user:) }
   let(:order) { create(:post_card_mail_order, user:, post_card: card, recipient: contact) }
@@ -101,6 +101,31 @@ RSpec.describe PostCard::MailSubmission do
 
       expect { described_class.new(order).submit! }.to raise_error(PostGrid::InvalidRequestError)
       expect(order.reload.status).to eq(PostCardMailOrder::PENDING)
+    end
+
+    # The actual defect this class existed to fix (#233): every live order
+    # used to carry a USPS-reserved placeholder — never the sender's own
+    # address — as its return address.
+    it "addresses the piece from the user's own configured return address, not a placeholder" do
+      stub = stub_postcard_create
+
+      described_class.new(order).submit!
+
+      expect(stub.with { |request|
+        from = JSON.parse(request.body)["from"]
+        from["addressLine1"] == "123 Market St" && from["city"] == "San Francisco" &&
+          from["firstName"] == "Ada Lovelace"
+      }).to have_been_made
+    end
+
+    it "raises a ConfigurationError and makes no request when the user has no return address" do
+      # No :with_return_address trait — the default a new user starts with.
+      bare_order = create(:post_card_mail_order, user: create(:user))
+      stub = stub_postcard_create
+
+      expect { described_class.new(bare_order).submit! }.to raise_error(PostGrid::ConfigurationError)
+      expect(stub).not_to have_been_made
+      expect(bare_order.reload.status).to eq(PostCardMailOrder::PENDING)
     end
   end
 end

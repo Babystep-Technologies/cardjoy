@@ -16,6 +16,7 @@ RSpec.describe "Viewer", type: :request do
           creditBalance
           activeOrganization { id name slug }
           organizationMemberships { id role organization { id name slug } }
+          returnAddress { addressLine1 complete }
         }
       }
     GRAPHQL
@@ -73,6 +74,21 @@ RSpec.describe "Viewer", type: :request do
     organization.archive!
 
     expect(exec["organizationMemberships"]).to be_empty
+  end
+
+  # #233: the caller's own return address is fine to see here — see
+  # Queries::User's spec for why UserType hides it from everyone else.
+  it "returns the caller's own return address" do
+    user.update!(
+      return_address_line1: "123 Market St", return_address_city: "San Francisco",
+      return_address_postal_code: "94103", return_address_country_code: "US"
+    )
+
+    expect(exec["returnAddress"]).to include("addressLine1" => "123 Market St", "complete" => true)
+  end
+
+  it "reports an incomplete return address rather than one of its default nils" do
+    expect(exec["returnAddress"]).to include("addressLine1" => nil, "complete" => false)
   end
 
   it "rejects unauthenticated callers" do

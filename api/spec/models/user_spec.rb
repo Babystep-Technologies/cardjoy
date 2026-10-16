@@ -477,4 +477,59 @@ RSpec.describe User, type: :model do
       expect(user.reload.update(name: "Renamed")).to be(true)
     end
   end
+
+  # The sender's own address on a physical post card (#233) — mandatory before
+  # sending, with no CardJoy-wide fallback. Mirrors Contact's address handling.
+  describe "return address" do
+    it "has no return address by default, and is not return_address_complete?" do
+      user = create(:user)
+
+      expect(HasReturnAddress::ADDRESS_FIELDS.map { |f| user.public_send(f) }).to all(be_nil)
+      expect(user).not_to be_return_address_complete
+    end
+
+    it "is complete with every required field" do
+      expect(create(:user, :with_return_address)).to be_return_address_complete
+    end
+
+    it "is complete without the optional line 2 and region" do
+      user = create(:user, :with_return_address, return_address_line2: nil, return_address_region: nil)
+
+      expect(user).to be_return_address_complete
+    end
+
+    it "is not complete when any required field is missing" do
+      HasReturnAddress::REQUIRED_ADDRESS_FIELDS.each do |field|
+        expect(build(:user, :with_return_address, field => nil)).not_to be_return_address_complete
+      end
+    end
+
+    it "rejects a half-filled address" do
+      user = build(:user, return_address_line1: "123 Market St", return_address_city: "San Francisco")
+
+      expect(user).not_to be_valid
+      expect(user.errors[:return_address_postal_code]).to be_present
+    end
+
+    it "upcases the country code and strips whitespace" do
+      user = create(:user, :with_return_address, return_address_country_code: "us",
+        return_address_line1: "  123 Market St  ")
+
+      expect(user.return_address_country_code).to eq("US")
+      expect(user.return_address_line1).to eq("123 Market St")
+    end
+
+    it "rejects a country code that isn't two letters" do
+      expect(build(:user, :with_return_address, return_address_country_code: "USA")).not_to be_valid
+    end
+
+    it "converts to PostGrid's address shape, dropping blank fields" do
+      user = create(:user, :with_return_address, return_address_line2: nil)
+
+      expect(user.return_address_for_postgrid).to eq(
+        addressLine1: "123 Market St", city: "San Francisco",
+        provinceOrState: "CA", postalOrZip: "94103", countryCode: "US"
+      )
+    end
+  end
 end
