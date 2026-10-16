@@ -58,23 +58,20 @@ not in a fixture. The specs use an obviously fake `test_sk_…` string.
 
 #### Return address
 
-`PostCard::ReturnAddress` is CardJoy's own mailing address — the `from` on every postcard, proof or
-live order. The same env-with-credentials-fallback convention, under `credentials.cardjoy.return_address.*`:
+The `from` on every postcard, proof or live order, is the *sender's own* mailing address (#233) —
+not CardJoy's, and not a shared config value. `User` (via the `HasReturnAddress` concern) carries six
+loose columns, `return_address_line1`/`_line2`/`_city`/`_region`/`_postal_code`/`_country_code`,
+mirroring how `Contact` carries a mailing address: the moment any field is set, line1/city/postal
+code/country are all required (`User#return_address_complete?`).
 
-| Env var | Credential | Purpose |
-|---|---|---|
-| `CARDJOY_RETURN_ADDRESS_LINE1` | `cardjoy.return_address.address_line1` | Required. |
-| `CARDJOY_RETURN_ADDRESS_LINE2` | `cardjoy.return_address.address_line2` | Optional. |
-| `CARDJOY_RETURN_ADDRESS_CITY` | `cardjoy.return_address.city` | Required. |
-| `CARDJOY_RETURN_ADDRESS_REGION` | `cardjoy.return_address.region` | Required. |
-| `CARDJOY_RETURN_ADDRESS_POSTAL_CODE` | `cardjoy.return_address.postal_code` | Required. |
-| `CARDJOY_RETURN_ADDRESS_COUNTRY` | `cardjoy.return_address.country` | Required. |
+`Mutations::SendPostCard` refuses outright, before any money moves, for a user whose return address
+isn't complete — same spot as the `PostGrid.configured?` check. `ProofGenerator` and `MailSubmission`
+both raise `PostGrid::ConfigurationError` if they're ever reached without one (defense-in-depth;
+`SendPostCard`'s gate should make this unreachable in practice), which `PostCardMailSubmissionJob`
+already treats as terminal-and-refund.
 
-Unset ⇒ `PostCard::ReturnAddress.configured?` is false and both `ProofGenerator` and
-`MailSubmission` raise `PostGrid::ConfigurationError` rather than printing a card with a blank
-return-address line — `PostCardMailSubmissionJob` treats that as terminal and refunds. This repo is
-public, so — like the PostGrid keys — the real address is never committed; specs set an obviously
-fake one via `with_cardjoy_return_address`.
+Set it from `Mutations::UpdateReturnAddress`, surfaced in the frontend as the "Return address"
+section of the profile page. In specs, `create(:user, :with_return_address)` gives a complete one.
 
 ### Inbound email (ActionMailbox)
 

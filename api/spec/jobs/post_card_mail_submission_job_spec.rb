@@ -5,14 +5,13 @@ require "rails_helper"
 RSpec.describe PostCardMailSubmissionJob do
   include ActiveJob::TestHelper
 
-  let(:user) { create(:user) }
+  let(:user) { create(:user, :with_return_address) }
   let(:contact) { create(:contact, :mailable, user:) }
   let(:card) { create(:post_card, user:) }
   let(:order) { create(:post_card_mail_order, user:, post_card: card, recipient: contact, charged_cents: 112) }
 
   before do
     with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY)
-    with_cardjoy_return_address
     # A wallet with the send already debited out of it, so a refund is visible
     # as a change rather than as the only row in the ledger.
     user.refund_postage!(cents: 500, reason: "top_up", event_kind: "postage_purchased")
@@ -120,11 +119,13 @@ RSpec.describe PostCardMailSubmissionJob do
       expect(balance).to eq(500)
     end
 
-    # Same path as a bad key: a missing return address is our fault, is not
-    # going to fix itself on retry, and must not leave the user's money
-    # sitting against a card nobody will ever print (#233).
-    it "fails and refunds without calling PostGrid when the return address is not configured" do
-      with_cardjoy_return_address(line1: nil)
+    # Same path as a bad key: a missing return address is not going to fix
+    # itself on retry, and must not leave the user's money sitting against a
+    # card nobody will ever print (#233). `SendPostCard` already refuses a send
+    # with no return address up front — this is the defense-in-depth case
+    # where one disappeared between send and submission.
+    it "fails and refunds without calling PostGrid when the user has no return address" do
+      user.update!(HasReturnAddress::ADDRESS_FIELDS.index_with { nil })
       stub = stub_postcard_create
 
       described_class.perform_now(order.id)

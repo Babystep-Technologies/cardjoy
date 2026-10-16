@@ -44,9 +44,9 @@ class PostCard::ProofGenerator
 
   # PostGrid will not create a postcard without a `to`, and a proof by
   # definition has no recipient — it is rendered before the user has picked
-  # one. `from` uses CardJoy's real `ReturnAddress` (#233), the same one the
-  # live order prints, so the proof shows the sender the user will actually
-  # get.
+  # one. `from` uses the card owner's own return address (#233), the same one
+  # the live order prints, so the proof shows the sender the recipient will
+  # actually see.
   #
   # This is the USPS-reserved example address, chosen so that anyone reading a
   # proof PDF or a PostGrid dashboard row can tell at a glance that no real
@@ -95,14 +95,13 @@ class PostCard::ProofGenerator
 
   attr_reader :card
 
-  # Same address and the same failure mode as `MailSubmission#return_address`
+  # Same source and the same failure mode as `MailSubmission#return_address`
   # — see there for why this raises rather than rendering with a blank field.
   def return_address
-    unless ::PostCard::ReturnAddress.configured?
-      raise PostGrid::ConfigurationError, "CardJoy return address is not configured"
-    end
+    user = card.user
+    raise PostGrid::ConfigurationError, "User has no return address configured" unless user.return_address_complete?
 
-    ::PostCard::ReturnAddress.address
+    user.return_address_for_postgrid
   end
 
   def body_for(panels)

@@ -27,7 +27,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApolloClient, useMutation, useQuery } from '@apollo/client';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Pencil, PackageX } from 'lucide-react';
+import { ArrowLeft, MapPin, Pencil, PackageX } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import withAuth from '@/lib/with-auth';
 import LoadingScreen from '@/components/Loading';
@@ -76,6 +76,7 @@ import {
 interface SendDataResponse {
   postCard: SendCard | null;
   postCardMailingAvailability: MailingAvailability;
+  viewer: { returnAddress: { complete: boolean } } | null;
   myContacts: SendContact[];
   myContactLists: SendContactList[];
 }
@@ -465,6 +466,44 @@ const PostCardSend: React.FC = () => {
               </Button>
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 Back to dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /**
+   * No return address, no send flow (#233). Every physical card needs a
+   * sender printed on it, and there is no CardJoy-wide fallback — `sendPostCard`
+   * already refuses with no return address, so this is where that gets caught
+   * before the user picks recipients and pays for nothing.
+   */
+  if (!data?.viewer?.returnAddress?.complete) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 px-4 py-8">
+        <div className="mx-auto w-full max-w-2xl">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 gap-1.5"
+            onClick={() => navigate(`/post-card/${externalId}/edit`)}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to the editor
+          </Button>
+          <div className="mt-4 rounded-xl border border-amber-200 bg-white p-8 text-center">
+            <MapPin className="mx-auto h-10 w-10 text-amber-500" />
+            <h1 className="mt-4 text-2xl font-semibold text-gray-900">Add your return address</h1>
+            <p className="mt-2 text-gray-600">
+              Every post card needs a sender address printed on it, so we need yours before you can
+              send one. Nothing has been charged.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button onClick={() => navigate('/profile')}>Add return address</Button>
+              <Button variant="outline" onClick={() => navigate(`/post-card/${externalId}/edit`)}>
+                Keep editing
               </Button>
             </div>
           </div>

@@ -16,13 +16,6 @@ module PostGridHelpers
   # created. Nothing signed with it ever leaves the process.
   WEBHOOK_SECRET = "whsec_specsuitefakesecretdonotuse"
 
-  # Obviously fake, complete return address — CardJoy's own `from`.
-  RETURN_ADDRESS_LINE1 = "123 Spec St"
-  RETURN_ADDRESS_CITY = "Specville"
-  RETURN_ADDRESS_REGION = "IL"
-  RETURN_ADDRESS_POSTAL_CODE = "60000"
-  RETURN_ADDRESS_COUNTRY = "US"
-
   VERIFY_URL ="#{PostGrid::Client::ADDRESS_VERIFICATION_BASE_URL}#{PostGrid::AddressVerification::VERIFY_PATH}"
   POSTCARDS_URL = "#{PostGrid::Client::BASE_URL}#{PostCard::ProofGenerator::POSTCARDS_PATH}"
 
@@ -44,20 +37,6 @@ module PostGridHelpers
   # full Rack stack, and a partial double on ENV#[] doesn't survive it.
   def with_post_grid_webhook_secret(secret = WEBHOOK_SECRET)
     set_post_grid_env("POSTGRID_WEBHOOK_SECRET", secret)
-  end
-
-  # Configures CardJoy's own `PostCard::ReturnAddress` for the duration of an
-  # example. Pass `line1: nil` (etc.) to leave a field unset, e.g. to exercise
-  # the "not configured" path.
-  def with_cardjoy_return_address(
-    line1: RETURN_ADDRESS_LINE1, city: RETURN_ADDRESS_CITY,
-    region: RETURN_ADDRESS_REGION, postal_code: RETURN_ADDRESS_POSTAL_CODE, country: RETURN_ADDRESS_COUNTRY
-  )
-    set_post_grid_env("CARDJOY_RETURN_ADDRESS_LINE1", line1)
-    set_post_grid_env("CARDJOY_RETURN_ADDRESS_CITY", city)
-    set_post_grid_env("CARDJOY_RETURN_ADDRESS_REGION", region)
-    set_post_grid_env("CARDJOY_RETURN_ADDRESS_POSTAL_CODE", postal_code)
-    set_post_grid_env("CARDJOY_RETURN_ADDRESS_COUNTRY", country)
   end
 
   # The `PostGrid-Signature` header for `payload`, built the way PostGrid builds

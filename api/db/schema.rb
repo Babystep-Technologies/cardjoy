@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_17_221130) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_205630) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -622,6 +622,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_17_221130) do
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
+    t.string "return_address_city"
+    t.string "return_address_country_code"
+    t.string "return_address_line1"
+    t.string "return_address_line2"
+    t.string "return_address_postal_code"
+    t.string "return_address_region"
     t.string "stripe_customer_id"
     t.string "uid"
     t.datetime "updated_at", null: false

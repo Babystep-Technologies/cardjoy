@@ -10,7 +10,6 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import RootLayout from '@/layouts/RootLayout';
 import VerifyEmail from '@/pages/VerifyEmail';
-import Profile from '@/pages/Profile';
 import BuyCredits from '@/pages/BuyCredits';
 import BuyCreditsCancel from '@/pages/BuyCredits/Cancel';
 import BuyCreditsSuccess from '@/pages/BuyCredits/Success';
@@ -83,6 +82,11 @@ const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Member
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
 const OrganizationJoin = React.lazy(() => import('@/pages/Organization/Join'));
 
+// Signed-in-only, same reasoning as Contacts above — and its return-address
+// form (#233) pulls in the same address UI Contacts does, which is what
+// pushed it over the main chunk's remaining headroom.
+const Profile = React.lazy(() => import('@/pages/Profile'));
+
 const MaintenanceGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isMaintenance = useFeatureFlagEnabled(import.meta.env.VITE_MAINTENANCE_MODE_FEATURE_FLAG);
   const location = useLocation();
@@ -124,7 +128,14 @@ const App: React.FC = () => {
           <Route path="/forgot_password" element={<ForgotPassword />} />
           <Route path="/reset_password" element={<ResetPassword />} />
           <Route path="/verify_email" element={<VerifyEmail />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route
+            path="/profile"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <Profile />
+              </React.Suspense>
+            }
+          />
           <Route path="/buy_credits" element={<BuyCredits />} />
           <Route path="/buy_credits/cancel" element={<BuyCreditsCancel />} />
           <Route path="/buy_credits/success" element={<BuyCreditsSuccess />} />

@@ -87,6 +87,7 @@ module Types
     field :generate_post_card_proof, mutation: Mutations::GeneratePostCardProof
     field :approve_post_card_proof, mutation: Mutations::ApprovePostCardProof
     field :send_post_card, mutation: Mutations::SendPostCard
+    field :update_return_address, mutation: Mutations::UpdateReturnAddress
     field :create_support_ticket, mutation: Mutations::CreateSupportTicket
     field :reply_to_support_ticket, mutation: Mutations::ReplyToSupportTicket
     field :reply_to_support_ticket_by_admin, mutation: Mutations::ReplyToSupportTicketByAdmin

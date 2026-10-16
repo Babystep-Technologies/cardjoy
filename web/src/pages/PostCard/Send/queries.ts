@@ -50,10 +50,10 @@ const SEND_CARD_FIELDS = gql`
  * The card, the address book, the lists — and whether any of this can run at
  * all. One round trip on flow entry.
  *
- * `postCardMailingAvailability` rides along rather than being asked for
- * separately because the answer decides whether the flow renders. A second
- * request would let the stepper paint first and be withdrawn a moment later
- * (#153).
+ * `postCardMailingAvailability` and `viewer.returnAddress` both ride along
+ * rather than being asked for separately, because either answer decides
+ * whether the flow renders at all. A second request would let the stepper
+ * paint first and be withdrawn a moment later (#153, #233).
  */
 export const GET_SEND_DATA = gql`
   query PostCardSend($externalId: String!) {
@@ -63,6 +63,11 @@ export const GET_SEND_DATA = gql`
     postCardMailingAvailability {
       proofsAvailable
       mailingAvailable
+    }
+    viewer {
+      returnAddress {
+        complete
+      }
     }
     myContacts {
       ...SendContactFields

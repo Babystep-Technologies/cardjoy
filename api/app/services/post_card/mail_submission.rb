@@ -70,16 +70,16 @@ class PostCard::MailSubmission
     }
   end
 
-  # CardJoy's own address, configured once for every order (#233). Raises
-  # rather than mailing a card with a blank return-address field — PostGrid
-  # would likely reject it anyway, but this is a clearer, faster failure than
-  # waiting on that 400.
+  # The sender's own address (#233) — never CardJoy's, never a placeholder.
+  # Raises rather than mailing a card with a blank return-address field;
+  # `Mutations::SendPostCard` already refuses a send with no return address up
+  # front, so reaching here with one incomplete would mean it disappeared
+  # between send and submission.
   def return_address
-    unless ::PostCard::ReturnAddress.configured?
-      raise PostGrid::ConfigurationError, "CardJoy return address is not configured"
-    end
+    user = order.user
+    raise PostGrid::ConfigurationError, "User has no return address configured" unless user.return_address_complete?
 
-    ::PostCard::ReturnAddress.address
+    user.return_address_for_postgrid
   end
 
   # Built from `recipient_snapshot`, never from `order.contact`. The contact may

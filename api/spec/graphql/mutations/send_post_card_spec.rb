@@ -7,7 +7,7 @@ require "rails_helper"
 RSpec.describe Mutations::SendPostCard, type: :request do
   include ActiveJob::TestHelper
 
-  let(:user) { create(:user) }
+  let(:user) { create(:user, :with_return_address) }
   let(:stranger) { create(:user) }
   let(:card) { create(:post_card, user:, size: "6x4") }
   let(:ada) { create(:contact, :address_verified, user:, name: "Ada Lovelace") }
@@ -42,10 +42,7 @@ RSpec.describe Mutations::SendPostCard, type: :request do
     GRAPHQL
   end
 
-  before do
-    with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY)
-    with_cardjoy_return_address
-  end
+  before { with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY) }
 
   # What ProofGenerator and approvePostCardProof leave behind, written
   # directly so this spec never renders or submits a proof.
@@ -413,6 +410,26 @@ RSpec.describe Mutations::SendPostCard, type: :request do
       result = exec(contacts: [ ada ])
 
       expect(result["errors"]).to eq([ described_class::UNAVAILABLE_ERROR ])
+      expect(PostCardMailOrder.count).to eq(0)
+      expect(balance).to eq(1_000)
+    end
+  end
+
+  # The actual defect this gate exists to close (#233): without it, a user with
+  # no return address of their own could still send, and every card would go
+  # out carrying a placeholder as its sender.
+  describe "when the user has no return address" do
+    let(:user) { create(:user) }
+
+    before do
+      approve_proof
+      top_up(1_000)
+    end
+
+    it "refuses the send and debits nothing" do
+      result = exec(contacts: [ ada ])
+
+      expect(result["errors"]).to eq([ described_class::NO_RETURN_ADDRESS_ERROR ])
       expect(PostCardMailOrder.count).to eq(0)
       expect(balance).to eq(1_000)
     end

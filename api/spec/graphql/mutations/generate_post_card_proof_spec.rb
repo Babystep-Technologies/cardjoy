@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe Mutations::GeneratePostCardProof, type: :request do
-  let(:user) { create(:user) }
+  let(:user) { create(:user, :with_return_address) }
   let(:secret) { Rails.application.credentials.dig(:jwt, :secret) }
   let(:token) { JWT.encode({ user_id: user.id }, secret, "HS256") }
   let(:headers) { { "Content-Type" => "application/json", "Authorization" => "Bearer #{token}" } }
@@ -20,10 +20,7 @@ RSpec.describe Mutations::GeneratePostCardProof, type: :request do
     GRAPHQL
   end
 
-  before do
-    with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY)
-    with_cardjoy_return_address
-  end
+  before { with_post_grid_key(live_key: PostGridHelpers::LIVE_API_KEY) }
 
   def generate(external_id: card.external_id, request_headers: headers)
     post "/graphql", params: { query:, variables: { externalId: external_id } }.to_json, headers: request_headers
