@@ -32,6 +32,16 @@ class PostgridWebhooksController < ApplicationController
   # belongs to a product we don't have and is logged rather than assumed.
   POSTCARD_UPDATED = "postcard.updated"
 
+  # Same tolerance `Stripe::Webhook.construct_event` enforces by default
+  # (#233). The HMAC alone proves the signature came from someone holding the
+  # secret at some point; it says nothing about *when*, so an intercepted
+  # request stays valid forever unless something checks the timestamp it
+  # carries. Mail-order transitions are monotonic/idempotent either way (see
+  # `PostCardMailOrder::STATUS_RANK`), so a stale replay getting this far
+  # would be a no-op rather than a corruption — this is the layer that should
+  # have refused it before it got that far.
+  SIGNATURE_TOLERANCE = 5.minutes
+
   def create
     payload = request.raw_post
 
@@ -61,9 +71,22 @@ class PostgridWebhooksController < ApplicationController
     timestamp = parts["t"]
     provided = parts["v1"]
     return false if timestamp.blank? || provided.blank?
+    return false unless recent?(timestamp)
 
     expected = OpenSSL::HMAC.hexdigest("SHA256", secret, "#{timestamp}.#{payload}")
     ActiveSupport::SecurityUtils.secure_compare(expected, provided)
+  end
+
+  # False for anything older than the tolerance, and for a timestamp that
+  # isn't a plain integer — malformed is just another way of being too old to
+  # trust. Never rejects a *future* timestamp: that's clock skew between here
+  # and PostGrid, not a replay, and the HMAC already proves the secret was
+  # known when it was signed.
+  def recent?(timestamp)
+    seconds = Integer(timestamp, 10)
+    Time.current.to_i - seconds <= SIGNATURE_TOLERANCE
+  rescue ArgumentError, TypeError
+    false
   end
 
   def parse(payload)
