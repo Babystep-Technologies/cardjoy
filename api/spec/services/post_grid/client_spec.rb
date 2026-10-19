@@ -163,6 +163,46 @@ RSpec.describe PostGrid::Client do
     end
   end
 
+  # PostGrid wraps a created/fetched resource under a top-level "data" key —
+  # confirmed on address verification's own fixtures — and this is the layer
+  # that used to leave every caller to guess that for itself. One caller,
+  # ProofGenerator, guessed wrong: it read a flat `payload["url"]`, found
+  # nothing on a real create (which PostGrid had genuinely just succeeded
+  # at), and raised ServiceError — "couldn't reach our print partner" for a
+  # postcard that had, in fact, been created (#233).
+  describe "the \"data\" envelope" do
+    it "unwraps a 2xx response's data key so callers read fields directly" do
+      stub_request(:post, url).to_return(status: 200, body: '{"data":{"id":"postcard_abc","url":"https://example.test/x.pdf"}}')
+
+      payload = client.create("/postcards", body: {}, idempotency_key: "order-42")
+
+      expect(payload).to eq("id" => "postcard_abc", "url" => "https://example.test/x.pdf")
+    end
+
+    it "passes a flat response through unchanged, for any endpoint that doesn't wrap" do
+      stub_request(:post, url).to_return(status: 200, body: '{"id":"postcard_abc"}')
+
+      payload = client.create("/postcards", body: {}, idempotency_key: "order-42")
+
+      expect(payload).to eq("id" => "postcard_abc")
+    end
+
+    it "does not unwrap a \"data\" field that isn't itself an object" do
+      stub_request(:post, url).to_return(status: 200, body: '{"id":"postcard_abc","data":"not-a-hash"}')
+
+      payload = client.create("/postcards", body: {}, idempotency_key: "order-42")
+
+      expect(payload).to eq("id" => "postcard_abc", "data" => "not-a-hash")
+    end
+
+    it "leaves an error response's envelope alone — only a 2xx is unwrapped" do
+      stub_request(:post, url).to_return(status: 400, body: '{"error":{"message":"bad address","type":"invalid_request_error"}}')
+
+      expect { client.create("/postcards", body: {}, idempotency_key: "order-42") }
+        .to raise_error(PostGrid::InvalidRequestError, "bad address")
+    end
+  end
+
   describe "logging" do
     let(:log) { StringIO.new }
 

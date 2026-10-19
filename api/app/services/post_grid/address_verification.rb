@@ -119,7 +119,8 @@ module PostGrid
         country: country_code
       }.compact })
 
-      build_result(payload.fetch("data", {}), fallback_country: country_code)
+      # Client#unwrap already stripped the "data" envelope.
+      build_result(payload, fallback_country: country_code)
     end
 
     private

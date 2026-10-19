@@ -78,7 +78,8 @@ RSpec.describe PostCard::ProofGenerator do
       # Asserted on the fixture rather than on the card, because `live` is the
       # field that proves the render cost nothing — it is why the fixture says
       # false, and a fixture that quietly flipped to true should fail here.
-      expect(JSON.parse(post_grid_fixture("postcard_test_created"))["live"]).to be(false)
+      # PostGrid wraps a created resource under "data" (#233).
+      expect(JSON.parse(post_grid_fixture("postcard_test_created")).dig("data", "live")).to be(false)
     end
 
     it "clears an approval carried over from a previous proof" do
