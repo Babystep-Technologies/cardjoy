@@ -95,16 +95,18 @@ class PostCard::ProofGenerator
 
   attr_reader :card
 
-  # `create` doesn't carry `url` — confirmed against a real response (#233),
-  # not assumed: PostGrid returns the rendered PDF's location only once you
-  # `GET` the postcard back, not on the create response itself. One extra
+  # Neither `create` nor a plain `GET /postcards/:id` carries `url` — confirmed
+  # against real responses, not assumed (#233). PostGrid's own OpenAPI spec
+  # names the actual source: `GET /postcards/:id/url`, a dedicated endpoint
+  # ("Get Postcard Preview") requiring PostGrid's document management addon,
+  # returning a signed S3 URL valid for 15 minutes from the call. One extra
   # round trip, immediately after create, for the one field a proof exists to
   # show.
   def fetch(created)
     id = created["id"].presence
     raise PostGrid::ServiceError, "PostGrid returned no postcard id" unless id
 
-    @client.get("#{POSTCARDS_PATH}/#{id}")
+    @client.get("#{POSTCARDS_PATH}/#{id}/url")
   end
 
   # Same source and the same failure mode as `MailSubmission#return_address`

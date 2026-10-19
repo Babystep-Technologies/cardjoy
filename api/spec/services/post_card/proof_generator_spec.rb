@@ -12,7 +12,7 @@ RSpec.describe PostCard::ProofGenerator do
       freeze_time do
         expect(described_class.new(card).generate!).to eq(card)
 
-        expect(card.reload.proof_url).to eq("https://pg-prod-bucket-1.s3.amazonaws.com/test/postcard_spec1fakepostcardid.pdf")
+        expect(card.reload.proof_url).to eq(JSON.parse(post_grid_fixture("postcard_test_fetched"))["url"])
         expect(card.proof_generated_at).to eq(Time.current)
         expect(card.proof_design_digest).to eq(card.proof_design_digest_for_current_design)
         expect(card.proof_current?).to be(true)
