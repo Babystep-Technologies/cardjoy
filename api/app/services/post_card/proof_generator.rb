@@ -86,14 +86,26 @@ class PostCard::ProofGenerator
     # claim this render depicts it.
     digest = card.proof_design_digest_for_current_design
 
-    payload = @client.create(POSTCARDS_PATH, body: body_for(panels), idempotency_key: SecureRandom.uuid)
+    created = @client.create(POSTCARDS_PATH, body: body_for(panels), idempotency_key: SecureRandom.uuid)
 
-    store!(payload, digest)
+    store!(fetch(created), digest)
   end
 
   private
 
   attr_reader :card
+
+  # `create` doesn't carry `url` — confirmed against a real response (#233),
+  # not assumed: PostGrid returns the rendered PDF's location only once you
+  # `GET` the postcard back, not on the create response itself. One extra
+  # round trip, immediately after create, for the one field a proof exists to
+  # show.
+  def fetch(created)
+    id = created["id"].presence
+    raise PostGrid::ServiceError, "PostGrid returned no postcard id" unless id
+
+    @client.get("#{POSTCARDS_PATH}/#{id}")
+  end
 
   # Same source and the same failure mode as `MailSubmission#return_address`
   # — see there for why this raises rather than rendering with a blank field.

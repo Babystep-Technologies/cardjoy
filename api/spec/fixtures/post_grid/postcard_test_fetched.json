@@ -1,0 +1,12 @@
+{
+  "id": "postcard_spec1fakepostcardid",
+  "object": "postcard",
+  "live": false,
+  "status": "ready",
+  "size": "6x4",
+  "url": "https://pg-prod-bucket-1.s3.amazonaws.com/test/postcard_spec1fakepostcardid.pdf",
+  "description": "CardJoy proof",
+  "sendDate": "2026-09-06T12:00:00.000Z",
+  "createdAt": "2026-09-06T12:00:00.000Z",
+  "updatedAt": "2026-09-06T12:00:00.000Z"
+}
