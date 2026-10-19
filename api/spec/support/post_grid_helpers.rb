@@ -72,8 +72,23 @@ module PostGridHelpers
 
   # Defaults to the created-postcard fixture, so the happy path reads as one
   # line. The returned stub is what a spec asserts request headers and body on.
+  #
+  # Also stubs the follow-up GET `ProofGenerator` makes for every create — the
+  # create response carries no `url` (#233), confirmed against a real PostGrid
+  # response. Harmless for a spec that never reaches it (an error-status create,
+  # or `MailSubmission`, which never calls GET at all): webmock doesn't require
+  # a registered stub to be hit.
   def stub_postcard_create(body: post_grid_fixture("postcard_test_created"), status: 200)
+    stub_postcard_get
     stub_request(:post, POSTCARDS_URL).to_return(
+      status:, body:, headers: { "Content-Type" => "application/json" }
+    )
+  end
+
+  # The id in both postcard fixtures by default — the one `stub_postcard_create`
+  # hands back, so the two line up without a spec having to pass it through.
+  def stub_postcard_get(id: "postcard_spec1fakepostcardid", body: post_grid_fixture("postcard_test_fetched"), status: 200)
+    stub_request(:get, "#{POSTCARDS_URL}/#{id}").to_return(
       status:, body:, headers: { "Content-Type" => "application/json" }
     )
   end

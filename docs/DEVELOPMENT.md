@@ -119,9 +119,12 @@ implementations of the cropping maths is how the on-screen proof stops matching 
 
 Before a card is printed the user approves a **proof**: the PDF PostGrid gets from rendering the
 card, produced by the same renderer that will print it. `PostCard::ProofGenerator` submits the
-rendered HTML to `/postcards` with the **test** key — a real PDF, no mail, no cost — and stores the
-returned `url`. `generatePostCardProof` and `approvePostCardProof` are the two mutations; the
-type exposes `proofUrl`, `proofGeneratedAt`, `proofCurrent`, and `proofApproved`.
+rendered HTML to `POST /postcards` with the **test** key — a real PDF, no mail, no cost — then
+immediately follows up with `GET /postcards/:id` and stores *that* response's `url`. The create
+response carries no `url` at all (confirmed against a real PostGrid response, not assumed — see
+#233); the PDF only shows up on the fetch. `generatePostCardProof` and `approvePostCardProof` are
+the two mutations; the type exposes `proofUrl`, `proofGeneratedAt`, `proofCurrent`, and
+`proofApproved`.
 
 Three rules hold this together, and the send flow (#148) depends on all of them:
 
@@ -136,15 +139,17 @@ Three rules hold this together, and the send flow (#148) depends on all of them:
   `PostCard::PROOF_MAX_AGE` reports as not current even if nothing was edited — regenerate rather
   than serve a dead link.
 
-Generation runs inline in the mutation, not in a job: the user is waiting on it and the client is
-bounded at 3 × (5s + 15s). Failures land in `errors` as sentences and leave the previous proof
-intact, so a PostGrid outage costs a retry rather than the render the user already had.
+Generation runs inline in the mutation, not in a job: the user is waiting on it, and each of the two
+calls (create, then fetch) is independently bounded at 3 × (5s + 15s) by `PostGrid::Client`. Failures
+land in `errors` as sentences and leave the previous proof intact, so a PostGrid outage costs a retry
+rather than the render the user already had.
 
 ### Mail pricing
 
-**PostGrid has no price-quote endpoint.** Creating a postcard returns an id, a status, and a PDF —
-no cost field — and there is nothing to ask beforehand. So "price a card from its destination" is
-two services that answer two different questions:
+**PostGrid has no price-quote endpoint.** Creating a postcard returns an id and a status — no PDF
+(that's a separate `GET`, see the proofs section above) and no cost field — and there is nothing to
+ask beforehand. So "price a card from its destination" is two services that answer two different
+questions:
 
 - `PostGrid::AddressVerification` is the authority on **where** an address is. It returns a `zone`
   (`us_domestic`, `canada`, `international`), cached on the contact in `address_zone`.

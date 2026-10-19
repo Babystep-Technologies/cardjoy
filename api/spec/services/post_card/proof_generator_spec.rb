@@ -19,6 +19,20 @@ RSpec.describe PostCard::ProofGenerator do
       end
     end
 
+    # The GET this fixes in for (#233): `create`'s response never carries
+    # `url`, confirmed against a real PostGrid response, so the proof's PDF
+    # only exists once this second call fetches the postcard back by id.
+    it "fetches the created postcard by id to get its url" do
+      stub_postcard_create
+      get_stub = stub_postcard_get
+
+      described_class.new(card).generate!
+
+      expect(get_stub.with { |request|
+        request.headers["X-Api-Key"] == PostGridHelpers::TEST_API_KEY
+      }).to have_been_made
+    end
+
     # The acceptance criterion with teeth: a live key is configured in this
     # spec's environment and must still never be the one that goes out.
     it "authenticates with the test key even when a live key is configured" do
@@ -78,8 +92,7 @@ RSpec.describe PostCard::ProofGenerator do
       # Asserted on the fixture rather than on the card, because `live` is the
       # field that proves the render cost nothing — it is why the fixture says
       # false, and a fixture that quietly flipped to true should fail here.
-      # PostGrid wraps a created resource under "data" (#233).
-      expect(JSON.parse(post_grid_fixture("postcard_test_created")).dig("data", "live")).to be(false)
+      expect(JSON.parse(post_grid_fixture("postcard_test_created"))["live"]).to be(false)
     end
 
     it "clears an approval carried over from a previous proof" do
@@ -105,11 +118,23 @@ RSpec.describe PostCard::ProofGenerator do
       end
     end
 
+    # The real failure mode (#233): `create` never carries `url` — only the
+    # follow-up `fetch` does — so this is what "no URL" actually looks like
+    # now: a fetched postcard that, for whatever reason, still has none.
     it "raises rather than storing a proof with no URL" do
-      stub_postcard_create(body: { "id" => "postcard_x", "live" => false }.to_json)
+      stub_postcard_create
+      stub_postcard_get(body: { "id" => "postcard_spec1fakepostcardid", "status" => "ready" }.to_json)
 
       expect { described_class.new(card).generate! }.to raise_error(PostGrid::ServiceError, /no proof URL/)
       expect(card.reload.proof_url).to be_nil
+    end
+
+    it "raises and makes no GET at all when create answers with no id" do
+      stub = stub_postcard_get
+      stub_postcard_create(body: { "status" => "ready" }.to_json)
+
+      expect { described_class.new(card).generate! }.to raise_error(PostGrid::ServiceError, /no postcard id/)
+      expect(stub).not_to have_been_made
     end
 
     it "raises UnknownTemplateError for a card whose template has been retired" do
