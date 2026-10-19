@@ -33,7 +33,7 @@ RSpec.describe Mutations::GeneratePostCardProof, type: :request do
     result = generate
 
     expect(result["errors"]).to be_empty
-    expect(result.dig("postCard", "proofUrl")).to eq("https://pg-prod-bucket-1.s3.amazonaws.com/test/postcard_spec1fakepostcardid.pdf")
+    expect(result.dig("postCard", "proofUrl")).to eq(JSON.parse(post_grid_fixture("postcard_test_fetched"))["url"])
     expect(result.dig("postCard", "proofGeneratedAt")).to be_present
     expect(result.dig("postCard", "proofCurrent")).to be(true)
     expect(result.dig("postCard", "proofApproved")).to be(false)

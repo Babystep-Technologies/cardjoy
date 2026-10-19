@@ -85,10 +85,12 @@ module PostGridHelpers
     )
   end
 
-  # The id in both postcard fixtures by default — the one `stub_postcard_create`
-  # hands back, so the two line up without a spec having to pass it through.
+  # "Get Postcard Preview" — PostGrid's dedicated endpoint for the signed PDF
+  # URL (see PostCard::ProofGenerator#fetch). The id defaults to the one
+  # `stub_postcard_create` hands back, so the two line up without a spec
+  # having to pass it through.
   def stub_postcard_get(id: "postcard_spec1fakepostcardid", body: post_grid_fixture("postcard_test_fetched"), status: 200)
-    stub_request(:get, "#{POSTCARDS_URL}/#{id}").to_return(
+    stub_request(:get, "#{POSTCARDS_URL}/#{id}/url").to_return(
       status:, body:, headers: { "Content-Type" => "application/json" }
     )
   end
