@@ -20,9 +20,9 @@ RSpec.describe Queries::AdminPromoCodes, type: :request do
 
   let(:query) do
     <<~GQL
-      query AdminPromoCodes($page: Int, $perPage: Int, $search: String) {
-        adminPromoCodes(page: $page, perPage: $perPage, search: $search) {
-          promoCodes { code creditAmount usageLimit timesRedeemed user { email } }
+      query AdminPromoCodes($page: Int, $perPage: Int, $search: String, $status: String, $sort: String, $direction: String) {
+        adminPromoCodes(page: $page, perPage: $perPage, search: $search, status: $status, sort: $sort, direction: $direction) {
+          promoCodes { code creditAmount usageLimit timesRedeemed disabledAt status user { email } }
           totalCount
           totalPages
           page
@@ -52,6 +52,62 @@ RSpec.describe Queries::AdminPromoCodes, type: :request do
     create(:promo_code)
     run(headers: user_headers)
     expect(JSON.parse(response.body)['errors'].first['message']).to eq 'Not authorized'
+  end
+
+  describe 'status' do
+    let!(:active) { create(:promo_code, code: 'active') }
+    let!(:expired) { create(:promo_code, :expired, code: 'expired') }
+    let!(:disabled) { create(:promo_code, :disabled, code: 'disabled') }
+    let!(:fully_redeemed) { create(:promo_code, :limit_reached, code: 'fullyredeemed') }
+
+    def codes_for(status)
+      run(variables: { status: status })
+      JSON.parse(response.body)['data']['adminPromoCodes']['promoCodes'].map { |p| p['code'] }
+    end
+
+    it 'filters to each lifecycle state' do
+      expect(codes_for('active')).to eq [ 'active' ]
+      expect(codes_for('expired')).to eq [ 'expired' ]
+      expect(codes_for('disabled')).to eq [ 'disabled' ]
+      expect(codes_for('fully_redeemed')).to eq [ 'fullyredeemed' ]
+    end
+
+    it 'reports the derived status on each code, disabled winning over expired' do
+      create(:promo_code, :expired, :disabled, code: 'both')
+
+      run
+      statuses = JSON.parse(response.body)['data']['adminPromoCodes']['promoCodes']
+        .to_h { |p| [ p['code'], p['status'] ] }
+      expect(statuses).to include('active' => 'active', 'expired' => 'expired',
+        'disabled' => 'disabled', 'fullyredeemed' => 'fully_redeemed', 'both' => 'disabled')
+    end
+
+    it 'rejects an unknown status' do
+      run(variables: { status: 'bogus' })
+      expect(JSON.parse(response.body)['errors'].first['message']).to eq 'Invalid status: bogus'
+    end
+  end
+
+  describe 'sort' do
+    it 'orders by the requested column and direction' do
+      create(:promo_code, code: 'b', credit_amount: 5)
+      create(:promo_code, code: 'a', credit_amount: 20)
+
+      run(variables: { sort: 'credit_amount', direction: 'asc' })
+      asc = JSON.parse(response.body)['data']['adminPromoCodes']['promoCodes'].map { |p| p['code'] }
+      run(variables: { sort: 'code', direction: 'desc' })
+      desc = JSON.parse(response.body)['data']['adminPromoCodes']['promoCodes'].map { |p| p['code'] }
+
+      expect(asc).to eq %w[b a]
+      expect(desc).to eq %w[b a]
+    end
+
+    it 'rejects an unknown sort or direction' do
+      run(variables: { sort: 'bogus' })
+      expect(JSON.parse(response.body)['errors'].first['message']).to eq 'Invalid sort: bogus'
+      run(variables: { direction: 'sideways' })
+      expect(JSON.parse(response.body)['errors'].first['message']).to eq 'Invalid direction: sideways'
+    end
   end
 
   describe 'search' do
