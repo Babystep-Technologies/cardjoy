@@ -140,9 +140,24 @@ module PostGrid
 
       log(uri, status, payload)
 
-      return payload if status.between?(200, 299)
+      return unwrap(payload) if status.between?(200, 299)
 
       raise error_for(status, payload)
+    end
+
+    # PostGrid wraps a created/fetched resource under a top-level "data" key
+    # on a 2xx (confirmed on address verification — see the fixtures under
+    # spec/fixtures/post_grid — and matching the defensive `|| data.id` reads
+    # that used to be scattered across callers). Unwrapped once here so every
+    # caller reads `id`/`url`/`status` directly, rather than each guessing —
+    # or, as `ProofGenerator#store!` did, not guessing, and raising
+    # ServiceError on a create that actually succeeded (#233).
+    #
+    # Falls back to the raw payload for any endpoint that doesn't wrap, so
+    # this never turns a flat response into an empty one.
+    def unwrap(payload)
+      nested = payload["data"]
+      nested.is_a?(Hash) ? nested : payload
     end
 
     # PostGrid reports errors as `{"error": {"message": …, "type": …}}`, but a
@@ -174,7 +189,11 @@ module PostGrid
 
     # Path, status, and PostGrid's object id. Nothing else — see the class note.
     def log(uri, status, payload)
-      object_id = payload.dig("data", "id") || payload["id"]
+      # #unwrap, not a second `.dig("data", "id")`: a non-Hash "data" (PostGrid
+      # sends one on some error bodies) would raise on `.dig`, and this runs on
+      # every response, success or failure, so it cannot be the thing that
+      # turns a loggable response into an unhandled 500.
+      object_id = unwrap(payload)["id"]
       Rails.logger.info(
         "[PostGrid] #{uri.path} status=#{status} mode=#{@mode}#{" id=#{object_id}" if object_id.present?}"
       )

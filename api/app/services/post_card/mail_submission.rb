@@ -103,7 +103,8 @@ class PostCard::MailSubmission
   # service failure so the job retries under the same idempotency key, rather
   # than being recorded as a success we can never look up.
   def store!(payload)
-    postgrid_id = (payload["id"] || payload.dig("data", "id")).presence
+    # Client#unwrap already stripped any "data" envelope.
+    postgrid_id = payload["id"].presence
     raise PostGrid::ServiceError, "PostGrid returned no postcard id" unless postgrid_id
 
     order.mark_submitted!(postgrid_id:, postgrid_status: payload["status"])
