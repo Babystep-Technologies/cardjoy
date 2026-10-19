@@ -195,7 +195,9 @@ module PostGrid
       # turns a loggable response into an unhandled 500.
       object_id = unwrap(payload)["id"]
       Rails.logger.info(
-        "[PostGrid] #{uri.path} status=#{status} mode=#{@mode}#{" id=#{object_id}" if object_id.present?}"
+        "[PostGrid] #{uri.path} status=#{status} mode=#{@mode}#{" id=#{object_id}" if object_id.present?}" \
+        " keys=#{payload.keys.inspect}" \
+        "#{" data_keys=#{payload['data'].keys.inspect}" if payload['data'].is_a?(Hash)}"
       )
     end
 
