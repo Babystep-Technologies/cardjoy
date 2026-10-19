@@ -271,42 +271,73 @@ const PostCardSend: React.FC = () => {
     void runQuote(selectedKey ? selectedKey.split(',') : []);
   }, [stage, selectedKey, runQuote]);
 
+  /**
+   * The mutation and the post-success `refetch` are deliberately in separate
+   * try/catches. Both used to share one: a `refetch` hiccup *after* a mutation
+   * that had already succeeded landed in the same `catch` as a real mutation
+   * failure, so a successful proof could show "we couldn't reach our print
+   * partner" — the one message that is specifically untrue at that point. A
+   * failed refetch here means only that this screen's copy of the card is
+   * stale, not that anything failed; the mutation result already told the
+   * user it worked.
+   */
   const handleGenerateProof = useCallback(async () => {
     setProofErrors([]);
+    let result: ProofMutationResponse | null | undefined;
     try {
-      const { data: result } = await generateProof({ variables: { externalId } });
-      const errors = result?.generatePostCardProof?.errors ?? [];
-      if (errors.length > 0) {
-        setProofErrors(errors);
-        return;
-      }
-      await refetch();
-      toast.success('Proof ready — take a good look at both sides.');
+      ({ data: result } = await generateProof({ variables: { externalId } }));
     } catch {
       setProofErrors([
         'We could not reach our print partner to render a proof. Please try again in a moment.',
       ]);
+      return;
+    }
+
+    const errors = result?.generatePostCardProof?.errors ?? [];
+    if (errors.length > 0) {
+      setProofErrors(errors);
+      return;
+    }
+
+    toast.success('Proof ready — take a good look at both sides.');
+    try {
+      await refetch();
+    } catch {
+      // The proof generated and saved — only this screen's refresh of it
+      // failed. Nothing here was untrue, so nothing more to tell the user.
     }
   }, [generateProof, externalId, refetch]);
 
   const handleApproveProof = useCallback(async () => {
     setProofErrors([]);
+    let result: ProofMutationResponse | null | undefined;
     try {
-      const { data: result } = await approveProof({ variables: { externalId } });
-      const errors = result?.approvePostCardProof?.errors ?? [];
-      if (errors.length > 0) {
-        // Almost always a proof that went stale between rendering and pressing
-        // the button. Re-reading the card is what puts the "out of date" banner
-        // and the regenerate button on screen.
-        setProofErrors(errors);
-        await refetch();
-        return;
-      }
-      await refetch();
-      setFurthest('review');
-      toast.success('Proof approved.');
+      ({ data: result } = await approveProof({ variables: { externalId } }));
     } catch {
       setProofErrors(['We could not record that approval. Please try again.']);
+      return;
+    }
+
+    const errors = result?.approvePostCardProof?.errors ?? [];
+    if (errors.length > 0) {
+      // Almost always a proof that went stale between rendering and pressing
+      // the button. Re-reading the card is what puts the "out of date" banner
+      // and the regenerate button on screen.
+      setProofErrors(errors);
+      try {
+        await refetch();
+      } catch {
+        // Already told the user what's wrong; a failed re-read doesn't change it.
+      }
+      return;
+    }
+
+    setFurthest('review');
+    toast.success('Proof approved.');
+    try {
+      await refetch();
+    } catch {
+      // The approval was recorded — only this screen's refresh of it failed.
     }
   }, [approveProof, externalId, refetch]);
 
