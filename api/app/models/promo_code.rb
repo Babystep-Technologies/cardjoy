@@ -29,6 +29,37 @@ class PromoCode < ApplicationRecord
   # exist would make past redemptions inconsistent with the code's own terms.
   class AlreadyPartiallyRedeemedError < StandardError; end
 
+  # The lifecycle states the admin list filters on (#180). Derived, never
+  # stored: a code is `disabled` once staff switch it off, otherwise `expired`
+  # once its expiry has passed, otherwise `fully_redeemed` once it has no
+  # redemptions left, otherwise `active`. The precedence is the order #redeem!
+  # checks them in, so the label is the reason a redemption would fail.
+  STATUSES = %w[active expired disabled fully_redeemed].freeze
+
+  scope :with_status, lambda { |status|
+    case status
+    when "disabled" then where.not(disabled_at: nil)
+    when "expired" then where(disabled_at: nil).where("promo_codes.expires_at < ?", Time.current)
+    when "fully_redeemed"
+      not_expired = "promo_codes.expires_at IS NULL OR promo_codes.expires_at >= ?"
+      where(disabled_at: nil).where(not_expired, Time.current)
+        .where("COALESCE(promo_codes.times_redeemed, 0) >= promo_codes.usage_limit")
+    when "active"
+      where(disabled_at: nil)
+        .where("promo_codes.expires_at IS NULL OR promo_codes.expires_at >= ?", Time.current)
+        .where("COALESCE(promo_codes.times_redeemed, 0) < promo_codes.usage_limit")
+    else raise ArgumentError, "Invalid status: #{status}"
+    end
+  }
+
+  def status
+    return "disabled" if disabled_at.present?
+    return "expired" if expires_at&.< Time.current
+    return "fully_redeemed" if times_redeemed.to_i >= T.must(usage_limit)
+
+    "active"
+  end
+
   # Generates a unique, human-friendly code not already in use.
   def self.generate_unique_code
     loop do
