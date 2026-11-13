@@ -21,7 +21,30 @@ class PreviewsController < ApplicationController
     render_invitation_preview(params[:id])
   end
 
+  # Registry previews (#247)
+  def registry_view
+    render_registry_preview(params[:id])
+  end
+
   private
+
+  # A hidden registry reads as missing here too, exactly as it does through GraphQL: an unfurl
+  # must not confirm that an unpublished registry exists or leak its title.
+  def render_registry_preview(external_id)
+    @registry = WishList.find_by!(external_id: external_id, visible: true)
+
+    owner = @registry.user&.name.to_s.split.first
+    @title = owner.present? ? "#{@registry.title} — #{owner}" : @registry.title
+    @description = @registry.intro.presence ||
+      "See what they'd love, and claim something so nobody doubles up."
+    @image_url = DEFAULT_OG_IMAGE_URL
+    @image_alt = "CardJoy"
+    @image_width = DEFAULT_OG_IMAGE_WIDTH
+    @image_height = DEFAULT_OG_IMAGE_HEIGHT
+    @url = "#{AppConfig.frontend_url}#{@registry.guest_path}"
+
+    render "previews/show", layout: false
+  end
 
   def render_card_preview(id_or_slug, editable:)
     @card = find_card(id_or_slug)

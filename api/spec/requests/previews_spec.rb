@@ -196,4 +196,34 @@ RSpec.describe 'Previews', type: :request do
     )
     card.cover_image.blob.update!(metadata: { 'width' => width, 'height' => height, 'analyzed' => true })
   end
+
+  describe 'GET /p/registry/:external_id' do
+    let(:registry) { create(:wish_list, :standalone, title: "Sam's 30th", intro: "Thanks for celebrating!", visible: true) }
+
+    it 'unfurls with the registry title, intro and a link to the public page' do
+      allow(AppConfig).to receive(:frontend_url).and_return('https://cardjoy.app')
+
+      get "/p/registry/#{registry.external_id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Sam&#39;s 30th")
+      expect(response.body).to include('Thanks for celebrating!')
+      expect(response.body).to include("url=https://cardjoy.app/registry/#{registry.external_id}")
+    end
+
+    it 'does not confirm that a hidden registry exists' do
+      registry.update!(visible: false)
+
+      get "/p/registry/#{registry.external_id}"
+
+      expect(response).to have_http_status(:not_found)
+      expect(response.body).not_to include("Sam")
+    end
+
+    it '404s for an unknown id' do
+      get '/p/registry/nope'
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end
