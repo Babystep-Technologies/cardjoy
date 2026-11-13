@@ -17,6 +17,11 @@ Rails.application.configure do
       class: "OccasionReminderJob",
       description: "Email users a reminder ~a week before each upcoming occasion-book occasion"
     },
+    registry_event_reminders: {
+      cron: "30 14 * * *",
+      class: "RegistryEventReminderJob",
+      description: "Nudge registry owners to share their registry ahead of the event"
+    },
     stale_wish_list_claims: {
       cron: "0 15 * * *",
       class: "StaleWishListClaimsJob",

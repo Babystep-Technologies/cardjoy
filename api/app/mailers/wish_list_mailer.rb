@@ -40,6 +40,23 @@ class WishListMailer < ApplicationMailer
     )
   end
 
+  # To the registry's owner, ahead of the event (#251): the nudge to share it. Differs by whether
+  # it is already shared, since an unpublished registry has nobody to see it yet.
+  def event_reminder(wish_list)
+    @wish_list = wish_list
+    @owner = wish_list.user
+    @days_away = (wish_list.event_date - Date.current).to_i
+    @edit_url = "#{frontend_url}/registry/#{wish_list.external_id}/edit"
+    @list_url = "#{frontend_url}#{wish_list.guest_path}"
+    set_organization_brand(@owner.active_organization)
+
+    mail(
+      to: @owner.email,
+      subject: "#{@wish_list.title} is #{@days_away.zero? ? 'today' : "in #{@days_away} days"}",
+      **brand_reply_to
+    )
+  end
+
   private
 
   def prepare_claim(reservation)

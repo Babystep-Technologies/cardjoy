@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_100000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -621,10 +621,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_100000) do
   create_table "wish_lists", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.date "event_date"
+    t.datetime "event_reminded_at"
     t.string "external_id", null: false
     t.text "intro"
     t.bigint "invitation_id"
     t.string "occasion"
+    t.boolean "remind_owner", default: true, null: false
     t.boolean "share_address", default: false, null: false
     t.boolean "surprise_mode", default: true, null: false
     t.string "title", default: "Wish List", null: false

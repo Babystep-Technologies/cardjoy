@@ -1,0 +1,21 @@
+<h2>Hi <%= @owner.name.to_s.split.first %>!</h2>
+
+<p>
+  <strong><%= @wish_list.title %></strong> is
+  <%= @days_away.zero? ? 'today' : "in #{@days_away} days" %>.
+</p>
+
+<% if @wish_list.visible %>
+  <p>Your registry is live. Now is a good time to send the link to the people who'll want it.</p>
+  <p><a href="<%= @list_url %>" class="primary-button">Open my registry</a></p>
+<% else %>
+  <p>
+    Your registry isn't shared yet, so nobody can see it. Add your items and turn sharing on so
+    friends and family have time to pick something.
+  </p>
+  <p><a href="<%= @edit_url %>" class="primary-button">Finish my registry</a></p>
+<% end %>
+
+<p style="font-size: 12px; color: #666;">
+  Don't want these? Turn off event reminders in the registry's settings.
+</p>

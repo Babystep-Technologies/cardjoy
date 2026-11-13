@@ -20,6 +20,7 @@ module Mutations
     argument :visible, Boolean, required: false
     argument :surprise_mode, Boolean, required: false
     argument :share_address, Boolean, required: false
+    argument :remind_owner, Boolean, required: false
     argument :items, [ Types::WishListItemInputType ], required: false
     argument :contributions, [ Types::WishListContributionInputType ], required: false
 
