@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -150,7 +151,30 @@ const RegistryEdit: React.FC = () => {
 
       <Card>
         <CardContent className="space-y-6 pt-6">
-          <WishListFields value={draft} onChange={setDraft} idPrefix="registry" />
+          <WishListFields
+            value={draft}
+            onChange={setDraft}
+            idPrefix="registry"
+            visibilityLabel="Share this registry"
+            extraSettings={
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <Label htmlFor="registryShareAddress" className="text-base font-semibold">
+                    Share my mailing address with guests who claim a gift
+                  </Label>
+                  <p className="text-sm text-gray-500">
+                    Only people who claim an item see it, and only while this is on. It uses the
+                    address saved on your profile.
+                  </p>
+                </div>
+                <Switch
+                  id="registryShareAddress"
+                  checked={draft.shareAddress}
+                  onCheckedChange={shareAddress => setDraft({ ...draft, shareAddress })}
+                />
+              </div>
+            }
+          />
           <div className="flex justify-end pt-2">
             <Button onClick={handleSave} disabled={saving} className="h-12 px-6 font-bold">
               {saving ? 'Saving...' : isNew ? 'Create registry' : 'Save registry'}

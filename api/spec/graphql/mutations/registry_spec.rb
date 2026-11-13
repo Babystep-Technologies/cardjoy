@@ -89,6 +89,16 @@ RSpec.describe "Registry mutations", type: :request do
       expect(WishList.count).to eq(1)
     end
 
+    it "lets the owner switch address sharing on (it starts off)" do
+      expect(registry.share_address).to be(false)
+      share = "mutation($id: String, $share: Boolean) { upsertWishList(input: { registryExternalId: $id, shareAddress: $share }) { wishList { shareAddress } errors } }"
+
+      data = run(share, { id: registry.external_id, share: true }).dig("data", "upsertWishList")
+
+      expect(data["wishList"]["shareAddress"]).to be(true)
+      expect(registry.reload.share_address).to be(true)
+    end
+
     it "treats someone else's registry as missing" do
       data = run(upsert, { registryExternalId: registry.external_id, title: "Hijacked" }, as: other)
         .dig("data", "upsertWishList")

@@ -13,6 +13,9 @@ module Types
     field :intro, String, null: true
     field :visible, Boolean, null: false
     field :surprise_mode, Boolean, null: false
+    # Whether guests who claim a gift can see the owner's mailing address. The address itself is
+    # never on this type; it is only readable through a claim (Types::WishListClaimType#ship_to).
+    field :share_address, Boolean, null: false
     # First name only: enough for a guest to see whose registry this is ("Sam's birthday"), without
     # putting an owner's full name on a page anyone with the link can open.
     field :owner_first_name, String, null: true

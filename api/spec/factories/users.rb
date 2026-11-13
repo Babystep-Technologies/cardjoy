@@ -13,8 +13,7 @@ FactoryBot.define do
       end
     end
 
-    # A complete return address (#233). Users have none by default — sending a
-    # post card is unavailable until one is set.
+    # A complete mailing address. Users have none by default.
     trait :with_return_address do
       return_address_line1 { "123 Market St" }
       return_address_line2 { "Apt 4" }

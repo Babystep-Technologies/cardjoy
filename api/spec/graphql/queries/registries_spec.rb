@@ -124,4 +124,63 @@ RSpec.describe "Registry queries", type: :request do
       expect(data.dig("data", "wishListClaim")).to be_nil
     end
   end
+
+  describe "where to send the gift" do
+    let(:query) do
+      "query GetWishListClaim($token: String!) { wishListClaim(token: $token) " \
+        "{ shipToName shipTo { addressLine1 city postalCode countryCode } } }"
+    end
+    let(:owner) { create(:user, :with_return_address, name: "Sam Rivera") }
+    let(:list) { create(:wish_list, :standalone, user: owner, share_address: sharing) }
+    let(:reservation) { create(:wish_list_reservation, wish_list_item: create(:wish_list_item, wish_list: list)) }
+
+    def claim_for(token)
+      run(query, { token: token }, as: nil, operation: "GetWishListClaim").dig("data", "wishListClaim")
+    end
+
+    context "when the owner shares their address" do
+      let(:sharing) { true }
+
+      it "shows it to someone holding a claim" do
+        claim = claim_for(reservation.token)
+
+        expect(claim["shipToName"]).to eq("Sam Rivera")
+        expect(claim["shipTo"]).to include("addressLine1" => "123 Market St", "city" => "San Francisco")
+      end
+
+      it "shows nothing without a valid claim token" do
+        expect(claim_for("nope")).to be_nil
+      end
+
+      it "shows nothing when the owner has no complete address saved" do
+        owner.update!(HasReturnAddress::ADDRESS_FIELDS.index_with { nil })
+
+        expect(claim_for(reservation.token)).to include("shipTo" => nil, "shipToName" => nil)
+      end
+
+      it "hides it again the moment the owner stops sharing" do
+        list.update!(share_address: false)
+
+        expect(claim_for(reservation.token)).to include("shipTo" => nil, "shipToName" => nil)
+      end
+    end
+
+    context "when the owner does not share (the default)" do
+      let(:sharing) { false }
+
+      it "never reveals it" do
+        expect(claim_for(reservation.token)).to include("shipTo" => nil, "shipToName" => nil)
+      end
+    end
+
+    it "is never on the public registry itself" do
+      list = create(:wish_list, :standalone, user: owner, share_address: true)
+      public_query = "query GetRegistry($id: String!) { registry(externalId: $id) { shareAddress } }"
+
+      data = run(public_query, { id: list.external_id }, as: nil, operation: "GetRegistry")
+
+      expect(data.dig("data", "registry")).to eq("shareAddress" => true)
+      expect(Types::WishListType.fields.keys).not_to include("shipTo", "returnAddress", "address")
+    end
+  end
 end
