@@ -207,4 +207,42 @@ RSpec.describe "Registry queries", type: :request do
       expect(run(query, { id: list.external_id }, as: nil, operation: "GetRegistry").dig("data", "registry", "insights")).to be_nil
     end
   end
+
+  describe "thank-you list" do
+    let(:query) { "query GetRegistry($id: String!) { registry(externalId: $id) { thankYouUnlocked thankYouList { guestName guestEmail itemTitle purchased } } }" }
+    let(:list) { create(:wish_list, :standalone, user: user, surprise_mode: true, event_date: nil) }
+
+    before do
+      item = create(:wish_list_item, wish_list: list, title: "Cast-iron pan")
+      create(:wish_list_reservation, wish_list_item: item, guest_name: "Alex", purchased_at: Time.current)
+    end
+
+    def registry(as: user)
+      run(query, { id: list.external_id }, as: as, operation: "GetRegistry").dig("data", "registry")
+    end
+
+    it "stays locked in surprise mode until the event has passed" do
+      expect(registry).to eq("thankYouUnlocked" => false, "thankYouList" => [])
+
+      list.update!(event_date: Date.current + 1)
+      expect(registry["thankYouList"]).to eq([])
+
+      list.update!(event_date: Date.current - 1)
+      expect(registry["thankYouUnlocked"]).to be(true)
+      expect(registry["thankYouList"]).to eq([ { "guestName" => "Alex", "guestEmail" => "alex.guest@example.com", "itemTitle" => "Cast-iron pan", "purchased" => true } ])
+    end
+
+    it "is open straight away when surprise mode is off" do
+      list.update!(surprise_mode: false)
+
+      expect(registry["thankYouList"].size).to eq(1)
+    end
+
+    it "is never shown to anyone but the owner, even once unlocked" do
+      list.update!(surprise_mode: false)
+
+      expect(registry(as: other)["thankYouList"]).to eq([])
+      expect(registry(as: nil)["thankYouList"]).to eq([])
+    end
+  end
 end
