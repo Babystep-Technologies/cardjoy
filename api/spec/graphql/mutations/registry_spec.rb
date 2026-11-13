@@ -52,6 +52,19 @@ RSpec.describe "Registry mutations", type: :request do
       expect(list.items.map(&:title)).to eq([ "Cast-iron pan" ])
     end
 
+    it "keeps item order and the most-wanted flag the owner sets" do
+      data = run(upsert, {
+        title: "Order", items: [
+          { title: "Second thing", priority: false }, { title: "First thing", priority: true }
+        ]
+      }).dig("data", "upsertWishList")
+
+      expect(data["errors"]).to be_empty
+      items = user.wish_lists.sole.items
+      expect(items.map(&:title)).to eq([ "Second thing", "First thing" ])
+      expect(items.map(&:priority)).to eq([ false, true ])
+    end
+
     it "requires sign-in" do
       post "/graphql", params: { query: upsert, variables: { title: "x" } }.to_json,
         headers: { "Content-Type" => "application/json" }

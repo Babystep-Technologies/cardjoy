@@ -165,6 +165,7 @@ export interface WishListItem {
   store?: string | null;
   note?: string | null;
   quantity: number;
+  priority?: boolean;
   remainingQuantity?: number;
   claimed?: boolean;
 }
@@ -255,6 +256,7 @@ export const wishListToDraft = (wishList: WishList): WishListDraft => ({
     store: item.store || '',
     note: item.note || '',
     quantity: item.quantity ?? 1,
+    priority: item.priority ?? false,
   })),
   contributions: wishList.contributions.map(contribution => ({
     kind: contribution.kind,
@@ -296,6 +298,7 @@ export const wishListDraftToInput = (draft: WishListDraft) => ({
     store: item.store?.trim() || null,
     note: item.note?.trim() || null,
     quantity: item.quantity || 1,
+    priority: item.priority ?? false,
   })),
   contributions: draft.contributions.map(contribution => ({
     kind: contribution.kind,
@@ -352,6 +355,7 @@ export const WISH_LIST_FIELDS = `
     store
     note
     quantity
+    priority
     position
     remainingQuantity
     claimed
