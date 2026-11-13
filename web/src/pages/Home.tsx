@@ -13,6 +13,7 @@ import {
   Users,
   Sparkles,
   Heart,
+  Gift,
   Send,
   ChevronLeft,
   ChevronRight,
@@ -43,21 +44,17 @@ const invitationFeatures = [
   { icon: CalendarCheck, text: 'One-tap add to calendar' },
 ];
 
-// Written against what the flow actually does (#153). A post card is printed
-// and posted; it is not shared by link and there is no email anywhere in it, so
-// the copy here promises print, an approval proof, and delivery tracking —
-// which are the three things the send flow really gives you.
-const postCardFeatures = [
-  { icon: Sparkles, text: 'Custom designs with your own photos' },
-  { icon: Check, text: 'Approve a print proof before anything is mailed' },
-  { icon: Send, text: 'Printed and posted to your whole list' },
+const registryFeatures = [
+  { icon: Gift, text: 'Add gifts from any store, just paste a link' },
+  { icon: Check, text: 'No duplicate gifts — items are claimed as they go' },
+  { icon: Users, text: 'Guests need no account' },
 ];
 
 const featuresByType: Record<CardTypeId, { icon: typeof Users; text: string }[]> = {
   group: cardFeatures,
   one_on_one: oneOnOneFeatures,
   invitation: invitationFeatures,
-  post_card: postCardFeatures,
+  registry: registryFeatures,
 };
 
 const Home: React.FC = () => {
@@ -102,7 +99,7 @@ const Home: React.FC = () => {
                 'Get Everyone to Sign One Card',
                 'Send Someone a Heartfelt Note',
                 'Invite Everyone to Celebrate',
-                'Post a Card to Your Whole List',
+                'Share a Wish List with Friends',
               ]}
               colors={[
                 'text-[var(--color-brand-pink)]',
@@ -133,7 +130,7 @@ const Home: React.FC = () => {
         </motion.div>
       </section>
 
-      {/* Three-products showcase */}
+      {/* Product showcase */}
       <section className="scroll-section bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 min-h-screen overflow-y-hidden flex flex-col justify-center items-center py-[5vh] px-4 text-center">
         <Reveal>
           <h2 className="text-gray-900 text-4xl md:text-6xl pt-12 font-black mb-4">

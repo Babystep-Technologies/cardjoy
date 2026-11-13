@@ -78,11 +78,10 @@ const UPDATE_RETURN_ADDRESS = gql`
 `;
 
 /**
- * The four fields PostGrid actually needs to print a return address — the
- * same subset the API requires the moment any field is set
+ * The fields the API requires the moment any address field is set
  * (`HasReturnAddress::REQUIRED_ADDRESS_FIELDS`). Unlike a contact's address,
- * this one has no "nothing entered yet" escape hatch: it's mandatory before
- * sending a post card by post (#233), so every field is checked on every save.
+ * there is no "nothing entered yet" escape hatch, so every field is checked on
+ * every save.
  */
 const REQUIRED_RETURN_ADDRESS_FIELDS: { field: keyof AddressDraft; label: string }[] = [
   { field: 'line1', label: 'Street address' },
@@ -226,10 +225,7 @@ function Profile() {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600">
-                  Printed as the sender on every post card you mail. Required before you can send
-                  one.
-                </p>
+                <p className="text-sm text-gray-600">Your mailing address.</p>
 
                 <div className="space-y-1.5">
                   <Label htmlFor="return-address-line1">Street address</Label>
