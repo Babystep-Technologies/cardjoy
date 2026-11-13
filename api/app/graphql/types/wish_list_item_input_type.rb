@@ -13,5 +13,6 @@ module Types
     argument :store, String, required: false
     argument :note, String, required: false
     argument :quantity, Integer, required: false, default_value: 1
+    argument :priority, Boolean, required: false, default_value: false
   end
 end

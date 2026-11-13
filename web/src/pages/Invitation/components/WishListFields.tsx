@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Gift, Plus, Trash2, Wallet, Info, Loader2 } from 'lucide-react';
+import { Gift, Plus, Trash2, Wallet, Info, Loader2, ArrowUp, ArrowDown, Star } from 'lucide-react';
 import {
   CONTRIBUTION_KINDS,
   contributionKindMeta,
@@ -54,6 +54,21 @@ const WishListFields: React.FC<Props> = ({
     patch({
       items: value.items.map((item, i) => (i === index ? { ...item, ...changes } : item)),
     });
+
+  // Swaps an item with its neighbour. The previewed-URL memo is keyed by row, so it moves with
+  // the item; otherwise a reorder would refetch (or skip) the wrong row's link preview.
+  const moveItem = (index: number, offset: -1 | 1) => {
+    const target = index + offset;
+    if (target < 0 || target >= value.items.length) return;
+    const items = [...value.items];
+    [items[index], items[target]] = [items[target], items[index]];
+    setPreviewedUrls(prev => {
+      const next = { ...prev };
+      [next[index], next[target]] = [prev[target], prev[index]];
+      return next;
+    });
+    patch({ items });
+  };
 
   const [previewWishListLink] = useMutation(PREVIEW_WISH_LIST_LINK);
   const [fetchingPreviewIndex, setFetchingPreviewIndex] = useState<number | null>(null);
@@ -154,6 +169,35 @@ const WishListFields: React.FC<Props> = ({
                 placeholder="Wooden play gym"
                 aria-label={`Gift idea ${index + 1} name`}
               />
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Mark gift idea ${index + 1} as most wanted`}
+                aria-pressed={!!item.priority}
+                onClick={() => updateItem(index, { priority: !item.priority })}
+              >
+                <Star
+                  className={`w-4 h-4 ${item.priority ? 'fill-yellow-400 text-yellow-500' : 'text-gray-400'}`}
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Move gift idea ${index + 1} up`}
+                disabled={index === 0}
+                onClick={() => moveItem(index, -1)}
+              >
+                <ArrowUp className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Move gift idea ${index + 1} down`}
+                disabled={index === value.items.length - 1}
+                onClick={() => moveItem(index, 1)}
+              >
+                <ArrowDown className="w-4 h-4" />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

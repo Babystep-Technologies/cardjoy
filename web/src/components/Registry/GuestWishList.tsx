@@ -22,6 +22,7 @@ import {
   Share2,
   Info,
   CheckCircle2,
+  Star,
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 import { getWishListReservationTokenKey } from '@/lib/utils';
@@ -270,6 +271,12 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
             ) : null}
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+            {item.priority && (
+              <span className="inline-flex items-center gap-1 font-semibold text-yellow-700">
+                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-500" />
+                Most wanted
+              </span>
+            )}
             {item.price && <span className="font-semibold text-gray-900">{item.price}</span>}
             {item.quantity > 1 && (
               <span>

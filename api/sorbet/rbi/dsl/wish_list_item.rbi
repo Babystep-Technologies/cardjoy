@@ -887,6 +887,51 @@ class WishListItem
     sig { void }
     def price_will_change!; end
 
+    sig { returns(T::Boolean) }
+    def priority; end
+
+    sig { params(value: T::Boolean).returns(T::Boolean) }
+    def priority=(value); end
+
+    sig { returns(T::Boolean) }
+    def priority?; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def priority_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def priority_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def priority_came_from_user?; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def priority_change; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def priority_change_to_be_saved; end
+
+    sig { params(from: T::Boolean, to: T::Boolean).returns(T::Boolean) }
+    def priority_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def priority_in_database; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def priority_previous_change; end
+
+    sig { params(from: T::Boolean, to: T::Boolean).returns(T::Boolean) }
+    def priority_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def priority_previously_was; end
+
+    sig { returns(T.nilable(T::Boolean)) }
+    def priority_was; end
+
+    sig { void }
+    def priority_will_change!; end
+
     sig { returns(::Integer) }
     def quantity; end
 
@@ -954,6 +999,9 @@ class WishListItem
     def restore_price!; end
 
     sig { void }
+    def restore_priority!; end
+
+    sig { void }
     def restore_quantity!; end
 
     sig { void }
@@ -1012,6 +1060,12 @@ class WishListItem
 
     sig { returns(T::Boolean) }
     def saved_change_to_price?; end
+
+    sig { returns(T.nilable([T::Boolean, T::Boolean])) }
+    def saved_change_to_priority; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_priority?; end
 
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_quantity; end
@@ -1249,6 +1303,9 @@ class WishListItem
 
     sig { returns(T::Boolean) }
     def will_save_change_to_price?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_priority?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_quantity?; end
