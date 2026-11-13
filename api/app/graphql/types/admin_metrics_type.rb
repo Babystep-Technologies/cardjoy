@@ -18,6 +18,14 @@ module Types
     field :one_on_one_cards, Integer, null: false
     field :invitations, Integer, null: false
 
+    # The fourth product (#252): standalone registries created in the window, plus what happened on
+    # them. Invitation-owned wish lists are left out; they count under `invitations`. Aggregate only:
+    # nothing here says who claimed or bought what, so surprise mode is never at stake.
+    field :registries, Integer, null: false
+    field :registry_items, Integer, null: false
+    field :registry_claims, Integer, null: false
+    field :registry_purchases, Integer, null: false
+
     field :rsvps_going, Integer, null: false
     field :rsvps_maybe, Integer, null: false
     field :rsvps_not_going, Integer, null: false
