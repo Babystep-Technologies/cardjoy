@@ -32,11 +32,6 @@ class User < ApplicationRecord
   # association — kept for the same reason every other has_many here is: a
   # user destroy should take their activity history with them.
   has_many :user_daily_activities, dependent: :destroy
-  # TEMPORARY: the PostCard product (and its models) is gone, but its tables and
-  # their foreign keys to users remain until the data-drop migration (#244). This
-  # purges them with raw SQL so deleting a user who has legacy rows doesn't fail on
-  # a foreign key. Remove this callback together with those tables.
-  before_destroy :purge_legacy_postcard_rows, prepend: true
   has_many :promo_codes, dependent: :destroy
   has_many :invitations, dependent: :destroy
   has_many :rsvps, dependent: :destroy
@@ -200,15 +195,6 @@ class User < ApplicationRecord
   end
 
   private
-
-  # See the TEMPORARY note on the before_destroy above. Order matters: orders
-  # reference both post_cards and postage_credits.
-  sig { void }
-  def purge_legacy_postcard_rows
-    %w[post_card_mail_orders post_cards postage_credits].each do |table|
-      self.class.connection.execute(self.class.sanitize_sql([ "DELETE FROM #{table} WHERE user_id = ?", id ]))
-    end
-  end
 
   # Checked against the raw column rather than the `active_organization`
   # association: the association is nil for an archived organization, which
