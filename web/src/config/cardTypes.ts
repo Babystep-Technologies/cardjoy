@@ -1,13 +1,9 @@
 import { Mail, Heart, PartyPopper, Gift, type LucideIcon } from 'lucide-react';
 
 // Product identities shown in marketing surfaces. This is broader than the API's
-// Card::KINDS (group | one_on_one): invitation and post_card are separate models with
+// Card::KINDS (group | one_on_one): invitation and registry are separate models with
 // their own flows, but all four share one brand identity here.
-//
-// Post Card is the odd one out in what it produces — it is printed and posted rather
-// than shared as a link — so copy about it belongs to physical mail. Anything here
-// promising a link or an email for a post card is wrong.
-export type CardTypeId = 'group' | 'one_on_one' | 'invitation' | 'post_card';
+export type CardTypeId = 'group' | 'one_on_one' | 'invitation' | 'registry';
 
 export interface CardTypeTheme {
   id: CardTypeId;
@@ -18,7 +14,7 @@ export interface CardTypeTheme {
   // Job-to-be-done phrasing for intent-led marketing CTAs — leads with what the
   // user wants to do rather than the internal card-type name.
   intent: string;
-  // Empty when the type has no working create flow yet. All four are live.
+  // Empty when the type has no working create flow yet (see `comingSoon`).
   route: string;
   icon: LucideIcon;
   description: string;
@@ -31,7 +27,7 @@ export interface CardTypeTheme {
 
 // Single source of truth for the per-type color scheme. Consumed by the marketing home
 // page, the Products dropdown, and the create/edit flows so the mapping lives in one place.
-// Mapping: group = pink, one_on_one = blue, invitation = green, post_card = yellow.
+// Mapping: group = pink, one_on_one = blue, invitation = green, registry = yellow.
 export const cardTypes: CardTypeTheme[] = [
   {
     id: 'group',
@@ -73,17 +69,18 @@ export const cardTypes: CardTypeTheme[] = [
     gradient: 'from-[var(--color-brand-green)] to-[var(--color-brand-blue)]',
   },
   {
-    id: 'post_card',
-    label: 'Post Cards',
-    shortLabel: 'Post Card',
-    cta: 'Create a Post Card',
-    intent: 'Print and post a card to your list',
-    route: '/post-card/new',
+    id: 'registry',
+    label: 'Registries',
+    shortLabel: 'Registry',
+    cta: 'Create a Registry',
+    intent: 'Share what you wish for',
+    route: '',
     icon: Gift,
     description:
-      'Design a card once, then have it printed and posted to everyone on your list — no holiday required.',
+      'Build a wish list for any occasion — birthday, wedding, baby — and let friends and family get you something you will love.',
     colorVar: 'var(--color-brand-yellow)',
     gradient: 'from-[var(--color-brand-yellow)] to-[var(--color-brand-pink)]',
+    comingSoon: true,
   },
 ];
 

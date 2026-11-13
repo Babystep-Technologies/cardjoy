@@ -60,23 +60,7 @@ const Contacts = React.lazy(() => import('@/pages/Contacts/Index'));
 const SupportIndex = React.lazy(() => import('@/pages/Support/Index'));
 const SupportThread = React.lazy(() => import('@/pages/Support/Thread'));
 
-// The post card editor is the biggest page in the app — a live print preview,
-// the template catalogue, and the sticker artwork as inline data URIs. Nobody
-// lands on it first, so it stays out of the initial bundle for the same reason
-// Contacts does.
-const PostCardNew = React.lazy(() => import('@/pages/PostCard/New'));
-const PostCardEdit = React.lazy(() => import('@/pages/PostCard/Edit'));
-// The send flow and the order list are only ever reached from the editor, so
-// they ride the same code-split as it rather than the initial bundle.
-const PostCardSend = React.lazy(() => import('@/pages/PostCard/Send'));
-const PostCardOrders = React.lazy(() => import('@/pages/PostCard/Orders'));
-
-// The postage wallet pages, split for the same reason: signed-in-only, reached
-// from the send flow or from Stripe's redirect, and the main chunk has around
-// 30 KiB of headroom left under the 2 MiB the PWA plugin will precache.
-const BuyPostage = React.lazy(() => import('@/pages/BuyPostage'));
-const BuyPostageCancel = React.lazy(() => import('@/pages/BuyPostage/Cancel'));
-const BuyPostageSuccess = React.lazy(() => import('@/pages/BuyPostage/Success'));
+const PostCardRetired = React.lazy(() => import('@/pages/PostCardRetired'));
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
@@ -139,37 +123,17 @@ const App: React.FC = () => {
           <Route path="/buy_credits" element={<BuyCredits />} />
           <Route path="/buy_credits/cancel" element={<BuyCreditsCancel />} />
           <Route path="/buy_credits/success" element={<BuyCreditsSuccess />} />
-          {/* Postage is a separate, cents-denominated wallet from card credits.
-              The wallet lives at /postage — it is somewhere you check a balance
-              and read history, not only somewhere you buy. The two Stripe
-              return paths below keep their `buy_postage` prefix because
-              CreateStripeCheckoutSession builds those URLs server-side, and a
-              session created before a deploy still comes back to them. */}
+          {/* Post Cards and the postage wallet were retired. Stripe return URLs from
+              top-ups started before the removal still come back to /buy_postage/*. */}
           <Route
             path="/postage"
             element={
               <React.Suspense fallback={<LoadingScreen />}>
-                <BuyPostage />
+                <PostCardRetired />
               </React.Suspense>
             }
           />
-          <Route path="/buy_postage" element={<LegacyRedirect to="/postage" />} />
-          <Route
-            path="/buy_postage/cancel"
-            element={
-              <React.Suspense fallback={<LoadingScreen />}>
-                <BuyPostageCancel />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/buy_postage/success"
-            element={
-              <React.Suspense fallback={<LoadingScreen />}>
-                <BuyPostageSuccess />
-              </React.Suspense>
-            }
-          />
+          <Route path="/buy_postage/*" element={<LegacyRedirect to="/postage" />} />
           <Route path="/redeem" element={<RedeemPromo />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route
@@ -243,38 +207,7 @@ const App: React.FC = () => {
           <Route path="/card/:cardExternalId/viewable" element={<CardViewable />} />
           <Route path="/card/:cardExternalId/editable" element={<CardEditable />} />
 
-          <Route
-            path="/post-card/new"
-            element={
-              <React.Suspense fallback={<LoadingScreen />}>
-                <PostCardNew />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/post-card/:externalId/edit"
-            element={
-              <React.Suspense fallback={<LoadingScreen />}>
-                <PostCardEdit />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/post-card/:externalId/send"
-            element={
-              <React.Suspense fallback={<LoadingScreen />}>
-                <PostCardSend />
-              </React.Suspense>
-            }
-          />
-          <Route
-            path="/post-card/:externalId/orders"
-            element={
-              <React.Suspense fallback={<LoadingScreen />}>
-                <PostCardOrders />
-              </React.Suspense>
-            }
-          />
+          <Route path="/post-card/*" element={<LegacyRedirect to="/postage" />} />
 
           <Route path="/invitation/new" element={<InvitationNew />} />
           <Route path="/invitation/:id" element={<InvitationView />} />
