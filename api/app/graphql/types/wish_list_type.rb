@@ -8,6 +8,8 @@ module Types
     field :external_id, String, null: false
     field :occasion, String, null: true
     field :event_date, GraphQL::Types::ISO8601Date, null: true
+    # The event has passed: the registry is read-only for guests, who can no longer claim.
+    field :archived, Boolean, null: false, method: :archived?
     field :standalone, Boolean, null: false, method: :standalone?
     field :title, String, null: false
     field :intro, String, null: true

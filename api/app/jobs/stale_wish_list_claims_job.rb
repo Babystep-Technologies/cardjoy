@@ -7,19 +7,20 @@
 # RELEASE_AFTER_REMINDER later. A claim the guest marked as purchased is never touched.
 #
 # Idempotent: `reminded_at` is stamped as the reminder is enqueued, and a released claim is gone,
-# so a re-run neither double-reminds nor double-releases.
+# so a re-run neither double-reminds nor double-releases. Claims on an archived registry (its event
+# has passed) are left as they are.
 class StaleWishListClaimsJob < ApplicationJob
   queue_as :default
 
   def perform
     # Release first: a claim reminded long ago must not be reminded again by the same run.
-    WishListReservation.due_for_release.find_each do |reservation|
+    WishListReservation.on_active_lists.due_for_release.find_each do |reservation|
       release(reservation)
     rescue StandardError => e
       Rails.logger.error "StaleWishListClaimsJob: failed to release #{reservation.id}: #{e.message}"
     end
 
-    WishListReservation.due_for_reminder.find_each do |reservation|
+    WishListReservation.on_active_lists.due_for_reminder.find_each do |reservation|
       remind(reservation)
     rescue StandardError => e
       Rails.logger.error "StaleWishListClaimsJob: failed to remind #{reservation.id}: #{e.message}"

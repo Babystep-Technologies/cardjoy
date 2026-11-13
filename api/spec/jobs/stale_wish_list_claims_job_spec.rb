@@ -41,6 +41,17 @@ RSpec.describe StaleWishListClaimsJob, type: :job do
     end
   end
 
+  describe "archived registries" do
+    it "neither reminds nor releases claims once the event has passed" do
+      item.wish_list.update!(event_date: Date.current - 1)
+      claim(age: 15.days)
+      claim(age: 25.days, reminded_at: 8.days.ago)
+
+      expect { described_class.new.perform }.not_to have_enqueued_mail(WishListMailer)
+      expect(WishListReservation.count).to eq(2)
+    end
+  end
+
   describe "releases" do
     it "releases a claim that stayed unbought a week after its reminder, and tells the guest" do
       lapsed = claim(age: 25.days, reminded_at: 8.days.ago)

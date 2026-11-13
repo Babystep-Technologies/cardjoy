@@ -20,6 +20,7 @@ module Mutations
     def resolve(wish_list_item_id:, guest_name:, guest_email:, quantity: 1)
       item = WishListItem.find_by(id: wish_list_item_id)
       return failure("Item not found") unless item
+      return failure("This registry's event has passed, so it is closed to new claims") if item.wish_list.archived?
 
       reservation = nil
       item.with_lock do

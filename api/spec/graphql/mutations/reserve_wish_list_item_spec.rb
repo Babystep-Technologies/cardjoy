@@ -38,6 +38,15 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
     parsed.dig("data", "reserveWishListItem")
   end
 
+  it "refuses a claim once the registry's event has passed" do
+    wish_list.update!(event_date: Date.current - 1)
+
+    result = reserve(wishListItemId: item.id.to_s, guestName: "Late", guestEmail: "late@example.com")
+
+    expect(result["errors"].join).to include("event has passed")
+    expect(item.reservations).to be_empty
+  end
+
   it "reserves an item for a signed-out guest and returns a token" do
     data = reserve({
       wishListItemId: item.id.to_s,

@@ -6,7 +6,8 @@ module Types
   # WishList#thank_you_unlocked? is true.
   class WishListThankYouType < Types::BaseObject
     field :guest_name, String, null: false
-    field :guest_email, String, null: false
+    # Null once scrubbed, a week after the event.
+    field :guest_email, String, null: true
     field :item_title, String, null: false
     field :purchased, Boolean, null: false
 
