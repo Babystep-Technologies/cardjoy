@@ -33,45 +33,17 @@ request was anonymous and sign-in appeared to succeed while silently doing nothi
 
 `credentials:edit` does not run initializers, so a missing secret is still fixable through it.
 
-### PostGrid (physical mail)
+### Return address
 
-Printing and mailing cards goes through PostGrid. It is entirely optional: with no key configured
-`PostGrid.configured?` is false, address verification reports itself unavailable, and nothing else
-in the app changes — the same gating GIPHY, Unsplash, and PostHog get on the frontend. **You do not
-need a PostGrid key to develop, and CI does not have one.**
+`User` (via the `HasReturnAddress` concern) carries the user's own mailing address as six loose
+columns, `return_address_line1`/`_line2`/`_city`/`_region`/`_postal_code`/`_country_code`, mirroring
+how `Contact` carries a mailing address: the moment any field is set, line1/city/postal
+code/country are all required (`User#return_address_complete?`). Set it with
+`Mutations::UpdateReturnAddress`, surfaced as the "Return address" section of the profile page. In
+specs, `create(:user, :with_return_address)` gives a complete one.
 
-Four env vars, each falling back to `credentials.post_grid.*`:
-
-| Env var | Credential | Purpose |
-|---|---|---|
-| `POSTGRID_API_KEY` | `post_grid.api_key` | The live key. Mails real cards and bills real money. |
-| `POSTGRID_TEST_API_KEY` | `post_grid.test_api_key` | The test key. Everything runs, nothing is printed. |
-| `POSTGRID_MODE` | `post_grid.mode` | `live` or `test`; anything else reads as `test`. |
-| `POSTGRID_WEBHOOK_SECRET` | `post_grid.webhook_secret` | Signs webhook deliveries. Unset ⇒ every webhook is rejected. |
-
-`POSTGRID_MODE` is a separate switch from `RAILS_ENV` on purpose. Nothing in `app/services/post_grid`
-looks at `Rails.env`: the proof run uses the **test** key from **production**, and a staging box that
-happens to boot as `production` must not start mailing postcards to real people.
-
-**This repo is public. Never commit a key, live or test** — not in a credentials file, not in a spec,
-not in a fixture. The specs use an obviously fake `test_sk_…` string.
-
-#### Return address
-
-The `from` on every postcard, proof or live order, is the *sender's own* mailing address (#233) —
-not CardJoy's, and not a shared config value. `User` (via the `HasReturnAddress` concern) carries six
-loose columns, `return_address_line1`/`_line2`/`_city`/`_region`/`_postal_code`/`_country_code`,
-mirroring how `Contact` carries a mailing address: the moment any field is set, line1/city/postal
-code/country are all required (`User#return_address_complete?`).
-
-`Mutations::SendPostCard` refuses outright, before any money moves, for a user whose return address
-isn't complete — same spot as the `PostGrid.configured?` check. `ProofGenerator` and `MailSubmission`
-both raise `PostGrid::ConfigurationError` if they're ever reached without one (defense-in-depth;
-`SendPostCard`'s gate should make this unreachable in practice), which `PostCardMailSubmissionJob`
-already treats as terminal-and-refund.
-
-Set it from `Mutations::UpdateReturnAddress`, surfaced in the frontend as the "Return address"
-section of the profile page. In specs, `create(:user, :with_return_address)` gives a complete one.
+Nothing requires it today. It was built for the retired PostCard product and is kept as a candidate
+for registry shipping addresses (#249).
 
 ### Inbound email (ActionMailbox)
 
@@ -90,174 +62,6 @@ mailbox, bypassing the HTTP ingress entirely.
 
 See `AppConfig.inbound_email_ingress`/`AppConfig.support_inbound_email_domain`,
 `SupportTicket#reply_to_address`, and `SupportTicketMailbox`.
-
-### Post card print rendering
-
-`PostCard::PrintRenderer.new(card).render` turns a card into `{ front:, back: }` — the two HTML
-documents PostGrid prints. It takes a card and returns two strings; it is deliberately **not**
-coupled to PostGrid, makes no HTTP calls, and can be exercised with nothing stubbed.
-
-It combines two things that know nothing about each other: `PostCardCatalogue` owns the geometry
-(where `photo_2` sits, in inches), and `PostCard#design_config` owns the content (which photo,
-panned and zoomed how). Rules worth knowing before you touch it:
-
-- **Inches and points, never pixels.** A pixel value bakes in an assumed DPI, and PostGrid renders
-  at print resolution. There is a spec that fails if a `px` appears in the output.
-- **Absolute positioning only**, at catalogue coordinates offset by the 0.125" bleed. No flexbox,
-  no grid — those are where our renderer and PostGrid's would diverge.
-- **Everything is clipped.** Photo slots and text regions are `overflow: hidden`, so nothing can
-  spill into the reserved address block on the back panel.
-- **Fonts are vendored and inlined as base64** from `app/assets/post_card_fonts` — only the ones
-  a panel actually paints with. See that directory's README before adding a font.
-- **`design_config` is untrusted.** Text is escaped; font, size, alignment, and colour are checked
-  against allow-lists before they reach the CSS.
-
-The pan/zoom CSS the renderer emits is the contract the editor preview has to reuse verbatim. Two
-implementations of the cropping maths is how the on-screen proof stops matching the printed card.
-
-### Post card proofs
-
-Before a card is printed the user approves a **proof**: the PDF PostGrid gets from rendering the
-card, produced by the same renderer that will print it. `PostCard::ProofGenerator` submits the
-rendered HTML to `POST /postcards` with the **test** key — a real PDF, no mail, no cost — then
-immediately follows up with `GET /postcards/:id` and stores *that* response's `url`. The create
-response carries no `url` at all (confirmed against a real PostGrid response, not assumed — see
-#233); the PDF only shows up on the fetch. `generatePostCardProof` and `approvePostCardProof` are
-the two mutations; the type exposes `proofUrl`, `proofGeneratedAt`, `proofCurrent`, and
-`proofApproved`.
-
-Three rules hold this together, and the send flow (#148) depends on all of them:
-
-- **`ProofGenerator::MODE` is hard-coded to `:test`.** Not `PostGrid.default_mode`, not `Rails.env`.
-  A proof must never be a live order, and that must not depend on how a box is configured.
-- **`proof_design_digest` is the mechanism.** It hashes `design_config`, `template_id`, and `size`
-  — canonicalized, so key order and symbol-vs-string keys don't move it. `#proof_current?` compares
-  it against the card's current digest, so *any* edit invalidates the proof. `PostCard` also
-  clears `proof_approved_at` in a `before_save` whenever one of those three changes, the same way
-  `Contact` clears its address verification.
-- **Proofs expire.** PostGrid's PDF links are not permanent, so a proof older than
-  `PostCard::PROOF_MAX_AGE` reports as not current even if nothing was edited — regenerate rather
-  than serve a dead link.
-
-Generation runs inline in the mutation, not in a job: the user is waiting on it, and each of the two
-calls (create, then fetch) is independently bounded at 3 × (5s + 15s) by `PostGrid::Client`. Failures
-land in `errors` as sentences and leave the previous proof intact, so a PostGrid outage costs a retry
-rather than the render the user already had.
-
-### Mail pricing
-
-**PostGrid has no price-quote endpoint.** Creating a postcard returns an id and a status — no PDF
-(that's a separate `GET`, see the proofs section above) and no cost field — and there is nothing to
-ask beforehand. So "price a card from its destination" is two services that answer two different
-questions:
-
-- `PostGrid::AddressVerification` is the authority on **where** an address is. It returns a `zone`
-  (`us_domestic`, `canada`, `international`), cached on the contact in `address_zone`.
-- `MailPricing` is the authority on **what that costs**. `MailPricing.quote(size:, zone:)` looks up
-  a versioned rate card and returns `base_cents`, `markup_cents`, and `total_cents`.
-
-Four rules, and the send flow (#148) depends on all of them:
-
-- **The rate card is a versioned constant.** `MailPricing::RATE_CARDS` is keyed by version, and
-  every version we have ever billed under stays in it — an order records the version it used, and
-  deleting an old entry makes a past charge unreconstructable. A rate change is a new version plus a
-  bump of `CURRENT_RATE_CARD_VERSION`, never an edit in place.
-- **An unknown zone raises.** `MailPricing::UnknownRateError` is never rescued into a domestic
-  default; a missing rate means we don't know what something costs, and the caller surfaces "we
-  can't mail to this destination yet". A quiet fallback is mailing to Australia at the US price.
-- **The markup rounds up, always,** and lives only on the server. `MARKUP_BASIS_POINTS` is basis
-  points over cost so the arithmetic stays in integers. `base_cents` and the markup are absent from
-  every GraphQL type — the user is quoted one number per card.
-- **A quote is advisory.** `quotePostCardMailing` prices a card against a list of contacts (and
-  verifies any contact that has no cached verdict, so bad addresses surface before anyone pays), but
-  the send flow re-prices inside the transaction that debits the postage wallet. A client never
-  sends a price back, and no mutation argument accepts one.
-
-`PostCard::MailingQuote` is the shared orchestration — every contact asked about comes back
-either priced or flagged with a reason, never dropped, so a quote can't tell someone "42 cards" and
-then send 38.
-
-### Sending cards by post
-
-`sendPostCard` is where the proof, the addresses, the rate card, and the wallet meet a service
-that prints things — the one place in the app where money and an irreversible physical action are in
-the same request. `myPostCardOrders` is the read side.
-
-**One row per piece, not per send.** `PostCardMailOrder` is a single postcard to a single
-address. Forty recipients is forty rows, forty PostGrid ids, forty statuses, and forty separate
-debits. Partial failure is the normal case: 38 pieces can go out while 2 are rejected and refund
-themselves. There is no batch to be atomic about — an external print service cannot be enrolled in
-our transaction — and the schema admits that rather than pretending.
-
-Five rules hold the money side together:
-
-- **Nothing is submitted inside the transaction.** The mutation re-prices, locks the user, debits,
-  and writes the order rows; `PostCardMailSubmissionJob` is enqueued per order only after the
-  commit. An HTTP call inside a transaction holds a connection open for a network round trip and
-  cannot be rolled back — a `ROLLBACK` after PostGrid accepted the postcard un-charges a card that
-  is already printing. There is a spec that asserts the transaction is closed by the time PostGrid
-  is called.
-- **The price is re-quoted server-side, always.** `MailPricing` is consulted again inside the debit
-  transaction, and `SendPostCard` has no argument that could carry a price — a spec asserts the
-  input type's full argument list, so one can't be added by accident.
-- **`idempotency_key` is minted once per order and never regenerated.** It goes out as PostGrid's
-  `Idempotency-Key` header on every attempt, which is what makes a retry return the original
-  postcard instead of printing a second one.
-- **`MailSubmission::MODE` is hard-coded to `:live`** — the mirror of `ProofGenerator::MODE`, which
-  is hard-coded to `:test`, and for a sharper reason. A test-mode send returns 2xx, returns an id,
-  and mails nothing: the wallet is debited, every order looks successful, and nothing arrives. A
-  deploy with no live key refuses to send at all rather than risk it.
-- **A refund is guarded by the status transition, not by a flag.**
-  `PostCardMailOrder#fail_and_refund!` claims the order with `UPDATE … WHERE status =
-  'pending'` and only refunds if it won the row, so a job that runs twice refunds once.
-
-The job's three outcomes: success records `postgrid_id` and moves to `submitted`; a retryable
-`ServiceError`/`RateLimitError` leaves the order `pending` and the wallet untouched; a 4xx, a
-retired template, or exhausted retries mark it `failed` with a reason and refund exactly
-`charged_cents`.
-
-The order stores `base_cents`, `zone`, `mailing_class`, and `rate_card_version` alongside
-`charged_cents` so a past charge stays reconstructable — and `Types::PostCardMailOrderType`
-exposes none of them. `recipient_snapshot` holds the name and address as they were at send time, so
-editing or deleting the contact afterwards leaves the record of where the card went intact.
-
-### Tracking a card after it is mailed
-
-Once an order is submitted, PostGrid owns it — it moves `ready` → `printing` →
-`processed_for_delivery` → `completed`, picks up a `trackingNumber` on the way, and can be cancelled.
-`POST /webhooks/postgrid` is how any of that reaches us; polling every open order would be slow and
-rude. `PostgridWebhooksController` verifies and enqueues, `PostgridWebhookJob` applies, and
-`PostCardMailOrder#apply_postgrid_update!` is where the rules live.
-
-- **Every request is verified.** `PostGrid-Signature` is `t=…,v1=…` — HMAC-SHA256 over
-  `"<t>.<raw body>"` with `POSTGRID_WEBHOOK_SECRET`, the same scheme Stripe uses. Anything that
-  doesn't verify is a 401, and **an unset secret rejects everything**. This endpoint moves order
-  state and issues refunds; "the URL is unguessable" is not an access control.
-- **`t` has to be recent**, not just present — within 5 minutes, the same tolerance
-  `Stripe::Webhook.construct_event` enforces by default. The HMAC alone proves someone held the
-  secret at *some* point, not when; without a tolerance check an intercepted request would stay
-  valid forever.
-- **Answer fast, 2xx nearly always.** The transition goes to a job, and an unknown `postgrid_id`, an
-  unhandled type (`letter.updated` and friends land on the same endpoint), an unmapped status, or an
-  unparseable body are all logged no-ops. PostGrid redelivers anything that isn't promptly 2xx, so a
-  5xx buys an unbounded retry of an event we could never act on. Test-mode orders, proofs, and other
-  environments sharing the account all report here — an unknown id is normal traffic, not an error.
-- **Transitions are monotonic.** `STATUS_RANK` orders the statuses and anything that would move an
-  order backwards is dropped, because webhooks arrive out of order and get replayed. Otherwise a late
-  `printing` event makes a card the recipient is holding say it is still at the printer. The three
-  terminal statuses (`completed`, `failed`, `cancelled`) share the top rank, so each is sticky.
-- **The refund guard is the transition itself**, exactly as in `fail_and_refund!`: one conditional
-  `UPDATE` matching only rows strictly behind the target status, with the refund inside the same
-  transaction. A replayed cancellation claims no row and so refunds nothing. Not a `refunded`
-  boolean — that is a second piece of state a crash can leave disagreeing with the ledger.
-- **Refund `charged_cents`, never a fresh quote.** The rate card may have moved since the send; the
-  user is owed what they paid. An order with no `postage_credit` behind it was never charged and gets
-  no refund row.
-
-`mailed_at` is written on the way into `processed_for_delivery` and nowhere else — the first moment
-PostGrid says the piece is with the carrier. Every delivery is logged with the PostGrid id and the
-resulting transition: when a physical mailing goes wrong, that log is the only record of what the
-outside world told us.
 
 ## Before you start
 
