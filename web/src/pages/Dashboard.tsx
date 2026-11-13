@@ -61,6 +61,11 @@ const GET_MY_REGISTRIES = gql`
       items {
         id
       }
+      insights {
+        itemCount
+        coveredCount
+        purchasedCount
+      }
     }
   }
 `;
