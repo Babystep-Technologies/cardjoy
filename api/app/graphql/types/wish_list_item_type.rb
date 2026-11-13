@@ -31,13 +31,13 @@ module Types
 
     # Who reserved what stays hidden from everyone except the host, and even the host only sees it
     # when they've turned surprise mode off (WishList#surprise_mode) -- otherwise a guest browsing
-    # the list, or a host peeking at their own invitation, would spoil the surprise.
+    # the list, or an owner peeking at their own list, would spoil the surprise.
     def reservations
       wish_list = object.wish_list
       return [] if wish_list.surprise_mode
 
       viewer = context[:current_user]
-      return [] unless viewer && viewer.id == wish_list.invitation.user_id
+      return [] unless wish_list.owned_by?(viewer)
 
       object.reservations
     end

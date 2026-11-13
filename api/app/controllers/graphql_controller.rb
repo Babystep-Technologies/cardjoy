@@ -16,7 +16,7 @@ class GraphqlController < ApiController
     SignIn SignUp GoogleOauthSignIn SendPasswordReset GoogleAdminSignIn
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
     GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
-    ReserveWishListItem ReleaseWishListReservation
+    ReserveWishListItem ReleaseWishListReservation GetRegistry
     OrganizationInvitationPreview
   ].freeze
 

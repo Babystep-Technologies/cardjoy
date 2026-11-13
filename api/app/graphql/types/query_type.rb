@@ -35,6 +35,8 @@ module Types
     field :contact_list, resolver: Queries::ContactList
     field :upcoming_occasions, resolver: Queries::UpcomingOccasions
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
+    field :my_registries, resolver: Queries::MyRegistries
+    field :registry, resolver: Queries::Registry
     field :my_support_tickets, resolver: Queries::MySupportTickets
     field :support_ticket, resolver: Queries::SupportTicket
     field :admin_support_tickets, resolver: Queries::AdminSupportTickets

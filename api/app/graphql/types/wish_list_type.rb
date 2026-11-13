@@ -4,6 +4,11 @@
 module Types
   class WishListType < Types::BaseObject
     field :id, ID, null: false
+    # The public id used in registry URLs.
+    field :external_id, String, null: false
+    field :occasion, String, null: true
+    field :event_date, GraphQL::Types::ISO8601Date, null: true
+    field :standalone, Boolean, null: false, method: :standalone?
     field :title, String, null: false
     field :intro, String, null: true
     field :visible, Boolean, null: false

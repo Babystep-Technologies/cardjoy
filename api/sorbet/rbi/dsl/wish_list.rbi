@@ -332,6 +332,9 @@ class WishList
     sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
     def build_invitation(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
+    def build_user(*args, &blk); end
+
     sig { returns(T::Array[T.untyped]) }
     def contribution_ids; end
 
@@ -351,6 +354,12 @@ class WishList
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
     def create_invitation!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
+    def create_user(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
+    def create_user!(*args, &blk); end
 
     sig { returns(T.nilable(::Invitation)) }
     def invitation; end
@@ -381,8 +390,26 @@ class WishList
     sig { returns(T.nilable(::Invitation)) }
     def reload_invitation; end
 
+    sig { returns(T.nilable(::User)) }
+    def reload_user; end
+
     sig { void }
     def reset_invitation; end
+
+    sig { void }
+    def reset_user; end
+
+    sig { returns(T.nilable(::User)) }
+    def user; end
+
+    sig { params(value: T.nilable(::User)).void }
+    def user=(value); end
+
+    sig { returns(T::Boolean) }
+    def user_changed?; end
+
+    sig { returns(T::Boolean) }
+    def user_previously_changed?; end
   end
 
   module GeneratedAssociationRelationMethods
@@ -576,6 +603,96 @@ class WishList
     sig { void }
     def created_at_will_change!; end
 
+    sig { returns(T.nilable(::Date)) }
+    def event_date; end
+
+    sig { params(value: T.nilable(::Date)).returns(T.nilable(::Date)) }
+    def event_date=(value); end
+
+    sig { returns(T::Boolean) }
+    def event_date?; end
+
+    sig { returns(T.nilable(::Date)) }
+    def event_date_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def event_date_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def event_date_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Date), T.nilable(::Date)])) }
+    def event_date_change; end
+
+    sig { returns(T.nilable([T.nilable(::Date), T.nilable(::Date)])) }
+    def event_date_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Date), to: T.nilable(::Date)).returns(T::Boolean) }
+    def event_date_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Date)) }
+    def event_date_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Date), T.nilable(::Date)])) }
+    def event_date_previous_change; end
+
+    sig { params(from: T.nilable(::Date), to: T.nilable(::Date)).returns(T::Boolean) }
+    def event_date_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Date)) }
+    def event_date_previously_was; end
+
+    sig { returns(T.nilable(::Date)) }
+    def event_date_was; end
+
+    sig { void }
+    def event_date_will_change!; end
+
+    sig { returns(::String) }
+    def external_id; end
+
+    sig { params(value: ::String).returns(::String) }
+    def external_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def external_id?; end
+
+    sig { returns(T.nilable(::String)) }
+    def external_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def external_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def external_id_came_from_user?; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def external_id_change; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def external_id_change_to_be_saved; end
+
+    sig { params(from: ::String, to: ::String).returns(T::Boolean) }
+    def external_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def external_id_in_database; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def external_id_previous_change; end
+
+    sig { params(from: ::String, to: ::String).returns(T::Boolean) }
+    def external_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def external_id_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def external_id_was; end
+
+    sig { void }
+    def external_id_will_change!; end
+
     sig { returns(::Integer) }
     def id; end
 
@@ -711,10 +828,10 @@ class WishList
     sig { void }
     def intro_will_change!; end
 
-    sig { returns(::Integer) }
+    sig { returns(T.nilable(::Integer)) }
     def invitation_id; end
 
-    sig { params(value: ::Integer).returns(::Integer) }
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
     def invitation_id=(value); end
 
     sig { returns(T::Boolean) }
@@ -729,22 +846,22 @@ class WishList
     sig { returns(T::Boolean) }
     def invitation_id_came_from_user?; end
 
-    sig { returns(T.nilable([::Integer, ::Integer])) }
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
     def invitation_id_change; end
 
-    sig { returns(T.nilable([::Integer, ::Integer])) }
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
     def invitation_id_change_to_be_saved; end
 
-    sig { params(from: ::Integer, to: ::Integer).returns(T::Boolean) }
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
     def invitation_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable(::Integer)) }
     def invitation_id_in_database; end
 
-    sig { returns(T.nilable([::Integer, ::Integer])) }
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
     def invitation_id_previous_change; end
 
-    sig { params(from: ::Integer, to: ::Integer).returns(T::Boolean) }
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
     def invitation_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
 
     sig { returns(T.nilable(::Integer)) }
@@ -756,8 +873,59 @@ class WishList
     sig { void }
     def invitation_id_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def occasion; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def occasion=(value); end
+
+    sig { returns(T::Boolean) }
+    def occasion?; end
+
+    sig { returns(T.nilable(::String)) }
+    def occasion_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def occasion_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def occasion_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def occasion_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def occasion_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def occasion_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def occasion_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def occasion_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def occasion_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def occasion_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def occasion_was; end
+
+    sig { void }
+    def occasion_will_change!; end
+
     sig { void }
     def restore_created_at!; end
+
+    sig { void }
+    def restore_event_date!; end
+
+    sig { void }
+    def restore_external_id!; end
 
     sig { void }
     def restore_id!; end
@@ -772,6 +940,9 @@ class WishList
     def restore_invitation_id!; end
 
     sig { void }
+    def restore_occasion!; end
+
+    sig { void }
     def restore_surprise_mode!; end
 
     sig { void }
@@ -781,6 +952,9 @@ class WishList
     def restore_updated_at!; end
 
     sig { void }
+    def restore_user_id!; end
+
+    sig { void }
     def restore_visible!; end
 
     sig { returns(T.nilable([::ActiveSupport::TimeWithZone, ::ActiveSupport::TimeWithZone])) }
@@ -788,6 +962,18 @@ class WishList
 
     sig { returns(T::Boolean) }
     def saved_change_to_created_at?; end
+
+    sig { returns(T.nilable([T.nilable(::Date), T.nilable(::Date)])) }
+    def saved_change_to_event_date; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_event_date?; end
+
+    sig { returns(T.nilable([::String, ::String])) }
+    def saved_change_to_external_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_external_id?; end
 
     sig { returns(T.nilable([::Integer, ::Integer])) }
     def saved_change_to_id; end
@@ -807,11 +993,17 @@ class WishList
     sig { returns(T::Boolean) }
     def saved_change_to_intro?; end
 
-    sig { returns(T.nilable([::Integer, ::Integer])) }
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
     def saved_change_to_invitation_id; end
 
     sig { returns(T::Boolean) }
     def saved_change_to_invitation_id?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_occasion; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_occasion?; end
 
     sig { returns(T.nilable([T::Boolean, T::Boolean])) }
     def saved_change_to_surprise_mode; end
@@ -830,6 +1022,12 @@ class WishList
 
     sig { returns(T::Boolean) }
     def saved_change_to_updated_at?; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def saved_change_to_user_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_user_id?; end
 
     sig { returns(T.nilable([T::Boolean, T::Boolean])) }
     def saved_change_to_visible; end
@@ -972,6 +1170,51 @@ class WishList
     sig { void }
     def updated_at_will_change!; end
 
+    sig { returns(::Integer) }
+    def user_id; end
+
+    sig { params(value: ::Integer).returns(::Integer) }
+    def user_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def user_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def user_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def user_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def user_id_came_from_user?; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def user_id_change; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def user_id_change_to_be_saved; end
+
+    sig { params(from: ::Integer, to: ::Integer).returns(T::Boolean) }
+    def user_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def user_id_in_database; end
+
+    sig { returns(T.nilable([::Integer, ::Integer])) }
+    def user_id_previous_change; end
+
+    sig { params(from: ::Integer, to: ::Integer).returns(T::Boolean) }
+    def user_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def user_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def user_id_was; end
+
+    sig { void }
+    def user_id_will_change!; end
+
     sig { returns(T::Boolean) }
     def visible; end
 
@@ -1021,6 +1264,12 @@ class WishList
     def will_save_change_to_created_at?; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_event_date?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_external_id?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_id?; end
 
     sig { returns(T::Boolean) }
@@ -1033,6 +1282,9 @@ class WishList
     def will_save_change_to_invitation_id?; end
 
     sig { returns(T::Boolean) }
+    def will_save_change_to_occasion?; end
+
+    sig { returns(T::Boolean) }
     def will_save_change_to_surprise_mode?; end
 
     sig { returns(T::Boolean) }
@@ -1040,6 +1292,9 @@ class WishList
 
     sig { returns(T::Boolean) }
     def will_save_change_to_updated_at?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_user_id?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_visible?; end

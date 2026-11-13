@@ -1,6 +1,13 @@
 FactoryBot.define do
   factory :wish_list do
     invitation { association :invitation }
+    user { invitation&.user || association(:user) }
+
+    trait :standalone do
+      invitation { nil }
+      user
+      occasion { "birthday" }
+    end
     title { "Wish List" }
     intro { "Anything from here would be lovely." }
     visible { true }

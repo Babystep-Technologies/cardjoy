@@ -557,6 +557,20 @@ class User
 
     sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
     def user_daily_activity_ids=(ids); end
+
+    sig { returns(T::Array[T.untyped]) }
+    def wish_list_ids; end
+
+    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
+    def wish_list_ids=(ids); end
+
+    # This method is created by ActiveRecord on the `User` class because it declared `has_many :wish_lists`.
+    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
+    sig { returns(::WishList::PrivateCollectionProxy) }
+    def wish_lists; end
+
+    sig { params(value: T::Enumerable[::WishList]).void }
+    def wish_lists=(value); end
   end
 
   module GeneratedAssociationRelationMethods
