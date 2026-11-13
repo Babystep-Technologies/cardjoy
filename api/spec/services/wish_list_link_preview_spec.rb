@@ -52,6 +52,30 @@ RSpec.describe WishListLinkPreview do
       expect(described_class.fetch("https://internal.example.com/")).to be_nil
     end
 
+    it "rejects other non-public ranges: CGNAT, documentation, multicast, reserved and embedded-IPv4 IPv6" do
+      %w[100.64.0.1 198.18.0.1 203.0.113.9 224.0.0.1 240.0.0.1 64:ff9b::a00:1 2002:a00:1::1 ::].each do |ip|
+        host = "range-#{ip.delete(':.')}.example.com"
+        stub_dns(host, ip)
+        expect(described_class.fetch("https://#{host}/")).to be_nil, "expected #{ip} to be blocked"
+      end
+    end
+
+    it "connects to the address it vetted instead of resolving the name a second time" do
+      stub_dns("store.example.com", "93.184.216.1")
+      stub_request(:get, "https://store.example.com/product").to_return(
+        status: 200, headers: { "Content-Type" => "text/html" }, body: html_with(title: "Thing")
+      )
+      pinned = []
+      allow_any_instance_of(Net::HTTP).to receive(:ipaddr=).and_wrap_original do |original, value|
+        pinned << value
+        original.call(value)
+      end
+
+      described_class.fetch("https://store.example.com/product")
+
+      expect(pinned).to eq([ "93.184.216.1" ])
+    end
+
     it "rejects a redirect that points at a private IP (DNS-rebinding-style bypass)" do
       stub_dns("store.example.com", "93.184.216.1")
       stub_dns("internal.example.com", "10.1.2.3")
@@ -82,6 +106,50 @@ RSpec.describe WishListLinkPreview do
       expect(result.image_url).to eq("https://store.example.com/images/play-gym.jpg")
       expect(result.price).to eq("140.00")
       expect(result.store).to eq("Lovevery")
+    end
+
+    it "reads price, name and image from schema.org JSON-LD when OpenGraph has none" do
+      stub_dns("store.example.com", "93.184.216.1")
+      json = {
+        "@context" => "https://schema.org",
+        "@graph" => [
+          { "@type" => "WebSite", "name" => "Store" },
+          { "@type" => "Product", "name" => "Cast Iron Pan", "image" => [ "/img/pan.jpg" ],
+            "offers" => { "@type" => "Offer", "price" => "39.99", "priceCurrency" => "USD" } }
+        ]
+      }.to_json
+      stub_request(:get, "https://store.example.com/pan").to_return(
+        status: 200, headers: { "Content-Type" => "text/html" },
+        body: "<html><head><script type=\"application/ld+json\">#{json}</script></head></html>"
+      )
+
+      result = described_class.fetch("https://store.example.com/pan")
+
+      expect(result.title).to eq("Cast Iron Pan")
+      expect(result.image_url).to eq("https://store.example.com/img/pan.jpg")
+      expect(result.price).to eq("$39.99")
+    end
+
+    it "keeps a non-USD currency and takes the low end of an AggregateOffer" do
+      stub_dns("store.example.com", "93.184.216.1")
+      json = { "@type" => "Product", "name" => "Rug",
+               "offers" => { "@type" => "AggregateOffer", "lowPrice" => "80", "priceCurrency" => "EUR" } }.to_json
+      stub_request(:get, "https://store.example.com/rug").to_return(
+        status: 200, headers: { "Content-Type" => "text/html" },
+        body: "<html><head><script type=\"application/ld+json\">#{json}</script></head></html>"
+      )
+
+      expect(described_class.fetch("https://store.example.com/rug").price).to eq("80 EUR")
+    end
+
+    it "ignores malformed JSON-LD instead of failing the preview" do
+      stub_dns("store.example.com", "93.184.216.1")
+      stub_request(:get, "https://store.example.com/bad").to_return(
+        status: 200, headers: { "Content-Type" => "text/html" },
+        body: "<html><head><title>Fine</title><script type=\"application/ld+json\">{ not json</script></head></html>"
+      )
+
+      expect(described_class.fetch("https://store.example.com/bad").title).to eq("Fine")
     end
 
     it "falls back to the <title> tag and the host when og tags are missing" do

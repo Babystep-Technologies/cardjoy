@@ -25,6 +25,12 @@ class WishListLinkPreview
   MAX_BODY_BYTES = 2 * 1024 * 1024
   USER_AGENT = "CardJoyLinkPreview/1.0 (+https://cardjoy.app)"
   ZERO_NETWORK = IPAddr.new("0.0.0.0/8")
+  # Beyond loopback/private/link-local: ranges that are never a public web server. Includes the
+  # IPv6 forms that embed an IPv4 address (NAT64, 6to4), which could otherwise smuggle a private one.
+  NON_PUBLIC_NETWORKS = %w[
+    100.64.0.0/10 192.0.0.0/24 192.0.2.0/24 198.18.0.0/15 198.51.100.0/24 203.0.113.0/24
+    224.0.0.0/4 240.0.0.0/4 ::/128 64:ff9b::/96 2002::/16 ff00::/8 fec0::/10
+  ].map { |cidr| IPAddr.new(cidr) }.freeze
 
   Result = Struct.new(:title, :image_url, :price, :store, keyword_init: true)
   FetchedResponse = Struct.new(:redirect, :location, :success, :content_type, :body, keyword_init: true)
@@ -48,10 +54,10 @@ class WishListLinkPreview
   private
 
   def fetch_html(url, redirects_left)
-    uri = safe_uri(url)
+    uri, address = resolve_target(url)
     return [ nil, nil ] unless uri
 
-    response = request(uri)
+    response = request(uri, address)
     return [ nil, nil ] unless response
 
     if response.redirect
@@ -68,8 +74,12 @@ class WishListLinkPreview
 
   # Streams the body so a hostile server can't force us to buffer an unbounded response; `break`
   # inside `read_body`'s block stops reading from the socket as soon as the cap is hit.
-  def request(uri)
+  def request(uri, address)
     http = Net::HTTP.new(uri.host, uri.port)
+    # Connect to the address we just vetted rather than letting Net::HTTP resolve the name again:
+    # a DNS server that answers "public" for our check and "10.x" for the connect would otherwise
+    # walk straight past it. TLS still validates against the hostname.
+    http.ipaddr = address.to_s
     http.use_ssl = (uri.scheme == "https")
     http.open_timeout = OPEN_TIMEOUT
     http.read_timeout = READ_TIMEOUT
@@ -104,23 +114,27 @@ class WishListLinkPreview
   end
 
   # Only an http(s) URL whose host (and every redirect hop) resolves exclusively to public IPs is
-  # safe to fetch. "localhost" is rejected by name since it commonly bypasses DNS entirely.
-  def safe_uri(raw_url)
+  # safe to fetch. "localhost" is rejected by name since it commonly bypasses DNS entirely. Returns
+  # the URI and the vetted address to connect to, or nil.
+  def resolve_target(raw_url)
     uri = URI.parse(raw_url)
     return nil unless uri.is_a?(URI::HTTP) && uri.host.present?
-    return nil unless safe_host?(uri.host)
 
-    uri
+    address = public_address(uri.host)
+    address ? [ uri, address ] : nil
   rescue URI::InvalidURIError
     nil
   end
 
-  def safe_host?(host)
-    return false if host.blank?
-    return false if host.casecmp("localhost").zero?
+  # The first resolved address, only when every address the name resolves to is public.
+  def public_address(host)
+    return nil if host.blank?
+    return nil if host.casecmp("localhost").zero?
 
     addresses = resolve_addresses(host)
-    addresses.present? && addresses.none? { |ip| blocked_ip?(ip) }
+    return nil if addresses.blank? || addresses.any? { |ip| blocked_ip?(ip) }
+
+    addresses.first
   end
 
   def resolve_addresses(host)
@@ -140,21 +154,70 @@ class WishListLinkPreview
 
   def blocked_ip?(ip)
     ip = ip.native if ip.ipv4_mapped?
-    ip.loopback? || ip.private? || ip.link_local? || ZERO_NETWORK.include?(ip)
+    ip.loopback? || ip.private? || ip.link_local? || ZERO_NETWORK.include?(ip) ||
+      NON_PUBLIC_NETWORKS.any? { |network| network.include?(ip) }
   end
 
   def parse(html, uri)
     doc = Nokogiri::HTML(html)
 
-    title = meta_content(doc, "og:title").presence || doc.at_css("title")&.text&.strip.presence
+    product = json_ld_product(doc)
+
+    title = meta_content(doc, "og:title").presence || product[:name].presence ||
+      doc.at_css("title")&.text&.strip.presence
     return nil if title.blank?
 
     Result.new(
       title: title,
-      image_url: absolute_url(meta_content(doc, "og:image"), uri),
-      price: meta_content(doc, "product:price:amount").presence || meta_content(doc, "og:price:amount"),
+      image_url: absolute_url(meta_content(doc, "og:image").presence || product[:image], uri),
+      price: meta_content(doc, "product:price:amount").presence || meta_content(doc, "og:price:amount").presence ||
+        product[:price],
       store: meta_content(doc, "og:site_name").presence || uri.host&.sub(/\Awww\./, "")
     )
+  end
+
+  # Most stores publish price (and often a better name and image) as schema.org JSON-LD rather than
+  # OpenGraph tags. Returns whatever a Product node offers, or an empty hash; malformed JSON is
+  # ignored, since a bad block on one page must never fail the whole preview.
+  def json_ld_product(doc)
+    nodes = doc.css("script[type='application/ld+json']").flat_map do |script|
+      flatten_json_ld(JSON.parse(script.text))
+    rescue JSON::ParserError
+      []
+    end
+    node = nodes.find { |n| Array(n["@type"]).include?("Product") }
+    return {} unless node
+
+    { name: node["name"].to_s.strip, image: json_ld_image(node["image"]), price: json_ld_price(node["offers"]) }
+  end
+
+  def flatten_json_ld(data)
+    case data
+    when Array then data.flat_map { |item| flatten_json_ld(item) }
+    when Hash then data["@graph"] ? flatten_json_ld(data["@graph"]) : [ data ]
+    else []
+    end
+  end
+
+  def json_ld_image(value)
+    value = value.first if value.is_a?(Array)
+    value = value["url"] if value.is_a?(Hash)
+    value.presence if value.is_a?(String)
+  end
+
+  # `offers` is one Offer, a list of them, or an AggregateOffer with a price range (we take the low
+  # end, which is what a guest would pay at minimum).
+  def json_ld_price(offers)
+    offer = offers.is_a?(Array) ? offers.first : offers
+    return nil unless offer.is_a?(Hash)
+
+    amount = offer["price"].presence || offer["lowPrice"].presence
+    return nil if amount.nil?
+
+    currency = offer["priceCurrency"].presence
+    return amount.to_s if currency.nil?
+
+    currency == "USD" ? "$#{amount}" : "#{amount} #{currency}"
   end
 
   def meta_content(doc, property)
