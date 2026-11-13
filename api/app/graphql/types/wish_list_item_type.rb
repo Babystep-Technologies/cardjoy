@@ -15,6 +15,7 @@ module Types
     field :note, String, null: true
     field :quantity, Integer, null: false
     field :position, Integer, null: false
+    field :section, String, null: true
     field :priority, Boolean, null: false
     field :reserved_quantity, Integer, null: false
     field :remaining_quantity, Integer, null: false

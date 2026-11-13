@@ -30,6 +30,7 @@ import { getWishListReservationTokenKey } from '@/lib/utils';
 import {
   contributionKindMeta,
   RELEASE_WISH_LIST_RESERVATION_MUTATION,
+  groupItemsBySection,
   RESERVE_WISH_LIST_ITEM_MUTATION,
   SET_WISH_LIST_RESERVATION_PURCHASED_MUTATION,
   TRUMP_ACCOUNT_INFO_URL,
@@ -523,14 +524,24 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
                 <Label htmlFor="hideClaimed">Only show what&apos;s still available</Label>
               </div>
             )}
-            {items.map((item, index) => (
-              <ItemCard
-                key={item.id ?? index}
-                item={item}
-                hideClaimed={hideClaimed}
-                archived={archived}
-                passcode={passcode}
-              />
+            {groupItemsBySection(items).map((group, groupIndex, groups) => (
+              <div key={group.section ?? `ungrouped-${groupIndex}`} className="space-y-3">
+                {/* Only label groups when there is more than one, so a plain list stays plain. */}
+                {groups.length > 1 && (
+                  <h3 className="pt-2 text-lg font-semibold text-gray-800">
+                    {group.section ?? 'More ideas'}
+                  </h3>
+                )}
+                {group.items.map((item, index) => (
+                  <ItemCard
+                    key={item.id ?? index}
+                    item={item}
+                    hideClaimed={hideClaimed}
+                    archived={archived}
+                    passcode={passcode}
+                  />
+                ))}
+              </div>
             ))}
           </section>
         )}
