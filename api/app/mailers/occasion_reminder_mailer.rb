@@ -20,6 +20,9 @@ class OccasionReminderMailer < ApplicationMailer
     @days_away = (@occurrence - Date.current).to_i
     @suggestion = OccasionDesignSuggestion.for(occasion.kind)
     @create_url = create_flow_url(occasion)
+    registry = @contact.registry(occasion.kind)
+    @registry = registry
+    @registry_url = "#{Rails.application.credentials.dig(:frontend_url)}#{registry.guest_path}" if registry
 
     mail(
       to: @user.email,
