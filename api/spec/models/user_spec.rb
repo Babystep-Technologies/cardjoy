@@ -284,29 +284,6 @@ RSpec.describe User, type: :model do
 
   # The sender's own address on a physical post card (#233) — mandatory before
   # sending, with no CardJoy-wide fallback. Mirrors Contact's address handling.
-  # Temporary, with the before_destroy it covers: the PostCard tables outlive their
-  # models until the data-drop migration, and their foreign keys would otherwise
-  # block deleting a user who has legacy rows (#244).
-  describe "destroying a user with legacy PostCard rows" do
-    it "purges the rows instead of tripping the foreign keys" do
-      user = create(:user)
-      connection = described_class.connection
-      connection.execute(<<~SQL.squish)
-        INSERT INTO post_cards (user_id, external_id, template_id, created_at, updated_at)
-        VALUES (#{user.id}, 'legacy-card', 'tpl', now(), now())
-      SQL
-      connection.execute(<<~SQL.squish)
-        INSERT INTO postage_credits (user_id, amount_cents, created_at, updated_at)
-        VALUES (#{user.id}, 1000, now(), now())
-      SQL
-
-      expect { user.destroy! }.not_to raise_error
-
-      expect(connection.select_value("SELECT count(*) FROM post_cards")).to eq(0)
-      expect(connection.select_value("SELECT count(*) FROM postage_credits")).to eq(0)
-    end
-  end
-
   describe "return address" do
     it "has no return address by default, and is not return_address_complete?" do
       user = create(:user)
