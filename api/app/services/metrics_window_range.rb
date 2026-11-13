@@ -64,7 +64,7 @@ class MetricsWindowRange
   # back to today when there is no data yet (a fresh environment), so the
   # range is never invalid.
   #
-  # `.unscoped` on the three soft-deletable products: an archived card is
+  # `.unscoped` on the two soft-deletable products: an archived card is
   # still part of the product's history for the purpose of "when did this
   # start", even though it no longer counts toward creation totals (see
   # Queries::AdminMetrics, which reads the default-scoped counts).
@@ -72,8 +72,7 @@ class MetricsWindowRange
     [
       ::User.minimum(:created_at),
       ::Card.unscoped.minimum(:created_at),
-      ::Invitation.unscoped.minimum(:created_at),
-      ::PostCard.unscoped.minimum(:created_at)
+      ::Invitation.unscoped.minimum(:created_at)
     ].compact.min&.to_date || end_date
   end
 end

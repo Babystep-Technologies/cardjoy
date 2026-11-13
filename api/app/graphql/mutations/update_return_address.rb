@@ -1,8 +1,7 @@
 # typed: true
 
 module Mutations
-  # Set or change the current user's own return address — the `from` on every
-  # physical postcard they send (issue #233). Always the caller's own; there
+  # Set or change the current user's own mailing address. Always the caller's own; there
   # is no id argument because there is nothing to disambiguate.
   class UpdateReturnAddress < BaseMutation
     FIELD_MAP = {

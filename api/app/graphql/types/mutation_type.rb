@@ -30,7 +30,6 @@ module Types
     field :reset_password, mutation: Mutations::ResetPassword
     field :update_card_by_admin, mutation: Mutations::UpdateCardByAdmin
     field :update_invitation_by_admin, mutation: Mutations::UpdateInvitationByAdmin
-    field :update_post_card_by_admin, mutation: Mutations::UpdatePostCardByAdmin
     field :flag_card_message, mutation: Mutations::FlagCardMessage
     field :generate_qr_code, mutation: Mutations::GenerateQrCode
     field :create_support_request, mutation: Mutations::CreateSupportRequest,
@@ -50,7 +49,6 @@ module Types
     field :create_contact, mutation: Mutations::CreateContact
     field :update_contact, mutation: Mutations::UpdateContact
     field :delete_contact, mutation: Mutations::DeleteContact
-    field :verify_contact_address, mutation: Mutations::VerifyContactAddress
     field :create_contact_list, mutation: Mutations::CreateContactList
     field :rename_contact_list, mutation: Mutations::RenameContactList
     field :delete_contact_list, mutation: Mutations::DeleteContactList
@@ -79,14 +77,6 @@ module Types
     field :set_annual_goals, mutation: Mutations::SetAnnualGoals
     field :create_organization_style, mutation: Mutations::CreateOrganizationStyle
     field :archive_organization_style, mutation: Mutations::ArchiveOrganizationStyle
-    field :create_post_card, mutation: Mutations::CreatePostCard
-    field :update_post_card, mutation: Mutations::UpdatePostCard
-    field :delete_post_card, mutation: Mutations::DeletePostCard
-    field :upload_post_card_photo, mutation: Mutations::UploadPostCardPhoto
-    field :delete_post_card_photo, mutation: Mutations::DeletePostCardPhoto
-    field :generate_post_card_proof, mutation: Mutations::GeneratePostCardProof
-    field :approve_post_card_proof, mutation: Mutations::ApprovePostCardProof
-    field :send_post_card, mutation: Mutations::SendPostCard
     field :update_return_address, mutation: Mutations::UpdateReturnAddress
     field :create_support_ticket, mutation: Mutations::CreateSupportTicket
     field :reply_to_support_ticket, mutation: Mutations::ReplyToSupportTicket
