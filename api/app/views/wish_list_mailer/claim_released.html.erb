@@ -1,0 +1,12 @@
+<h2>Hi <%= @guest_name %>!</h2>
+
+<p>
+  We haven't heard whether you got <strong><%= @item_title %></strong> from
+  <strong><%= @wish_list.title %></strong>, so we've freed it up for someone else.
+</p>
+
+<p>Still planning to get it? You can claim it again any time.</p>
+
+<p>
+  <a href="<%= @list_url %>" class="primary-button">View the list</a>
+</p>

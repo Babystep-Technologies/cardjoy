@@ -32,6 +32,8 @@ module Mutations
         return failure(*reservation.errors.full_messages) unless reservation.persisted?
       end
 
+      WishListMailer.claim_confirmation(reservation).deliver_later
+
       { reservation: reservation, token: reservation.token, wish_list_item: item.reload, errors: [] }
     end
 

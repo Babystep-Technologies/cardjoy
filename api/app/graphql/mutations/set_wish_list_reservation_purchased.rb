@@ -16,7 +16,12 @@ module Mutations
       reservation = WishListReservation.find_by(token: token)
       return { wish_list_item: nil, errors: [ "Reservation not found" ] } unless reservation
 
-      reservation.update!(purchased_at: purchased ? (reservation.purchased_at || Time.current) : nil)
+      if purchased
+        reservation.update!(purchased_at: reservation.purchased_at || Time.current)
+      else
+        # Taking a purchase back puts the claim back on the clock from a clean slate.
+        reservation.update!(purchased_at: nil, reminded_at: nil)
+      end
       { wish_list_item: reservation.wish_list_item.reload, errors: [] }
     end
   end

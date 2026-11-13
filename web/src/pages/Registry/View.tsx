@@ -10,6 +10,7 @@ import { Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LoadingScreen from '@/components/Loading';
 import { GuestWishList } from '@/components/Registry/GuestWishList';
+import { useClaimFromLink } from '@/components/Registry/useClaimFromLink';
 import { occasionLabel, WISH_LIST_FIELDS } from '@/lib/wishList';
 import { format, parseISO } from 'date-fns';
 
@@ -39,13 +40,14 @@ const useNoIndex = () => {
 const RegistryView: React.FC = () => {
   const { externalId } = useParams<{ externalId: string }>();
   useNoIndex();
+  const { ready: claimReady } = useClaimFromLink();
 
   const { data, loading } = useQuery(GET_REGISTRY, {
     variables: { externalId },
     skip: !externalId,
   });
 
-  if (loading) return <LoadingScreen />;
+  if (loading || !claimReady) return <LoadingScreen />;
 
   const registry = data?.registry;
   if (!registry) {

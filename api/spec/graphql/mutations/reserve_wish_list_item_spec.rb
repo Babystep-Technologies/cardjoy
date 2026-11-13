@@ -53,6 +53,18 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
     expect(data["wishListItem"]["claimed"]).to be(false)
   end
 
+  it "emails the guest a confirmation with a link to manage their claim" do
+    expect {
+      reserve({ wishListItemId: item.id.to_s, guestName: "Jamie Guest", guestEmail: "jamie@example.com" })
+    }.to have_enqueued_mail(WishListMailer, :claim_confirmation)
+  end
+
+  it "sends nothing when the claim is refused" do
+    expect {
+      reserve({ wishListItemId: "0", guestName: "Jamie Guest", guestEmail: "jamie@example.com" })
+    }.not_to have_enqueued_mail(WishListMailer, :claim_confirmation)
+  end
+
   it "marks the item claimed once quantity is fully reserved" do
     data = reserve({
       wishListItemId: item.id.to_s,

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Gift, ArrowLeft } from 'lucide-react';
 import LoadingScreen from '@/components/Loading';
 import { GuestWishList } from '@/components/Registry/GuestWishList';
+import { useClaimFromLink } from '@/components/Registry/useClaimFromLink';
 import { WISH_LIST_FIELDS } from '@/lib/wishList';
 
 // Named to match GraphqlController::PUBLIC_OPERATIONS so guests can load it signed out.
@@ -25,6 +26,7 @@ const GET_INVITATION_WISH_LIST = gql`
 const InvitationWishList: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { ready: claimReady } = useClaimFromLink();
 
   const { loading, data } = useQuery(GET_INVITATION_WISH_LIST, {
     variables: { externalId: id },
@@ -34,7 +36,7 @@ const InvitationWishList: React.FC = () => {
   const invitation = data?.invitation;
   const wishList = invitation?.wishList;
 
-  if (loading) return <LoadingScreen />;
+  if (loading || !claimReady) return <LoadingScreen />;
 
   if (!wishList) {
     return (

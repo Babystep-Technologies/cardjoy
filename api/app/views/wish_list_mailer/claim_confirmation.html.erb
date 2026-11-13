@@ -1,0 +1,25 @@
+<h2>Hi <%= @reservation.guest_name %>!</h2>
+
+<p>
+  Thanks for picking <strong><%= @item.title %></strong> from <strong><%= @wish_list.title %></strong>.
+  We've marked it as claimed so nobody else buys the same thing.
+</p>
+
+<% if @item.url.present? %>
+  <p>
+    <a href="<%= @item.url %>" class="primary-button">Get it<%= " on #{@item.store}" if @item.store.present? %></a>
+  </p>
+<% end %>
+
+<p>
+  Once you've bought it, tell us so we know it's covered. If your plans change, you can give it back
+  just as easily.
+</p>
+
+<p>
+  <a href="<%= @manage_url %>" class="primary-button">Manage my claim</a>
+</p>
+
+<p style="font-size: 12px; color: #6b7280; margin-top: 24px;">
+  Keep this email: the button above is how you update or undo your claim from any device.
+</p>
