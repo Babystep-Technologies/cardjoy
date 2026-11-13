@@ -76,6 +76,46 @@ CardJoy is a Rails GraphQL API with a React/TypeScript frontend.
   and the admin mutations. They're authorization-checked like any other field, so removing them
   because "the admin app is gone" would break the dashboard.
 
+## Registry (the fourth product)
+
+A registry is a list of things someone wants, for an occasion, that friends and family can claim.
+It grew out of an invitation's wish list, so the model and GraphQL names are still `WishList*`
+(`upsertWishList`, `WishListType`); the product name is Registry.
+
+- **Data.** `wish_lists` belong to a `user` and optionally to an `invitation`; with no invitation
+  it is a *standalone* registry (`standalone?`) with an `occasion`, `event_date` and a public
+  `external_id`. `wish_list_items` carry `quantity`, `position` and `priority` ("most wanted").
+  A guest's claim is a `wish_list_reservations` row (`purchased_at`, `reminded_at`); the claim's
+  `token` is the guest's only credential and is a bearer secret, so treat it like a
+  password: it rides in emailed links (`?claim=`) and the guest's `localStorage`.
+- **Who sees what.** `surprise_mode` hides who claimed what from everyone, owner included.
+  Per-item `claimed` is public, so owner-only totals (`WishList#insights`) leak nothing new. The
+  owner's *thank-you list* (`thankYouList`) stays locked in surprise mode until `event_date` has
+  passed. A hidden (`visible: false`) registry reads as missing to everyone but its owner, in
+  GraphQL and in the `/p/registry/:id` share preview alike.
+- **Ship-to address.** Opt-in per registry (`share_address`, default off). The owner's profile
+  address (`HasReturnAddress`) is returned only through `WishListClaimType#ship_to`, for a valid
+  claim token while sharing is on, and each reveal is logged. It is never a field on `WishListType`.
+- **Anonymous access.** Guests have no account. `GraphqlController::PUBLIC_OPERATIONS` is an
+  allow-list of *operation names*, so a new guest-facing query must be named to match
+  (`GetRegistry`, `GetWishListClaim`, `ReserveWishListItem`, ...). Anything else returns 401.
+- **Jobs** (GoodJob cron, `config/initializers/good_job.rb`): `OccasionReminderJob` (14:00 UTC),
+  `RegistryEventReminderJob` (14:30, owners, once within 14 days of the event, per-registry
+  opt-out) and `StaleWishListClaimsJob` (15:00, remind unbought claims after 14 days, release 7
+  days later; purchases are never touched). All are idempotent via a timestamp column.
+- **Cards link out.** `cards.wish_list_id` points a card at one of its owner's registries; the card
+  page and the 1-on-1/viewer emails link to it only while it is shared.
+- **Link previews.** `WishListLinkPreview` fetches OpenGraph and schema.org JSON-LD for a pasted
+  URL. It treats every URL as attacker-controlled (public-IP check on every hop, the vetted IP is
+  pinned for the connection, size/time/redirect caps); keep those properties when changing it.
+- **Admin metrics.** `Queries::AdminMetrics` counts standalone registries, items, claims and
+  purchases (aggregate only). The dashboard that charts them is in the private admin repo.
+
+Money is deliberately out of scope: guests buy from the retailer, or send cash through the owner's
+own payment app. CardJoy never holds funds (see `WishListContribution`).
+
+When a change adds a column or field the web reads, deploy the API before the web.
+
 ## Request lifecycle (example)
 
 1. The web app fires a GraphQL mutation via an Apollo `useMutation` hook.
