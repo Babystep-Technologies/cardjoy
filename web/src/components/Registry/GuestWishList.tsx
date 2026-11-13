@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -160,7 +161,10 @@ const ReserveDialog: React.FC<{
   );
 };
 
-const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
+const ItemCard: React.FC<{ item: WishListItem; hideClaimed?: boolean }> = ({
+  item,
+  hideClaimed = false,
+}) => {
   const tokenKey = item.id ? getWishListReservationTokenKey(item.id) : null;
   const [myToken, setMyToken] = useState<string | null>(() =>
     tokenKey ? localStorage.getItem(tokenKey) : null
@@ -245,6 +249,9 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
       toast.error('Could not release this item. Please try again.');
     }
   };
+
+  // The guest's own claim always stays visible so they can still manage it.
+  if (hideClaimed && claimed && !myToken) return null;
 
   return (
     <Card className="border-2 border-gray-200 bg-white/95">
@@ -455,7 +462,9 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
     }
   };
 
+  const [hideClaimed, setHideClaimed] = useState(false);
   const items: WishListItem[] = wishList.items ?? [];
+  const anyClaimed = items.some(item => item.claimed);
   const contributions: WishListContribution[] = wishList.contributions ?? [];
 
   return (
@@ -490,8 +499,14 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
               <Gift className="w-5 h-5 text-pink-500" />
               Gift ideas
             </h2>
+            {anyClaimed && (
+              <div className="flex items-center gap-2 text-sm text-gray-700">
+                <Switch id="hideClaimed" checked={hideClaimed} onCheckedChange={setHideClaimed} />
+                <Label htmlFor="hideClaimed">Only show what&apos;s still available</Label>
+              </div>
+            )}
             {items.map((item, index) => (
-              <ItemCard key={item.id ?? index} item={item} />
+              <ItemCard key={item.id ?? index} item={item} hideClaimed={hideClaimed} />
             ))}
           </section>
         )}
