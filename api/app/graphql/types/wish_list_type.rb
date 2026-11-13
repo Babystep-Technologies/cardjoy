@@ -28,6 +28,8 @@ module Types
     field :insights, Types::WishListInsightsType, null: true
     # Whether the owner may see who gave what yet, and the claims themselves once they may. Empty
     # (not an error) otherwise, so surprise mode is never spoiled by asking.
+    # Owner-only: an SVG QR code for the guest link, to print or show at the event (#247).
+    field :qr_svg, String, null: true
     field :thank_you_unlocked, Boolean, null: false
     field :thank_you_list, [ Types::WishListThankYouType ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
@@ -35,6 +37,15 @@ module Types
 
     def insights
       object.insights if object.owned_by?(context[:current_user])
+    end
+
+    def qr_svg
+      return unless object.owned_by?(context[:current_user])
+
+      base = Rails.application.credentials.dig(:frontend_url)
+      RQRCode::QRCode.new("#{base}#{object.guest_path}").as_svg(
+        module_size: 6, standalone: true, use_path: true, viewbox: true, svg_attributes: { class: "qr" }
+      )
     end
 
     def thank_you_unlocked
