@@ -18,6 +18,13 @@
   <a href="<%= @create_url %>" class="primary-button">Create <%= @contact.name %>'s card</a>
 </p>
 
+<% if @registry %>
+  <p>
+    Prefer to give a gift? <%= @contact.name %> has a registry:
+    <a href="<%= @registry_url %>"><%= @registry.title %></a>.
+  </p>
+<% end %>
+
 <p style="font-size: 12px; color: #6b7280; margin-top: 24px;">
   You're getting this because <%= @contact.name %> is in your CardJoy occasion book.
 </p>

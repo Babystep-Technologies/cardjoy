@@ -64,6 +64,21 @@ class Contact < ApplicationRecord
     REQUIRED_ADDRESS_FIELDS.all? { |field| public_send(field).present? }
   end
 
+  # The registry this person has shared, found by matching their email to a CardJoy account (#250).
+  # A hidden or already-archived registry never matches. Prefers one for the given occasion kind
+  # ("Birthday" finds a birthday registry), then the soonest event, so a reminder points at the
+  # registry that is actually about to matter.
+  def registry(kind = nil)
+    address = email
+    return if address.blank?
+
+    owner = User.find_by("lower(email) = ?", address.downcase)
+    return unless owner
+
+    lists = owner.wish_lists.open_to_guests.order(Arel.sql("event_date ASC NULLS LAST, id DESC")).to_a
+    lists.find { |list| kind.present? && list.occasion == kind.downcase } || lists.first
+  end
+
   private
 
   # True once the user has typed anything at all into the address, including the

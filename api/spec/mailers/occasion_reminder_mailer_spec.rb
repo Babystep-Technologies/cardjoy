@@ -23,6 +23,42 @@ RSpec.describe OccasionReminderMailer, type: :mailer do
       expect(mail.subject).to include("Birthday")
     end
 
+    describe "when the contact has a registry on CardJoy" do
+      let(:contact) { create(:contact, user:, name: "Jordan", email: "Jordan@Example.com") }
+      let(:friend) { create(:user, email: "jordan@example.com") }
+
+      it "links to the registry matched by email" do
+        list = create(:wish_list, :standalone, user: friend, title: "Jordan's 30th")
+
+        expect(mail.body.encoded).to include("#{frontend_url}/registry/#{list.external_id}")
+        expect(mail.body.encoded).to include("Jordan&#39;s 30th")
+      end
+
+      it "skips a hidden registry" do
+        friend
+        create(:wish_list, :standalone, user: friend, visible: false)
+
+        expect(mail.body.encoded).not_to include("/registry/")
+      end
+
+      it "skips a registry whose event has passed" do
+        create(:wish_list, :standalone, user: friend, event_date: Date.current - 1)
+
+        expect(mail.body.encoded).not_to include("/registry/")
+      end
+
+      it "prefers a registry for the occasion over a sooner one for something else" do
+        create(:wish_list, :standalone, user: friend, occasion: "wedding", event_date: Date.current + 1)
+        birthday = create(:wish_list, :standalone, user: friend, occasion: "birthday", event_date: Date.current + 40)
+
+        expect(mail.body.encoded).to include("/registry/#{birthday.external_id}")
+      end
+    end
+
+    it "mentions no registry for a contact without a matching account" do
+      expect(mail.body.encoded).not_to include("/registry/")
+    end
+
     it "includes a curated design suggestion in the body" do
       suggestion = OccasionDesignSuggestion.for("Birthday")
       expect(mail.body.encoded).to include(suggestion.headline)

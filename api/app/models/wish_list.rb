@@ -33,6 +33,12 @@ class WishList < ApplicationRecord
       .where(event_date: today..(today + EVENT_REMINDER_LEAD))
   end
 
+  # Standalone registries a guest can still claim from: shared, and not past their event.
+  scope :open_to_guests, lambda {
+    where(visible: true, invitation_id: nil)
+      .where("wish_lists.event_date IS NULL OR wish_lists.event_date >= ?", Date.current)
+  }
+
   # Registries whose event is past the retention window, so their guests' emails are due to go.
   def self.due_for_email_scrub(today = Date.current)
     where(event_date: ..(today - GUEST_EMAIL_RETENTION))
