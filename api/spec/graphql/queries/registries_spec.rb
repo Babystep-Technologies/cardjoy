@@ -245,4 +245,17 @@ RSpec.describe "Registry queries", type: :request do
       expect(registry(as: nil)["thankYouList"]).to eq([])
     end
   end
+
+  describe "registry qrSvg (#247)" do
+    let(:query) { "query GetRegistry($id: String!) { registry(externalId: $id) { qrSvg } }" }
+    let(:list) { create(:wish_list, :standalone, user: user, visible: true) }
+
+    it "gives the owner a QR code and everyone else nothing" do
+      mine = run(query, { id: list.external_id }, operation: "GetRegistry").dig("data", "registry", "qrSvg")
+      expect(mine).to include("<svg")
+
+      theirs = run(query, { id: list.external_id }, as: nil, operation: "GetRegistry").dig("data", "registry", "qrSvg")
+      expect(theirs).to be_nil
+    end
+  end
 end

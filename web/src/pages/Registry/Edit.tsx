@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ThankYouList } from '@/components/Registry/ThankYouList';
+import { ShareQrCode } from '@/components/Registry/ShareQrCode';
 import { ResetRegistry } from '@/components/Registry/ResetRegistry';
 import {
   Select,
@@ -235,6 +236,7 @@ const RegistryEdit: React.FC = () => {
         </CardContent>
       </Card>
 
+      {!isNew && externalId && <ShareQrCode externalId={externalId} />}
       {!isNew && externalId && <ThankYouList externalId={externalId} />}
       {!isNew && externalId && data?.registry?.standalone && (
         <ResetRegistry externalId={externalId} onReset={() => refetch()} />
