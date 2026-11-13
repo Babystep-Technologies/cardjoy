@@ -29,6 +29,7 @@ import {
   contributionKindMeta,
   RELEASE_WISH_LIST_RESERVATION_MUTATION,
   RESERVE_WISH_LIST_ITEM_MUTATION,
+  SET_WISH_LIST_RESERVATION_PURCHASED_MUTATION,
   TRUMP_ACCOUNT_INFO_URL,
   type WishList,
   type WishListContribution,
@@ -37,6 +38,7 @@ import {
 
 const RESERVE_WISH_LIST_ITEM = gql(RESERVE_WISH_LIST_ITEM_MUTATION);
 const RELEASE_WISH_LIST_RESERVATION = gql(RELEASE_WISH_LIST_RESERVATION_MUTATION);
+const SET_RESERVATION_PURCHASED = gql(SET_WISH_LIST_RESERVATION_PURCHASED_MUTATION);
 
 const ReserveDialog: React.FC<{
   open: boolean;
@@ -105,7 +107,14 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
   const [myToken, setMyToken] = useState<string | null>(() =>
     tokenKey ? localStorage.getItem(tokenKey) : null
   );
+  // The server holds the truth, but a guest has no way to read their own claim back, so the
+  // purchased flag is remembered next to the token in this browser.
+  const purchasedKey = tokenKey ? `${tokenKey}:purchased` : null;
+  const [purchased, setPurchased] = useState<boolean>(() =>
+    purchasedKey ? localStorage.getItem(purchasedKey) === '1' : false
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [setReservationPurchased] = useMutation(SET_RESERVATION_PURCHASED);
   const [reserveWishListItem] = useMutation(RESERVE_WISH_LIST_ITEM);
   const [releaseWishListReservation] = useMutation(RELEASE_WISH_LIST_RESERVATION);
 
@@ -134,6 +143,29 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
     }
   };
 
+  const handlePurchased = async (next: boolean) => {
+    if (!myToken) return;
+    try {
+      const { data } = await setReservationPurchased({
+        variables: { input: { token: myToken, purchased: next } },
+      });
+      const errors: string[] = data?.setWishListReservationPurchased?.errors ?? [];
+      if (errors.length > 0) {
+        toast.error(errors.join(', '));
+        return;
+      }
+      if (purchasedKey) {
+        if (next) localStorage.setItem(purchasedKey, '1');
+        else localStorage.removeItem(purchasedKey);
+      }
+      setPurchased(next);
+      toast.success(next ? 'Marked as bought — thank you!' : 'Marked as not bought yet');
+    } catch (error) {
+      console.error('Failed to update purchase status', error);
+      toast.error('Could not update this item. Please try again.');
+    }
+  };
+
   const handleRelease = async () => {
     if (!myToken) return;
     try {
@@ -146,6 +178,8 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
         return;
       }
       if (tokenKey) localStorage.removeItem(tokenKey);
+      if (purchasedKey) localStorage.removeItem(purchasedKey);
+      setPurchased(false);
       setMyToken(null);
       toast.success('Reservation released');
     } catch (error) {
@@ -170,7 +204,7 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
             {myToken ? (
               <Badge className="bg-green-100 text-green-800 border border-green-300 shrink-0">
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                You're getting this
+                {purchased ? 'You bought this' : "You're getting this"}
               </Badge>
             ) : claimed ? (
               <Badge variant="outline" className="border-gray-300 text-gray-500 shrink-0">
@@ -198,9 +232,29 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
               </Button>
             )}
             {myToken ? (
-              <Button variant="outline" size="sm" className="border-2" onClick={handleRelease}>
-                Undo
-              </Button>
+              <>
+                {purchased ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-2"
+                    onClick={() => handlePurchased(false)}
+                  >
+                    Not bought yet
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold"
+                    onClick={() => handlePurchased(true)}
+                  >
+                    I&apos;ve bought it
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" className="border-2" onClick={handleRelease}>
+                  Undo
+                </Button>
+              </>
             ) : (
               !claimed && (
                 <Button

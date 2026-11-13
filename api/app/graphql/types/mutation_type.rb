@@ -44,6 +44,7 @@ module Types
     field :delete_registry, mutation: Mutations::DeleteRegistry
     field :preview_wish_list_link, mutation: Mutations::PreviewWishListLink
     field :reserve_wish_list_item, mutation: Mutations::ReserveWishListItem
+    field :set_wish_list_reservation_purchased, mutation: Mutations::SetWishListReservationPurchased
     field :release_wish_list_reservation, mutation: Mutations::ReleaseWishListReservation
     field :create_rsvp, mutation: Mutations::CreateRsvp
     field :connect_slack_account, mutation: Mutations::ConnectSlackAccount

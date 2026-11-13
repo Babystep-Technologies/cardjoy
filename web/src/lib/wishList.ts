@@ -288,6 +288,18 @@ export const RESERVE_WISH_LIST_ITEM_MUTATION = `
   }
 `;
 
+export const SET_WISH_LIST_RESERVATION_PURCHASED_MUTATION = `
+  mutation SetWishListReservationPurchased($input: SetWishListReservationPurchasedInput!) {
+    setWishListReservationPurchased(input: $input) {
+      wishListItem {
+        id
+        claimed
+      }
+      errors
+    }
+  }
+`;
+
 export const RELEASE_WISH_LIST_RESERVATION_MUTATION = `
   mutation ReleaseWishListReservation($input: ReleaseWishListReservationInput!) {
     releaseWishListReservation(input: $input) {

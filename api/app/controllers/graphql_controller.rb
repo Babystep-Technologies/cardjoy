@@ -17,6 +17,7 @@ class GraphqlController < ApiController
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
     GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
     ReserveWishListItem ReleaseWishListReservation GetRegistry
+    SetWishListReservationPurchased
     OrganizationInvitationPreview
   ].freeze
 
