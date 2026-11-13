@@ -46,6 +46,20 @@ class WishList < ApplicationRecord
     "/invitation/#{linked_invitation.external_id}/wishlist"
   end
 
+  # Progress totals for the owner's dashboard: how many items are fully claimed and how many claims
+  # are marked bought. Two grouped queries however many items there are.
+  def insights
+    list_items = items.to_a
+    reserved = WishListReservation.where(wish_list_item_id: list_items.map(&:id))
+    quantities = reserved.group(:wish_list_item_id).sum(:quantity)
+
+    {
+      item_count: list_items.size,
+      covered_count: list_items.count { |item| quantities.fetch(item.id, 0) >= item.quantity },
+      purchased_count: reserved.where.not(purchased_at: nil).count
+    }
+  end
+
   def owned_by?(candidate)
     candidate.present? && candidate.id == user_id
   end

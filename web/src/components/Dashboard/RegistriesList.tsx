@@ -13,6 +13,7 @@ export interface DashboardRegistry {
   eventDate?: string | null;
   standalone: boolean;
   items: { id: string }[];
+  insights?: { itemCount: number; coveredCount: number; purchasedCount: number } | null;
 }
 
 interface RegistriesListProps {
@@ -70,7 +71,14 @@ export const RegistriesList: React.FC<RegistriesListProps> = ({ registries, onDe
                   </p>
                 </div>
                 <p className="text-sm text-gray-600">
-                  {registry.items.length} {registry.items.length === 1 ? 'item' : 'items'}
+                  {registry.items.length === 0
+                    ? 'No items yet'
+                    : registry.insights
+                      ? `${registry.insights.coveredCount} of ${registry.insights.itemCount} covered` +
+                        (registry.insights.purchasedCount > 0
+                          ? ` · ${registry.insights.purchasedCount} bought`
+                          : '')
+                      : `${registry.items.length} ${registry.items.length === 1 ? 'item' : 'items'}`}
                 </p>
                 <div className="mt-auto flex gap-2">
                   <Button

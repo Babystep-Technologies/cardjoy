@@ -22,8 +22,14 @@ module Types
     field :owner_first_name, String, null: true
     field :items, [ Types::WishListItemType ], null: false
     field :contributions, [ Types::WishListContributionType ], null: false
+    # Progress totals, visible to the owner only; null for everyone else.
+    field :insights, Types::WishListInsightsType, null: true
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    def insights
+      object.insights if object.owned_by?(context[:current_user])
+    end
 
     def owner_first_name
       object.user&.name.to_s.split.first

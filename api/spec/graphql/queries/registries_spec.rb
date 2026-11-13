@@ -183,4 +183,28 @@ RSpec.describe "Registry queries", type: :request do
       expect(Types::WishListType.fields.keys).not_to include("shipTo", "returnAddress", "address")
     end
   end
+
+  describe "insights" do
+    let(:list) { create(:wish_list, :standalone, user: user, surprise_mode: true) }
+    let(:query) { "query GetRegistry($id: String!) { registry(externalId: $id) { insights { itemCount coveredCount purchasedCount } } }" }
+
+    before do
+      pan = create(:wish_list_item, wish_list: list, quantity: 1)
+      towels = create(:wish_list_item, wish_list: list, quantity: 2)
+      create(:wish_list_item, wish_list: list, quantity: 1)
+      create(:wish_list_reservation, wish_list_item: pan, purchased_at: Time.current)
+      create(:wish_list_reservation, wish_list_item: towels, quantity: 1)
+    end
+
+    it "gives the owner totals only, even in surprise mode" do
+      data = run(query, { id: list.external_id }, operation: "GetRegistry").dig("data", "registry", "insights")
+
+      expect(data).to eq("itemCount" => 3, "coveredCount" => 1, "purchasedCount" => 1)
+    end
+
+    it "is hidden from everyone else" do
+      expect(run(query, { id: list.external_id }, as: other, operation: "GetRegistry").dig("data", "registry", "insights")).to be_nil
+      expect(run(query, { id: list.external_id }, as: nil, operation: "GetRegistry").dig("data", "registry", "insights")).to be_nil
+    end
+  end
 end
