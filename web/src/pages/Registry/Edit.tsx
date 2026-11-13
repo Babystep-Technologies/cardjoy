@@ -28,6 +28,8 @@ import withAuth from '@/lib/with-auth';
 import WishListFields from '@/pages/Invitation/components/WishListFields';
 import {
   emptyWishListDraft,
+  applyRegistryTemplate,
+  REGISTRY_TEMPLATES,
   REGISTRY_OCCASIONS,
   UPSERT_WISH_LIST_MUTATION,
   validateWishListDraft,
@@ -104,6 +106,11 @@ const RegistryEdit: React.FC = () => {
   };
 
   if (loading) return <LoadingScreen />;
+  // Ideas the owner hasn't added yet, so tapping one makes it disappear.
+  const suggestions = (REGISTRY_TEMPLATES[draft.occasion]?.suggestions ?? []).filter(
+    idea => !draft.items.some(item => item.title === idea)
+  );
+
   if (error || (!isNew && !data?.registry)) return <ErrorScreen />;
 
   return (
@@ -123,7 +130,9 @@ const RegistryEdit: React.FC = () => {
             <Label htmlFor="registryOccasion">Occasion</Label>
             <Select
               value={draft.occasion || undefined}
-              onValueChange={occasion => setDraft({ ...draft, occasion })}
+              onValueChange={occasion =>
+                setDraft(isNew ? applyRegistryTemplate(draft, occasion) : { ...draft, occasion })
+              }
             >
               <SelectTrigger id="registryOccasion">
                 <SelectValue placeholder="Pick one (optional)" />
@@ -148,6 +157,29 @@ const RegistryEdit: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {suggestions.length > 0 && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Ideas to start with</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {suggestions.map(idea => (
+              <Button
+                key={idea}
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setDraft({ ...draft, items: [...draft.items, { title: idea, quantity: 1 }] })
+                }
+              >
+                + {idea}
+              </Button>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="space-y-6 pt-6">
