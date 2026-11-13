@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ThankYouList } from '@/components/Registry/ThankYouList';
+import { ResetRegistry } from '@/components/Registry/ResetRegistry';
 import {
   Select,
   SelectContent,
@@ -60,7 +61,7 @@ const RegistryEdit: React.FC = () => {
   const [draft, setDraft] = useState<WishListDraft>({ ...emptyWishListDraft(), title: '' });
   const [saving, setSaving] = useState(false);
 
-  const { data, loading, error } = useQuery(GET_REGISTRY, {
+  const { data, loading, error, refetch } = useQuery(GET_REGISTRY, {
     variables: { externalId },
     skip: isNew,
     fetchPolicy: 'network-only',
@@ -235,6 +236,9 @@ const RegistryEdit: React.FC = () => {
       </Card>
 
       {!isNew && externalId && <ThankYouList externalId={externalId} />}
+      {!isNew && externalId && data?.registry?.standalone && (
+        <ResetRegistry externalId={externalId} onReset={() => refetch()} />
+      )}
     </div>
   );
 };
