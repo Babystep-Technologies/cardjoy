@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { ThankYouList } from '@/components/Registry/ThankYouList';
 import {
   Select,
   SelectContent,
@@ -232,6 +233,8 @@ const RegistryEdit: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {!isNew && externalId && <ThankYouList externalId={externalId} />}
     </div>
   );
 };

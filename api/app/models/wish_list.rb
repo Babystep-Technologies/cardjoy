@@ -60,6 +60,23 @@ class WishList < ApplicationRecord
     }
   end
 
+  # Whether the owner may see who gave what, for thank-you notes (#252). Surprise mode hides it until
+  # the event is over: with no date it stays hidden, since "over" is unknowable.
+  def thank_you_unlocked?
+    return true unless surprise_mode
+
+    date = event_date
+    !date.nil? && date < Date.current
+  end
+
+  # Claims in the order the owner will write the notes: by guest, then by item.
+  def thank_you_list
+    WishListReservation.joins(:wish_list_item)
+      .where(wish_list_items: { wish_list_id: id })
+      .includes(:wish_list_item)
+      .order(:guest_name, :id)
+  end
+
   def owned_by?(candidate)
     candidate.present? && candidate.id == user_id
   end

@@ -24,11 +24,25 @@ module Types
     field :contributions, [ Types::WishListContributionType ], null: false
     # Progress totals, visible to the owner only; null for everyone else.
     field :insights, Types::WishListInsightsType, null: true
+    # Whether the owner may see who gave what yet, and the claims themselves once they may. Empty
+    # (not an error) otherwise, so surprise mode is never spoiled by asking.
+    field :thank_you_unlocked, Boolean, null: false
+    field :thank_you_list, [ Types::WishListThankYouType ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
 
     def insights
       object.insights if object.owned_by?(context[:current_user])
+    end
+
+    def thank_you_unlocked
+      object.thank_you_unlocked?
+    end
+
+    def thank_you_list
+      return [] unless object.owned_by?(context[:current_user]) && object.thank_you_unlocked?
+
+      object.thank_you_list
     end
 
     def owner_first_name
