@@ -21,6 +21,11 @@ class WishList < ApplicationRecord
   # Guest emails are kept this long past the event, for thank-you notes, then scrubbed (#252).
   GUEST_EMAIL_RETENTION = 7.days
 
+  PASSCODE_MIN_LENGTH = 4
+  PASSCODE_ITERATIONS = 100_000
+
+  validate :passcode_long_enough
+
   before_validation :inherit_owner_from_invitation
   # A new date is a new event, so it earns a fresh reminder.
   before_save :rearm_event_reminder, if: :event_date_changed?
@@ -33,9 +38,10 @@ class WishList < ApplicationRecord
       .where(event_date: today..(today + EVENT_REMINDER_LEAD))
   end
 
-  # Standalone registries a guest can still claim from: shared, and not past their event.
+  # Standalone registries a guest can still claim from: shared, not past their event, and not behind
+  # a passcode (nobody is handed a link they can't open).
   scope :open_to_guests, lambda {
-    where(visible: true, invitation_id: nil)
+    where(visible: true, invitation_id: nil, passcode_digest: nil)
       .where("wish_lists.event_date IS NULL OR wish_lists.event_date >= ?", Date.current)
   }
 
@@ -98,11 +104,52 @@ class WishList < ApplicationRecord
       .order(:guest_name, :id)
   end
 
+  # Setting a passcode stores only a salted digest. Blank clears it; too short is a validation error.
+  def passcode=(raw)
+    value = raw.to_s.strip
+    @passcode_too_short = value.present? && value.length < PASSCODE_MIN_LENGTH
+    return if @passcode_too_short
+
+    self.passcode_digest = value.empty? ? nil : self.class.digest_passcode(value)
+  end
+
+  def passcode_protected?
+    passcode_digest.present?
+  end
+
+  def passcode_matches?(candidate)
+    stored = passcode_digest
+    return false if stored.blank? || candidate.blank?
+
+    salt, expected = stored.split("$", 2)
+    actual = self.class.pbkdf2(candidate.to_s.strip, [ salt.to_s ].pack("H*"))
+    ActiveSupport::SecurityUtils.secure_compare(actual, expected.to_s)
+  end
+
+  # Whether this person may open the registry: its owner, anyone when no passcode is set, or a guest
+  # who knows it.
+  def open_to?(user, passcode)
+    owned_by?(user) || !passcode_protected? || passcode_matches?(passcode)
+  end
+
+  def self.digest_passcode(value)
+    salt = SecureRandom.random_bytes(16)
+    "#{salt.unpack1('H*')}$#{pbkdf2(value, salt)}"
+  end
+
+  def self.pbkdf2(value, salt)
+    OpenSSL::KDF.pbkdf2_hmac(value, salt: salt, iterations: PASSCODE_ITERATIONS, length: 32, hash: "sha256").unpack1("H*")
+  end
+
   def owned_by?(candidate)
     candidate.present? && candidate.id == user_id
   end
 
   private
+
+  def passcode_long_enough
+    errors.add(:passcode, "must be at least #{PASSCODE_MIN_LENGTH} characters") if @passcode_too_short
+  end
 
   def rearm_event_reminder
     self.event_reminded_at = nil

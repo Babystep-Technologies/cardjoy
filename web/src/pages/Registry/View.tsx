@@ -3,11 +3,12 @@
  * to browse, claim, or follow a cash link. A hidden registry reads as missing to everyone but its
  * owner, so an unpublished one shows the same "not found" a bad link does.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router-dom';
 import { Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import LoadingScreen from '@/components/Loading';
 import { GuestWishList } from '@/components/Registry/GuestWishList';
 import { useClaimFromLink } from '@/components/Registry/useClaimFromLink';
@@ -16,8 +17,8 @@ import { format, parseISO } from 'date-fns';
 
 // Named to match GraphqlController::PUBLIC_OPERATIONS so guests can load it signed out.
 const GET_REGISTRY = gql`
-  query GetRegistry($externalId: String!) {
-    registry(externalId: $externalId) {
+  query GetRegistry($externalId: String!, $passcode: String) {
+    registry(externalId: $externalId, passcode: $passcode) {
       ownerFirstName
       ${WISH_LIST_FIELDS}
     }
@@ -37,17 +38,73 @@ const useNoIndex = () => {
   }, []);
 };
 
+const passcodeKey = (externalId?: string) => `registry-passcode:${externalId}`;
+const rememberedPasscode = (externalId?: string) => {
+  try {
+    return sessionStorage.getItem(passcodeKey(externalId)) ?? '';
+  } catch {
+    return '';
+  }
+};
+
 const RegistryView: React.FC = () => {
   const { externalId } = useParams<{ externalId: string }>();
   useNoIndex();
   const { ready: claimReady } = useClaimFromLink();
 
-  const { data, loading } = useQuery(GET_REGISTRY, {
-    variables: { externalId },
+  const [passcode, setPasscode] = useState(() => rememberedPasscode(externalId));
+  const [typed, setTyped] = useState('');
+
+  const { data, loading, error } = useQuery(GET_REGISTRY, {
+    variables: { externalId, passcode: passcode || undefined },
     skip: !externalId,
   });
 
+  useEffect(() => {
+    if (data?.registry && passcode) {
+      try {
+        sessionStorage.setItem(passcodeKey(externalId), passcode);
+      } catch {
+        // Private mode: the guest just types it again next visit.
+      }
+    }
+  }, [data, passcode, externalId]);
+
   if (loading || !claimReady) return <LoadingScreen />;
+
+  const lockCode = error?.graphQLErrors?.[0]?.extensions?.code;
+  if (lockCode === 'PASSCODE_REQUIRED' || lockCode === 'PASSCODE_INVALID') {
+    return (
+      <div className="flex flex-col flex-grow min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50">
+        <form
+          className="w-full mx-auto px-4 py-8 max-w-sm mt-16 text-center space-y-4"
+          onSubmit={e => {
+            e.preventDefault();
+            setPasscode(typed.trim());
+          }}
+        >
+          <Gift className="w-12 h-12 mx-auto text-gray-400" />
+          <h1 className="text-2xl font-bold">This registry has a passcode</h1>
+          <p className="text-gray-600">Ask the person who shared it for the passcode.</p>
+          <Input
+            type="password"
+            value={typed}
+            onChange={e => setTyped(e.target.value)}
+            aria-label="Passcode"
+            autoComplete="off"
+          />
+          {lockCode === 'PASSCODE_INVALID' && (
+            <p role="alert" className="text-sm text-red-600">
+              That passcode isn&apos;t right.
+            </p>
+          )}
+          <Button type="submit" disabled={!typed.trim()} className="w-full font-bold">
+            Open registry
+          </Button>
+        </form>
+      </div>
+    );
+  }
 
   const registry = data?.registry;
   if (!registry) {
@@ -82,6 +139,7 @@ const RegistryView: React.FC = () => {
   return (
     <GuestWishList
       wishList={registry}
+      passcode={passcode || undefined}
       subtitle={subtitle}
       shareTitle={`${registry.title}${registry.ownerFirstName ? ` — ${registry.ownerFirstName}` : ''}`}
     />

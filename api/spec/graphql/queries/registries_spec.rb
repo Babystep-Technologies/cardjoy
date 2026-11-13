@@ -258,4 +258,33 @@ RSpec.describe "Registry queries", type: :request do
       expect(theirs).to be_nil
     end
   end
+
+  describe "registry passcode (#247)" do
+    let(:query) { "query GetRegistry($id: String!, $passcode: String) { registry(externalId: $id, passcode: $passcode) { externalId passcodeProtected } }" }
+    let(:list) { create(:wish_list, :standalone, user: user, visible: true, passcode: "sunflower") }
+
+    def code(result)
+      result.dig("errors", 0, "extensions", "code")
+    end
+
+    it "asks for a passcode, rejects a wrong one, and opens for the right one" do
+      expect(code(run(query, { id: list.external_id }, as: nil, operation: "GetRegistry"))).to eq("PASSCODE_REQUIRED")
+      expect(code(run(query, { id: list.external_id, passcode: "tulip" }, as: nil, operation: "GetRegistry"))).to eq("PASSCODE_INVALID")
+
+      ok = run(query, { id: list.external_id, passcode: "sunflower" }, as: nil, operation: "GetRegistry")
+      expect(ok.dig("data", "registry", "externalId")).to eq(list.external_id)
+      expect(ok.dig("data", "registry", "passcodeProtected")).to be(true)
+    end
+
+    it "never asks the owner" do
+      expect(run(query, { id: list.external_id }, operation: "GetRegistry").dig("data", "registry", "externalId"))
+        .to eq(list.external_id)
+    end
+
+    it "still reads as missing, not locked, when hidden" do
+      list.update!(visible: false)
+
+      expect(run(query, { id: list.external_id }, as: nil, operation: "GetRegistry").dig("data", "registry")).to be_nil
+    end
+  end
 end

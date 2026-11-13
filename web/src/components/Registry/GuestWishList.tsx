@@ -165,7 +165,8 @@ const ItemCard: React.FC<{
   item: WishListItem;
   hideClaimed?: boolean;
   archived?: boolean;
-}> = ({ item, hideClaimed = false, archived = false }) => {
+  passcode?: string;
+}> = ({ item, hideClaimed = false, archived = false, passcode }) => {
   const tokenKey = item.id ? getWishListReservationTokenKey(item.id) : null;
   const [myToken, setMyToken] = useState<string | null>(() =>
     tokenKey ? localStorage.getItem(tokenKey) : null
@@ -187,7 +188,9 @@ const ItemCard: React.FC<{
   const handleReserve = async (guestName: string, guestEmail: string) => {
     try {
       const { data } = await reserveWishListItem({
-        variables: { input: { wishListItemId: item.id, guestName, guestEmail, quantity: 1 } },
+        variables: {
+          input: { wishListItemId: item.id, guestName, guestEmail, quantity: 1, passcode },
+        },
       });
       const result = data?.reserveWishListItem;
       const errors: string[] = result?.errors ?? [];
@@ -427,6 +430,8 @@ interface GuestWishListProps {
   /** Used as the native share sheet's title. */
   shareTitle: string;
   backLink?: { to: string; label: string };
+  /** The passcode the guest entered, for a protected registry; sent along when claiming. */
+  passcode?: string;
 }
 
 /**
@@ -439,6 +444,7 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
   subtitle,
   shareTitle,
   backLink,
+  passcode,
 }) => {
   const share = async () => {
     // A standalone registry shares through the API's server-rendered preview so the link unfurls with
@@ -523,6 +529,7 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
                 item={item}
                 hideClaimed={hideClaimed}
                 archived={archived}
+                passcode={passcode}
               />
             ))}
           </section>

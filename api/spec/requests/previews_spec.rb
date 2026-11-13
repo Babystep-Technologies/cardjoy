@@ -211,6 +211,17 @@ RSpec.describe 'Previews', type: :request do
       expect(response.body).to include("url=https://cardjoy.app/registry/#{registry.external_id}")
     end
 
+    it 'keeps the title and note of a passcode-protected registry out of the unfurl' do
+      registry.update!(passcode: 'sunflower')
+
+      get "/p/registry/#{registry.external_id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include('30th')
+      expect(response.body).not_to include('Thanks for celebrating')
+      expect(response.body).to include('passcode')
+    end
+
     it 'does not confirm that a hidden registry exists' do
       registry.update!(visible: false)
 

@@ -205,6 +205,7 @@ export interface WishList {
   occasion?: string | null;
   eventDate?: string | null;
   archived?: boolean;
+  passcodeProtected?: boolean;
   standalone?: boolean;
   title: string;
   intro?: string | null;
@@ -360,6 +361,7 @@ export const WISH_LIST_FIELDS = `
   occasion
   eventDate
   archived
+  passcodeProtected
   standalone
   title
   intro
