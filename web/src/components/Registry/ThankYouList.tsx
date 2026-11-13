@@ -34,8 +34,12 @@ export const ThankYouList: React.FC<Props> = ({ externalId }) => {
   const registry = data?.registry;
   if (!registry) return null;
 
-  const claims: { guestName: string; guestEmail: string; itemTitle: string; purchased: boolean }[] =
-    registry.thankYouList;
+  const claims: {
+    guestName: string;
+    guestEmail: string | null;
+    itemTitle: string;
+    purchased: boolean;
+  }[] = registry.thankYouList;
 
   if (!registry.thankYouUnlocked) {
     return (
@@ -58,7 +62,7 @@ export const ThankYouList: React.FC<Props> = ({ externalId }) => {
     const text = claims
       .map(
         c =>
-          `${c.guestName} <${c.guestEmail}> - ${c.itemTitle}${c.purchased ? '' : ' (not yet bought)'}`
+          `${c.guestName}${c.guestEmail ? ` <${c.guestEmail}>` : ''} - ${c.itemTitle}${c.purchased ? '' : ' (not yet bought)'}`
       )
       .join('\n');
     try {
@@ -87,7 +91,7 @@ export const ThankYouList: React.FC<Props> = ({ externalId }) => {
                 <li key={i} className="flex flex-wrap items-baseline justify-between gap-x-4 py-2">
                   <span>
                     <span className="font-semibold text-gray-900">{c.guestName}</span>
-                    <span className="text-gray-500"> · {c.guestEmail}</span>
+                    {c.guestEmail && <span className="text-gray-500"> · {c.guestEmail}</span>}
                   </span>
                   <span className="text-gray-700">
                     {c.itemTitle}

@@ -161,10 +161,11 @@ const ReserveDialog: React.FC<{
   );
 };
 
-const ItemCard: React.FC<{ item: WishListItem; hideClaimed?: boolean }> = ({
-  item,
-  hideClaimed = false,
-}) => {
+const ItemCard: React.FC<{
+  item: WishListItem;
+  hideClaimed?: boolean;
+  archived?: boolean;
+}> = ({ item, hideClaimed = false, archived = false }) => {
   const tokenKey = item.id ? getWishListReservationTokenKey(item.id) : null;
   const [myToken, setMyToken] = useState<string | null>(() =>
     tokenKey ? localStorage.getItem(tokenKey) : null
@@ -328,7 +329,8 @@ const ItemCard: React.FC<{ item: WishListItem; hideClaimed?: boolean }> = ({
                 </Button>
               </>
             ) : (
-              !claimed && (
+              !claimed &&
+              !archived && (
                 <Button
                   size="sm"
                   className="bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold"
@@ -465,6 +467,8 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
   const [hideClaimed, setHideClaimed] = useState(false);
   const items: WishListItem[] = wishList.items ?? [];
   const anyClaimed = items.some(item => item.claimed);
+  // The event has passed: still readable, but closed to new claims.
+  const archived: boolean = wishList.archived ?? false;
   const contributions: WishListContribution[] = wishList.contributions ?? [];
 
   return (
@@ -487,6 +491,11 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
           </h1>
           {subtitle && <p className="text-gray-600 text-lg">{subtitle}</p>}
           {wishList.intro && <p className="text-gray-700 max-w-lg mx-auto">{wishList.intro}</p>}
+          {archived && (
+            <p className="mx-auto max-w-lg rounded-md bg-gray-100 px-4 py-2 text-sm text-gray-700">
+              This event has passed, so this registry is closed to new claims.
+            </p>
+          )}
           <Button variant="outline" size="sm" className="border-2" onClick={share}>
             <Share2 className="w-4 h-4 mr-2" />
             Share this list
@@ -506,7 +515,12 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
               </div>
             )}
             {items.map((item, index) => (
-              <ItemCard key={item.id ?? index} item={item} hideClaimed={hideClaimed} />
+              <ItemCard
+                key={item.id ?? index}
+                item={item}
+                hideClaimed={hideClaimed}
+                archived={archived}
+              />
             ))}
           </section>
         )}

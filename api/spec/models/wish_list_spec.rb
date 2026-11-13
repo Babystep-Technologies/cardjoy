@@ -47,4 +47,20 @@ RSpec.describe WishList, type: :model do
 
     expect { list.user.destroy! }.to change(described_class, :count).by(-1)
   end
+
+  describe "archiving and guest email retention (#251, #252)" do
+    it "archives once the event date has passed, never before or without a date" do
+      expect(build(:wish_list, event_date: Date.current - 1)).to be_archived
+      expect(build(:wish_list, event_date: Date.current)).not_to be_archived
+      expect(build(:wish_list, event_date: nil)).not_to be_archived
+    end
+
+    it "is due for an email scrub a week after the event, not before" do
+      due = create(:wish_list, :standalone, event_date: Date.current - 7)
+      create(:wish_list, :standalone, event_date: Date.current - 6)
+      create(:wish_list, :standalone, event_date: nil)
+
+      expect(described_class.due_for_email_scrub).to contain_exactly(due)
+    end
+  end
 end

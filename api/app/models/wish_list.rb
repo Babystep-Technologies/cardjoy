@@ -18,6 +18,9 @@ class WishList < ApplicationRecord
   # How far ahead of the event the owner is nudged to share the registry (#251).
   EVENT_REMINDER_LEAD = 14.days
 
+  # Guest emails are kept this long past the event, for thank-you notes, then scrubbed (#252).
+  GUEST_EMAIL_RETENTION = 7.days
+
   before_validation :inherit_owner_from_invitation
   # A new date is a new event, so it earns a fresh reminder.
   before_save :rearm_event_reminder, if: :event_date_changed?
@@ -28,6 +31,18 @@ class WishList < ApplicationRecord
   def self.due_for_event_reminder(today = Date.current)
     where(remind_owner: true, event_reminded_at: nil, invitation_id: nil)
       .where(event_date: today..(today + EVENT_REMINDER_LEAD))
+  end
+
+  # Registries whose event is past the retention window, so their guests' emails are due to go.
+  def self.due_for_email_scrub(today = Date.current)
+    where(event_date: ..(today - GUEST_EMAIL_RETENTION))
+  end
+
+  # An event that has passed archives its registry: still readable, but closed to new claims (#251).
+  # With no date there is no event to end, so it never archives.
+  def archived?(today = Date.current)
+    date = event_date
+    !date.nil? && date < today
   end
 
   def empty?

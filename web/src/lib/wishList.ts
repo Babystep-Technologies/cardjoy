@@ -203,6 +203,7 @@ export interface WishList {
   externalId?: string;
   occasion?: string | null;
   eventDate?: string | null;
+  archived?: boolean;
   standalone?: boolean;
   title: string;
   intro?: string | null;
@@ -357,6 +358,7 @@ export const WISH_LIST_FIELDS = `
   externalId
   occasion
   eventDate
+  archived
   standalone
   title
   intro

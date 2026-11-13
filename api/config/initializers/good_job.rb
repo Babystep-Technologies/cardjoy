@@ -26,6 +26,11 @@ Rails.application.configure do
       cron: "0 15 * * *",
       class: "StaleWishListClaimsJob",
       description: "Remind guests about unbought registry claims, and release the ones nobody acted on"
+    },
+    scrub_guest_emails: {
+      cron: "30 15 * * *",
+      class: "ScrubGuestEmailsJob",
+      description: "Erase guests' email addresses a week after a registry's event"
     }
   }
 end
