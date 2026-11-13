@@ -57,6 +57,20 @@ export const CONTRIBUTION_KINDS: ContributionKindMeta[] = [
 export const contributionKindMeta = (kind: string): ContributionKindMeta =>
   CONTRIBUTION_KINDS.find(k => k.value === kind) ?? CONTRIBUTION_KINDS[0];
 
+/** What a registry is for. Keep in sync with WishList::OCCASIONS in the API. */
+export const REGISTRY_OCCASIONS = [
+  { value: 'birthday', label: 'Birthday' },
+  { value: 'wedding', label: 'Wedding' },
+  { value: 'baby', label: 'Baby' },
+  { value: 'housewarming', label: 'Housewarming' },
+  { value: 'graduation', label: 'Graduation' },
+  { value: 'holiday', label: 'Holiday' },
+  { value: 'other', label: 'Something else' },
+] as const;
+
+export const occasionLabel = (occasion?: string | null): string | null =>
+  REGISTRY_OCCASIONS.find(o => o.value === occasion)?.label ?? null;
+
 export const TRUMP_ACCOUNT_INFO_URL = 'https://www.irs.gov/trumpaccounts';
 
 export interface WishListItem {
@@ -84,6 +98,10 @@ export interface WishListContribution {
 
 export interface WishList {
   id?: string;
+  externalId?: string;
+  occasion?: string | null;
+  eventDate?: string | null;
+  standalone?: boolean;
   title: string;
   intro?: string | null;
   visible: boolean;
@@ -94,6 +112,8 @@ export interface WishList {
 
 /** The editable shape of a wish list, shared by the create and edit flows. */
 export interface WishListDraft {
+  occasion: string;
+  eventDate: string;
   title: string;
   intro: string;
   visible: boolean;
@@ -103,6 +123,8 @@ export interface WishListDraft {
 }
 
 export const emptyWishListDraft = (): WishListDraft => ({
+  occasion: '',
+  eventDate: '',
   title: 'Wish List',
   intro: '',
   visible: true,
@@ -127,6 +149,8 @@ export const emptyWishListContribution = (): WishListContribution => ({
 });
 
 export const wishListToDraft = (wishList: WishList): WishListDraft => ({
+  occasion: wishList.occasion || '',
+  eventDate: wishList.eventDate || '',
   title: wishList.title || 'Wish List',
   intro: wishList.intro || '',
   visible: wishList.visible,
@@ -164,6 +188,8 @@ export const validateWishListDraft = (draft: WishListDraft): string | null => {
 };
 
 export const wishListDraftToInput = (draft: WishListDraft) => ({
+  occasion: draft.occasion || null,
+  eventDate: draft.eventDate || null,
   title: draft.title.trim() || 'Wish List',
   intro: draft.intro.trim() || null,
   visible: draft.visible,
@@ -191,6 +217,7 @@ export const UPSERT_WISH_LIST_MUTATION = `
     upsertWishList(input: $input) {
       wishList {
         id
+        externalId
       }
       errors
     }
@@ -213,6 +240,10 @@ export const PREVIEW_WISH_LIST_LINK_MUTATION = `
 
 export const WISH_LIST_FIELDS = `
   id
+  externalId
+  occasion
+  eventDate
+  standalone
   title
   intro
   visible

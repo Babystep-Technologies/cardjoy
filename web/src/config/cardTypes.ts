@@ -74,7 +74,7 @@ export const cardTypes: CardTypeTheme[] = [
     shortLabel: 'Registry',
     cta: 'Create a Registry',
     intent: 'Share what you wish for',
-    route: '',
+    route: '/registry/new',
     icon: Gift,
     description:
       'Build a wish list for any occasion — birthday, wedding, baby — and let friends and family get you something you will love.',

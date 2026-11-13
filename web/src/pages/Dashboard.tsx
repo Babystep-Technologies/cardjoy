@@ -15,6 +15,7 @@ import CardQrCode from '@/pages/Card/components/QrCode';
 import ShareDialog from '@/components/ShareDialog';
 import { CardsList } from '@/components/Dashboard/CardsList';
 import { InvitationsList } from '@/components/Dashboard/InvitationsList';
+import { RegistriesList, type DashboardRegistry } from '@/components/Dashboard/RegistriesList';
 
 // `organizationId` is the context: null lists the signed-in user's personal cards,
 // an id lists everything that organization owns — including cards other members made.
@@ -43,6 +44,32 @@ const GET_USER_CARDS = gql`
         kind
         value
       }
+    }
+  }
+`;
+
+// Registries are personal for now (no organization argument), so the tab is simply absent inside an
+// organization rather than showing someone's personal lists under a shared heading.
+const GET_MY_REGISTRIES = gql`
+  query MyRegistries {
+    myRegistries {
+      externalId
+      title
+      occasion
+      eventDate
+      standalone
+      items {
+        id
+      }
+    }
+  }
+`;
+
+const DELETE_REGISTRY = gql`
+  mutation DeleteRegistry($externalId: String!) {
+    deleteRegistry(input: { externalId: $externalId }) {
+      success
+      errors
     }
   }
 `;
@@ -133,6 +160,8 @@ const Dashboard: React.FC = () => {
   const [selectedItemType, setSelectedItemType] = useState<'card' | 'invitation'>('card');
   const [qrCardId, setQrCardId] = useState<string | null>(null);
   const [deleteCard] = useMutation(DELETE_CARD);
+  const [deleteRegistry] = useMutation(DELETE_REGISTRY);
+  const [registryToDelete, setRegistryToDelete] = useState<string | null>(null);
 
   // Wait for the context to resolve before asking: firing early would send
   // organizationId: null and flash the user's personal cards inside an organization.
@@ -155,6 +184,17 @@ const Dashboard: React.FC = () => {
     fetchPolicy: 'network-only',
     nextFetchPolicy: 'network-only',
   });
+
+  const showRegistryTab = organizationId === null;
+  const { data: registriesData, refetch: refetchRegistries } = useQuery(GET_MY_REGISTRIES, {
+    skip: skipQueries || !showRegistryTab,
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'network-only',
+  });
+  const registries: DashboardRegistry[] = useMemo(
+    () => registriesData?.myRegistries ?? [],
+    [registriesData]
+  );
 
   const cards: CardType[] = useMemo(() => data?.userCards || [], [data]);
   const invitations = invitationsData?.userInvitations || [];
@@ -203,6 +243,24 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const confirmDeleteRegistry = async () => {
+    if (!registryToDelete) return;
+
+    try {
+      const result = await deleteRegistry({ variables: { externalId: registryToDelete } });
+      const payload = result.data?.deleteRegistry;
+      if (payload?.success) {
+        await refetchRegistries();
+        toast.success('Registry deleted');
+      } else {
+        toast.error(payload?.errors?.[0] ?? 'Failed to delete registry');
+      }
+    } catch {
+      toast.error('Failed to delete registry');
+    }
+    setRegistryToDelete(null);
+  };
+
   const handleCardShareClick = (cardId: string) => {
     setSelectedCardId(cardId);
     setSelectedItemType('card');
@@ -220,7 +278,8 @@ const Dashboard: React.FC = () => {
 
   const hasCards = cards.length > 0;
   const hasInvitations = invitations.length > 0;
-  const hasAnyContent = hasCards || hasInvitations;
+  const hasRegistries = showRegistryTab && registries.length > 0;
+  const hasAnyContent = hasCards || hasInvitations || hasRegistries;
 
   return (
     <div className="flex flex-col flex-grow min-h-[calc(100vh-4rem)] p-4">
@@ -236,7 +295,7 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-500 text-lg">
               {organizationName
                 ? `Create a card or an invitation — everyone in ${organizationName} will see it here.`
-                : 'Create a group card, send a 1-on-1 card, or plan an event invitation to get started'}
+                : 'Create a group card, send a 1-on-1 card, plan an event invitation, or make a registry to get started'}
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -249,6 +308,11 @@ const Dashboard: React.FC = () => {
             <Button asChild size="lg" variant="outline">
               <Link to="/invitation/new">Create an invitation</Link>
             </Button>
+            {showRegistryTab && (
+              <Button asChild size="lg" variant="outline">
+                <Link to="/registry/new">Create a registry</Link>
+              </Button>
+            )}
           </div>
         </div>
       ) : (
@@ -283,6 +347,14 @@ const Dashboard: React.FC = () => {
               >
                 Invites{hasInvitations && ` (${invitations.length})`}
               </TabsTrigger>
+              {showRegistryTab && (
+                <TabsTrigger
+                  value="registries"
+                  className="rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm whitespace-nowrap"
+                >
+                  Registries{hasRegistries && ` (${registries.length})`}
+                </TabsTrigger>
+              )}
             </TabsList>
 
             {CARD_TABS.map(tab => (
@@ -318,9 +390,35 @@ const Dashboard: React.FC = () => {
                 }
               />
             </TabsContent>
+            {showRegistryTab && (
+              <TabsContent value="registries" className="mt-0">
+                <RegistriesList registries={registries} onDelete={setRegistryToDelete} />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       )}
+
+      {/* Registry delete confirmation: its own copy, since guests' claims go with it. */}
+      <Dialog open={!!registryToDelete} onOpenChange={open => !open && setRegistryToDelete(null)}>
+        <DialogContent className="p-6 w-96 text-black">
+          <DialogHeader>
+            <DialogTitle>Delete this registry?</DialogTitle>
+          </DialogHeader>
+          <p>
+            Its items, cash options, and anything guests have already claimed go with it. This
+            action cannot be undone.
+          </p>
+          <div className="flex justify-end space-x-4 mt-4">
+            <Button variant="outline" onClick={() => setRegistryToDelete(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteRegistry}>
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Share Dialog */}
       <ShareDialog
