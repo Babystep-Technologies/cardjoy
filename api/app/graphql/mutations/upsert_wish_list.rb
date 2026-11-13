@@ -21,6 +21,8 @@ module Mutations
     argument :surprise_mode, Boolean, required: false
     argument :share_address, Boolean, required: false
     argument :remind_owner, Boolean, required: false
+    # Blank clears it; omit to leave it unchanged. Stored only as a digest.
+    argument :passcode, String, required: false
     argument :items, [ Types::WishListItemInputType ], required: false
     argument :contributions, [ Types::WishListContributionInputType ], required: false
 

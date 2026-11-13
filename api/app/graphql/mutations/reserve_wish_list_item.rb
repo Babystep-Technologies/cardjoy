@@ -11,15 +11,18 @@ module Mutations
     argument :guest_name, String, required: true
     argument :guest_email, String, required: true
     argument :quantity, Integer, required: false, default_value: 1
+    # Needed when the registry is protected, so item ids alone can't be used to claim from it.
+    argument :passcode, String, required: false
 
     field :reservation, Types::WishListReservationType, null: true
     field :token, String, null: true
     field :wish_list_item, Types::WishListItemType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(wish_list_item_id:, guest_name:, guest_email:, quantity: 1)
+    def resolve(wish_list_item_id:, guest_name:, guest_email:, quantity: 1, passcode: nil)
       item = WishListItem.find_by(id: wish_list_item_id)
       return failure("Item not found") unless item
+      return failure("That passcode isn't right") unless item.wish_list.open_to?(context[:current_user], passcode)
       return failure("This registry's event has passed, so it is closed to new claims") if item.wish_list.archived?
 
       reservation = nil

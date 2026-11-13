@@ -37,6 +37,11 @@ class PreviewsController < ApplicationController
     @title = owner.present? ? "#{@registry.title} — #{owner}" : @registry.title
     @description = @registry.intro.presence ||
       "See what they'd love, and claim something so nobody doubles up."
+    # A passcode-protected registry unfurls as a generic invite: its title and note stay behind it.
+    if @registry.passcode_protected?
+      @title = "A registry on CardJoy"
+      @description = "You've been invited to a registry. Open the link and enter the passcode."
+    end
     @image_url = DEFAULT_OG_IMAGE_URL
     @image_alt = "CardJoy"
     @image_width = DEFAULT_OG_IMAGE_WIDTH

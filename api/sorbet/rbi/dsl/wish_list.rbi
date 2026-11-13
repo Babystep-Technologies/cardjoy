@@ -976,6 +976,51 @@ class WishList
     sig { void }
     def occasion_will_change!; end
 
+    sig { returns(T.nilable(::String)) }
+    def passcode_digest; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def passcode_digest=(value); end
+
+    sig { returns(T::Boolean) }
+    def passcode_digest?; end
+
+    sig { returns(T.nilable(::String)) }
+    def passcode_digest_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def passcode_digest_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def passcode_digest_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def passcode_digest_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def passcode_digest_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def passcode_digest_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def passcode_digest_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def passcode_digest_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def passcode_digest_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def passcode_digest_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def passcode_digest_was; end
+
+    sig { void }
+    def passcode_digest_will_change!; end
+
     sig { returns(T::Boolean) }
     def remind_owner; end
 
@@ -1047,6 +1092,9 @@ class WishList
 
     sig { void }
     def restore_occasion!; end
+
+    sig { void }
+    def restore_passcode_digest!; end
 
     sig { void }
     def restore_remind_owner!; end
@@ -1122,6 +1170,12 @@ class WishList
 
     sig { returns(T::Boolean) }
     def saved_change_to_occasion?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_passcode_digest; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_passcode_digest?; end
 
     sig { returns(T.nilable([T::Boolean, T::Boolean])) }
     def saved_change_to_remind_owner; end
@@ -1461,6 +1515,9 @@ class WishList
 
     sig { returns(T::Boolean) }
     def will_save_change_to_occasion?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_passcode_digest?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_remind_owner?; end

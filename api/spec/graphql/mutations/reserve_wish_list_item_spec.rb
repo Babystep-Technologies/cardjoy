@@ -11,6 +11,7 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
         $guestName: String!
         $guestEmail: String!
         $quantity: Int
+        $passcode: String
       ) {
         reserveWishListItem(
           input: {
@@ -18,6 +19,7 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
             guestName: $guestName
             guestEmail: $guestEmail
             quantity: $quantity
+            passcode: $passcode
           }
         ) {
           token
@@ -36,6 +38,17 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
     parsed = JSON.parse(response.body)
     expect(parsed["errors"]).to be_nil, "unexpected GraphQL errors: #{parsed['errors'].inspect}"
     parsed.dig("data", "reserveWishListItem")
+  end
+
+  it "refuses a claim on a passcode-protected registry without the passcode" do
+    wish_list.update!(passcode: "sunflower")
+    vars = { wishListItemId: item.id.to_s, guestName: "Pat", guestEmail: "pat@example.com" }
+
+    expect(reserve(vars)["errors"].join).to include("passcode")
+    expect(item.reservations).to be_empty
+
+    expect(reserve(vars.merge(passcode: "sunflower"))["errors"]).to be_empty
+    expect(item.reservations.count).to eq(1)
   end
 
   it "refuses a claim once the registry's event has passed" do

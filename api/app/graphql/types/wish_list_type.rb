@@ -10,6 +10,8 @@ module Types
     field :event_date, GraphQL::Types::ISO8601Date, null: true
     # The event has passed: the registry is read-only for guests, who can no longer claim.
     field :archived, Boolean, null: false, method: :archived?
+    # Whether guests need a passcode to open it. The passcode itself is only ever stored as a digest.
+    field :passcode_protected, Boolean, null: false, method: :passcode_protected?
     field :standalone, Boolean, null: false, method: :standalone?
     field :title, String, null: false
     field :intro, String, null: true

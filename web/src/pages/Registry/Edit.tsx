@@ -61,6 +61,9 @@ const RegistryEdit: React.FC = () => {
 
   const [draft, setDraft] = useState<WishListDraft>({ ...emptyWishListDraft(), title: '' });
   const [saving, setSaving] = useState(false);
+  // Write-only: the API keeps just a digest, so this is only ever what the owner types now.
+  const [passcode, setPasscode] = useState('');
+  const [clearPasscode, setClearPasscode] = useState(false);
 
   const { data, loading, error, refetch } = useQuery(GET_REGISTRY, {
     variables: { externalId },
@@ -88,7 +91,11 @@ const RegistryEdit: React.FC = () => {
     try {
       const { data: result } = await upsertWishList({
         variables: {
-          input: { registryExternalId: externalId ?? null, ...wishListDraftToInput(draft) },
+          input: {
+            registryExternalId: externalId ?? null,
+            ...wishListDraftToInput(draft),
+            ...(passcode.trim() ? { passcode } : clearPasscode ? { passcode: '' } : {}),
+          },
         },
       });
       const errors: string[] = result?.upsertWishList?.errors ?? [];
@@ -98,6 +105,9 @@ const RegistryEdit: React.FC = () => {
       }
 
       toast.success('Registry saved!');
+      setPasscode('');
+      setClearPasscode(false);
+      if (!isNew) refetch();
       const savedId = result?.upsertWishList?.wishList?.externalId;
       if (isNew && savedId) navigate(`/registry/${savedId}/edit`, { replace: true });
     } catch (e) {
@@ -208,6 +218,38 @@ const RegistryEdit: React.FC = () => {
                     checked={draft.shareAddress}
                     onCheckedChange={shareAddress => setDraft({ ...draft, shareAddress })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="registryPasscode" className="text-base font-semibold">
+                    Passcode (optional)
+                  </Label>
+                  <p className="text-sm text-gray-500">
+                    {data?.registry?.passcodeProtected && !clearPasscode
+                      ? 'A passcode is set. Type a new one to change it. '
+                      : 'Guests must enter it to open your registry. '}
+                    Share it separately from the link. At least 4 characters.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="registryPasscode"
+                      type="text"
+                      autoComplete="off"
+                      value={passcode}
+                      onChange={e => setPasscode(e.target.value)}
+                      placeholder={data?.registry?.passcodeProtected ? '••••••' : 'No passcode'}
+                    />
+                    {data?.registry?.passcodeProtected && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        aria-pressed={clearPasscode}
+                        onClick={() => setClearPasscode(!clearPasscode)}
+                      >
+                        {clearPasscode ? 'Will remove on save' : 'Remove passcode'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <div>
