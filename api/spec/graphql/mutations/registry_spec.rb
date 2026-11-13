@@ -148,4 +148,55 @@ RSpec.describe "Registry mutations", type: :request do
       expect(WishList.count).to eq(1)
     end
   end
+
+  describe "resetting for next year" do
+    let(:reset) do
+      <<~GRAPHQL
+        mutation Reset($externalId: String!) {
+          resetRegistry(input: { externalId: $externalId }) {
+            wishList { eventDate items { title remainingQuantity } }
+            errors
+          }
+        }
+      GRAPHQL
+    end
+    let(:list) { create(:wish_list, :standalone, user: user, event_date: Date.current - 20) }
+
+    before do
+      item = create(:wish_list_item, wish_list: list, title: "Cast-iron pan", quantity: 1)
+      create(:wish_list_reservation, wish_list_item: item)
+    end
+
+    it "keeps the items, frees every claim and moves the date to the next occurrence ahead" do
+      data = run(reset, { externalId: list.external_id }).dig("data", "resetRegistry")
+
+      expect(data["errors"]).to be_empty
+      expect(data["wishList"]["items"]).to eq([ { "title" => "Cast-iron pan", "remainingQuantity" => 1 } ])
+      expect(WishListReservation.count).to eq(0)
+      expect(list.reload.event_date).to be > Date.current
+      expect(list.event_date).to be <= Date.current + 1.year
+    end
+
+    it "re-arms the owner reminder for the new date" do
+      list.update_columns(event_reminded_at: Time.current)
+      run(reset, { externalId: list.external_id })
+
+      expect(list.reload.event_reminded_at).to be_nil
+    end
+
+    it "leaves someone else's registry alone" do
+      data = run(reset, { externalId: list.external_id }, as: other).dig("data", "resetRegistry")
+
+      expect(data["errors"]).to eq([ "Registry not found" ])
+      expect(WishListReservation.count).to eq(1)
+    end
+
+    it "refuses an invitation's wish list" do
+      invitation_list = create(:wish_list, user: user)
+
+      data = run(reset, { externalId: invitation_list.external_id }).dig("data", "resetRegistry")
+
+      expect(data["errors"]).to eq([ "Only a standalone registry can be reset" ])
+    end
+  end
 end
