@@ -9,6 +9,7 @@ module Types
     field :id, ID, null: false
     field :guest_name, String, null: false
     field :quantity, Integer, null: false
+    field :purchased, Boolean, null: false, method: :purchased?
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
   end
 end

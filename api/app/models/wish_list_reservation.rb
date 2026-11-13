@@ -12,8 +12,15 @@ class WishListReservation < ApplicationRecord
   validates :quantity, numericality: { only_integer: true, greater_than: 0 }
   validates :token, presence: true, uniqueness: true
 
+  scope :purchased, -> { where.not(purchased_at: nil) }
+  scope :unpurchased, -> { where(purchased_at: nil) }
+
   before_validation :normalize_email
   before_validation :generate_token, on: :create
+
+  def purchased?
+    purchased_at.present?
+  end
 
   private
 
