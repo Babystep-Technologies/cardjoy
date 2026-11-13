@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import LoadingScreen from '@/components/Loading';
 import { GuestWishList } from '@/components/Registry/GuestWishList';
 import { useClaimFromLink } from '@/components/Registry/useClaimFromLink';
-import { occasionLabel, WISH_LIST_FIELDS } from '@/lib/wishList';
+import { eventCountdown, occasionLabel, WISH_LIST_FIELDS } from '@/lib/wishList';
 import { format, parseISO } from 'date-fns';
 
 // Named to match GraphqlController::PUBLIC_OPERATIONS so guests can load it signed out.
@@ -74,6 +74,7 @@ const RegistryView: React.FC = () => {
         ? `${registry.ownerFirstName}'s ${occasion?.toLowerCase() ?? 'registry'}`
         : occasion,
       registry.eventDate ? format(parseISO(registry.eventDate), 'MMMM d, yyyy') : null,
+      eventCountdown(registry.eventDate),
     ]
       .filter(Boolean)
       .join(' · ') || null;
