@@ -80,7 +80,6 @@ export const cardTypes: CardTypeTheme[] = [
       'Build a wish list for any occasion — birthday, wedding, baby — and let friends and family get you something you will love.',
     colorVar: 'var(--color-brand-yellow)',
     gradient: 'from-[var(--color-brand-yellow)] to-[var(--color-brand-pink)]',
-    comingSoon: true,
   },
 ];
 
