@@ -110,6 +110,14 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
   `WishList::GUEST_EMAIL_RETENTION` (7 days) after the event; the claim and guest name stay for
   thank-you notes, so `guest_email` is nullable and only required on create. A registry with no
   date never archives and keeps its emails. A new date (the yearly reset) un-archives it.
+- **Passcode.** An owner may protect a registry (`wish_lists.passcode_digest`, salted PBKDF2, write-only).
+  `registry(externalId, passcode)` errors `PASSCODE_REQUIRED`/`PASSCODE_INVALID`; `reserveWishListItem`
+  takes the passcode too, because item ids are sequential. The `/p/registry/:id` unfurl turns generic,
+  and `passcode` requests are throttled (`config/initializers/rack_attack.rb`). Keep any new
+  guest-facing read behind `WishList#open_to?`.
+- **Smaller pieces.** Items carry `price_updated_at` (guests see "price may have changed" after 30
+  days) and a free-text `section` (the guest page groups by it). `WishListType#qrSvg` is owner-only
+  and drawn per request with `rqrcode`.
 - **Occasion reminders.** The reminder email links the contact's registry (`Contact#registry`),
   matched by email to an account with a shared, unarchived standalone registry.
 - **Cards link out.** `cards.wish_list_id` points a card at one of its owner's registries; the card
