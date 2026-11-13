@@ -61,6 +61,7 @@ const SupportIndex = React.lazy(() => import('@/pages/Support/Index'));
 const SupportThread = React.lazy(() => import('@/pages/Support/Thread'));
 
 const PostCardRetired = React.lazy(() => import('@/pages/PostCardRetired'));
+const RegistryEdit = React.lazy(() => import('@/pages/Registry/Edit'));
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
@@ -208,6 +209,23 @@ const App: React.FC = () => {
           <Route path="/card/:cardExternalId/editable" element={<CardEditable />} />
 
           <Route path="/post-card/*" element={<LegacyRedirect to="/postage" />} />
+
+          <Route
+            path="/registry/new"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <RegistryEdit />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/registry/:externalId/edit"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <RegistryEdit />
+              </React.Suspense>
+            }
+          />
 
           <Route path="/invitation/new" element={<InvitationNew />} />
           <Route path="/invitation/:id" element={<InvitationView />} />
