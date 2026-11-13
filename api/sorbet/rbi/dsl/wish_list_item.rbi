@@ -1063,6 +1063,9 @@ class WishListItem
     def restore_quantity!; end
 
     sig { void }
+    def restore_section!; end
+
+    sig { void }
     def restore_store!; end
 
     sig { void }
@@ -1138,6 +1141,12 @@ class WishListItem
     def saved_change_to_quantity?; end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def saved_change_to_section; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_section?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_store; end
 
     sig { returns(T::Boolean) }
@@ -1166,6 +1175,51 @@ class WishListItem
 
     sig { returns(T::Boolean) }
     def saved_change_to_wish_list_id?; end
+
+    sig { returns(T.nilable(::String)) }
+    def section; end
+
+    sig { params(value: T.nilable(::String)).returns(T.nilable(::String)) }
+    def section=(value); end
+
+    sig { returns(T::Boolean) }
+    def section?; end
+
+    sig { returns(T.nilable(::String)) }
+    def section_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def section_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def section_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def section_change; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def section_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def section_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def section_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
+    def section_previous_change; end
+
+    sig { params(from: T.nilable(::String), to: T.nilable(::String)).returns(T::Boolean) }
+    def section_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::String)) }
+    def section_previously_was; end
+
+    sig { returns(T.nilable(::String)) }
+    def section_was; end
+
+    sig { void }
+    def section_will_change!; end
 
     sig { returns(T.nilable(::String)) }
     def store; end
@@ -1376,6 +1430,9 @@ class WishListItem
 
     sig { returns(T::Boolean) }
     def will_save_change_to_quantity?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_section?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_store?; end

@@ -5,6 +5,7 @@ class WishListItem < ApplicationRecord
   has_many :reservations, class_name: "WishListReservation", dependent: :destroy
 
   validates :title, presence: true
+  validates :section, length: { maximum: 60 }, allow_nil: true
   validates :quantity, numericality: { only_integer: true, greater_than: 0 }
   validates :url, format: { with: %r{\Ahttps?://}, message: "must start with http:// or https://" },
     allow_blank: true
@@ -13,6 +14,7 @@ class WishListItem < ApplicationRecord
   PRICE_STALE_AFTER = 30.days
 
   before_validation :normalize_url
+  before_validation :normalize_section
   before_save :stamp_price_updated_at, if: :price_changed?
   before_validation :derive_store
 
@@ -40,6 +42,10 @@ class WishListItem < ApplicationRecord
 
   def stamp_price_updated_at
     self.price_updated_at = price.present? ? Time.current : nil
+  end
+
+  def normalize_section
+    self.section = section&.strip.presence
   end
 
   def normalize_url

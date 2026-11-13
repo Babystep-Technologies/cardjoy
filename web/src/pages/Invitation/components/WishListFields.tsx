@@ -286,9 +286,23 @@ const WishListFields: React.FC<Props> = ({
               placeholder="Size 2T, any color (optional)"
               aria-label={`Gift idea ${index + 1} note`}
             />
+            <Input
+              value={item.section ?? ''}
+              onChange={e => updateItem(index, { section: e.target.value })}
+              placeholder="Section, e.g. Kitchen (optional)"
+              aria-label={`Gift idea ${index + 1} section`}
+              list={`${idPrefix}Sections`}
+              maxLength={60}
+            />
           </div>
         ))}
       </div>
+
+      <datalist id={`${idPrefix}Sections`}>
+        {Array.from(new Set(value.items.map(i => i.section?.trim()).filter(Boolean))).map(name => (
+          <option key={name} value={name} />
+        ))}
+      </datalist>
 
       {/* Cash gifts */}
       <div className="space-y-3">

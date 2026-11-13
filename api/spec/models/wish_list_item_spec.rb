@@ -102,4 +102,15 @@ RSpec.describe WishListItem, type: :model do
       expect(build(:wish_list_item, price: nil).price_stale?(1.year.from_now)).to be(false)
     end
   end
+
+  describe "section (#246)" do
+    it "trims, and treats blank as no section" do
+      expect(create(:wish_list_item, section: "  Kitchen ").section).to eq("Kitchen")
+      expect(create(:wish_list_item, section: "   ").section).to be_nil
+    end
+
+    it "caps the length" do
+      expect(build(:wish_list_item, section: "x" * 61)).not_to be_valid
+    end
+  end
 end

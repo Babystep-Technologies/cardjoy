@@ -185,6 +185,7 @@ export interface WishListItem {
   note?: string | null;
   quantity: number;
   priority?: boolean;
+  section?: string | null;
   remainingQuantity?: number;
   claimed?: boolean;
 }
@@ -252,6 +253,20 @@ export const emptyWishListItem = (): WishListItem => ({
   quantity: 1,
 });
 
+/** Items grouped under their section heading, in the order each section first appears. */
+export const groupItemsBySection = (
+  items: WishListItem[]
+): { section: string | null; items: WishListItem[] }[] => {
+  const groups: { section: string | null; items: WishListItem[] }[] = [];
+  for (const item of items) {
+    const section = item.section?.trim() || null;
+    const group = groups.find(g => g.section === section);
+    if (group) group.items.push(item);
+    else groups.push({ section, items: [item] });
+  }
+  return groups;
+};
+
 export const emptyWishListContribution = (): WishListContribution => ({
   kind: 'venmo',
   handle: '',
@@ -278,6 +293,7 @@ export const wishListToDraft = (wishList: WishList): WishListDraft => ({
     note: item.note || '',
     quantity: item.quantity ?? 1,
     priority: item.priority ?? false,
+    section: item.section || '',
   })),
   contributions: wishList.contributions.map(contribution => ({
     kind: contribution.kind,
@@ -320,6 +336,7 @@ export const wishListDraftToInput = (draft: WishListDraft) => ({
     note: item.note?.trim() || null,
     quantity: item.quantity || 1,
     priority: item.priority ?? false,
+    section: item.section?.trim() || null,
   })),
   contributions: draft.contributions.map(contribution => ({
     kind: contribution.kind,
@@ -380,6 +397,7 @@ export const WISH_LIST_FIELDS = `
     note
     quantity
     priority
+    section
     position
     remainingQuantity
     claimed
