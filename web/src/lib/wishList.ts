@@ -71,6 +71,89 @@ export const REGISTRY_OCCASIONS = [
 export const occasionLabel = (occasion?: string | null): string | null =>
   REGISTRY_OCCASIONS.find(o => o.value === occasion)?.label ?? null;
 
+/**
+ * Starting points per occasion (#251): a title and intro to edit, whether it is a surprise, and a few
+ * plain-text ideas an owner can add with one tap. Deliberately generic, never specific products.
+ */
+export interface RegistryTemplate {
+  title: string;
+  intro: string;
+  surpriseMode: boolean;
+  suggestions: string[];
+}
+
+export const REGISTRY_TEMPLATES: Record<string, RegistryTemplate> = {
+  birthday: {
+    title: 'My birthday wish list',
+    intro: 'Thanks for celebrating with me! Here are a few things I would love.',
+    surpriseMode: true,
+    suggestions: [
+      'A good book',
+      'Gift card to a favorite restaurant',
+      'Something for my hobby',
+      'Cozy blanket',
+    ],
+  },
+  wedding: {
+    title: 'Our wedding registry',
+    intro:
+      'Your love and support mean the world to us. If you would like to give a gift, here are some ideas.',
+    surpriseMode: false,
+    suggestions: ['Cookware set', 'Bedding', 'Dinnerware', 'Honeymoon fund', 'Home decor'],
+  },
+  baby: {
+    title: 'Baby registry',
+    intro: 'We are so grateful for your help getting ready for our little one.',
+    surpriseMode: false,
+    suggestions: ['Stroller', 'Crib', 'Diapers', 'Baby carrier', 'Swaddle blankets'],
+  },
+  housewarming: {
+    title: 'Housewarming wish list',
+    intro: 'Come see the new place! If you would like to bring something, here are some ideas.',
+    surpriseMode: false,
+    suggestions: ['Kitchen tools', 'Houseplant', 'Throw pillows', 'Wall art', 'Towels'],
+  },
+  graduation: {
+    title: 'Graduation wish list',
+    intro: 'Thank you for helping me celebrate this milestone.',
+    surpriseMode: true,
+    suggestions: ['Laptop accessories', 'Luggage', 'Work wardrobe', 'Gift card for books'],
+  },
+  holiday: {
+    title: 'Holiday wish list',
+    intro: 'Happy holidays! Here are some ideas if you are shopping for me.',
+    surpriseMode: true,
+    suggestions: ['Warm socks', 'Candles', 'A good cookbook', 'Board game'],
+  },
+  other: {
+    title: 'My wish list',
+    intro: 'Anything from here would be lovely.',
+    surpriseMode: true,
+    suggestions: [],
+  },
+};
+
+/**
+ * Picks an occasion on a new registry: fills the title, intro and surprise setting from its
+ * template, but never overwrites text the owner has changed. A field still holding another
+ * template's text counts as untouched.
+ */
+export const applyRegistryTemplate = (draft: WishListDraft, occasion: string): WishListDraft => {
+  const template = REGISTRY_TEMPLATES[occasion];
+  const templates = Object.values(REGISTRY_TEMPLATES);
+  const untouched = (value: string, field: 'title' | 'intro') =>
+    !value.trim() || templates.some(t => t[field] === value);
+  if (!template) return { ...draft, occasion };
+
+  return {
+    ...draft,
+    occasion,
+    title: untouched(draft.title, 'title') ? template.title : draft.title,
+    intro: untouched(draft.intro, 'intro') ? template.intro : draft.intro,
+    surpriseMode: template.surpriseMode,
+  };
+};
+
 export const TRUMP_ACCOUNT_INFO_URL = 'https://www.irs.gov/trumpaccounts';
 
 export interface WishListItem {
