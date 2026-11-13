@@ -56,6 +56,15 @@ RSpec.describe "Registry queries", type: :request do
       expect(run(query, { id: list.external_id }, as: user, operation: "GetRegistry").dig("data", "registry", "title")).to eq(list.title)
     end
 
+    it "exposes the owner's first name but nothing more about them" do
+      list = create(:wish_list, :standalone, user: create(:user, name: "Sam Rivera"))
+      query = "query GetRegistry($id: String!) { registry(externalId: $id) { ownerFirstName } }"
+
+      data = run(query, { id: list.external_id }, as: nil, operation: "GetRegistry")
+
+      expect(data.dig("data", "registry", "ownerFirstName")).to eq("Sam")
+    end
+
     it "returns nil for an unknown id" do
       expect(run(query, { id: "nope" }, operation: "GetRegistry").dig("data", "registry")).to be_nil
     end

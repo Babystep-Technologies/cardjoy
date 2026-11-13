@@ -62,6 +62,7 @@ const SupportThread = React.lazy(() => import('@/pages/Support/Thread'));
 
 const PostCardRetired = React.lazy(() => import('@/pages/PostCardRetired'));
 const RegistryEdit = React.lazy(() => import('@/pages/Registry/Edit'));
+const RegistryView = React.lazy(() => import('@/pages/Registry/View'));
 const OrganizationSettings = React.lazy(() => import('@/pages/Organization/Settings'));
 const OrganizationMembers = React.lazy(() => import('@/pages/Organization/Members'));
 const OrganizationCredits = React.lazy(() => import('@/pages/Organization/Credits'));
@@ -215,6 +216,14 @@ const App: React.FC = () => {
             element={
               <React.Suspense fallback={<LoadingScreen />}>
                 <RegistryEdit />
+              </React.Suspense>
+            }
+          />
+          <Route
+            path="/registry/:externalId"
+            element={
+              <React.Suspense fallback={<LoadingScreen />}>
+                <RegistryView />
               </React.Suspense>
             }
           />

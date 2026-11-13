@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
-import { Gift, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Gift, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { occasionLabel } from '@/lib/wishList';
@@ -79,6 +79,11 @@ export const RegistriesList: React.FC<RegistriesListProps> = ({ registries, onDe
                     onClick={() => navigate(`/registry/${registry.externalId}/edit`)}
                   >
                     <Pencil className="mr-1 h-4 w-4" /> Edit
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to={`/registry/${registry.externalId}`}>
+                      <Eye className="mr-1 h-4 w-4" /> View
+                    </Link>
                   </Button>
                   <Button
                     variant="ghost"
