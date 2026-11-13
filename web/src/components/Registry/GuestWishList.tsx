@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,6 +39,63 @@ import {
 const RESERVE_WISH_LIST_ITEM = gql(RESERVE_WISH_LIST_ITEM_MUTATION);
 const RELEASE_WISH_LIST_RESERVATION = gql(RELEASE_WISH_LIST_RESERVATION_MUTATION);
 const SET_RESERVATION_PURCHASED = gql(SET_WISH_LIST_RESERVATION_PURCHASED_MUTATION);
+
+// Named to match GraphqlController::PUBLIC_OPERATIONS. The address is only returned while the owner
+// is sharing it and only for a valid claim token.
+const GET_SHIP_TO = gql`
+  query GetWishListClaim($token: String!) {
+    wishListClaim(token: $token) {
+      wishListItemId
+      shipToName
+      shipTo {
+        addressLine1
+        addressLine2
+        city
+        region
+        postalCode
+        countryCode
+      }
+    }
+  }
+`;
+
+/** Where to send the gift, shown only to a guest who holds a claim, when the owner shares it. */
+const ShipTo: React.FC<{ token: string }> = ({ token }) => {
+  const { data } = useQuery(GET_SHIP_TO, { variables: { token } });
+  const claim = data?.wishListClaim;
+  const address = claim?.shipTo;
+  if (!address) return null;
+
+  const text = [
+    claim.shipToName,
+    address.addressLine1,
+    address.addressLine2,
+    [address.city, address.region, address.postalCode].filter(Boolean).join(', '),
+    address.countryCode,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Address copied!');
+    } catch {
+      toast.error('Could not copy — you can select the text instead.');
+    }
+  };
+
+  return (
+    <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm">
+      <p className="font-semibold text-gray-900">Ship it to</p>
+      <pre className="mt-1 whitespace-pre-wrap font-sans text-gray-700">{text}</pre>
+      <Button variant="outline" size="sm" className="mt-2 border-2" onClick={copy}>
+        <Copy className="mr-1.5 h-3.5 w-3.5" />
+        Copy address
+      </Button>
+    </div>
+  );
+};
 
 const ReserveDialog: React.FC<{
   open: boolean;
@@ -222,6 +279,7 @@ const ItemCard: React.FC<{ item: WishListItem }> = ({ item }) => {
             {item.store && <span className="truncate">{item.store}</span>}
           </div>
           {item.note && <p className="text-sm text-gray-600">{item.note}</p>}
+          {myToken && <ShipTo token={myToken} />}
           <div className="flex flex-wrap gap-2 mt-2">
             {item.url && (
               <Button asChild variant="outline" size="sm" className="border-2">

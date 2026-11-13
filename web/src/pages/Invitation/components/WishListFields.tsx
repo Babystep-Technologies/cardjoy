@@ -33,6 +33,10 @@ interface Props {
   onChange: (draft: WishListDraft) => void;
   /** The create flow has no invitation yet, so it hides the publish toggle. */
   showVisibilityToggle?: boolean;
+  /** What turning visibility on shows, e.g. "Show on the invitation". */
+  visibilityLabel?: string;
+  /** Extra rows for the settings block, e.g. the registry's address sharing. */
+  extraSettings?: React.ReactNode;
   idPrefix?: string;
 }
 
@@ -40,6 +44,8 @@ const WishListFields: React.FC<Props> = ({
   value,
   onChange,
   showVisibilityToggle = true,
+  visibilityLabel = 'Show on the invitation',
+  extraSettings,
   idPrefix = 'wishList',
 }) => {
   const patch = (changes: Partial<WishListDraft>) => onChange({ ...value, ...changes });
@@ -313,7 +319,7 @@ const WishListFields: React.FC<Props> = ({
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor={`${idPrefix}Visible`} className="text-base font-semibold">
-                Show on the invitation
+                {visibilityLabel}
               </Label>
               <p className="text-sm text-gray-500">
                 Turn this off while you're still putting the list together.
@@ -342,6 +348,8 @@ const WishListFields: React.FC<Props> = ({
             onCheckedChange={surpriseMode => patch({ surpriseMode })}
           />
         </div>
+
+        {extraSettings}
       </div>
     </div>
   );

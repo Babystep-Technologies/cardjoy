@@ -42,8 +42,9 @@ code/country are all required (`User#return_address_complete?`). Set it with
 `Mutations::UpdateReturnAddress`, surfaced as the "Return address" section of the profile page. In
 specs, `create(:user, :with_return_address)` gives a complete one.
 
-Nothing requires it today. It was built for the retired PostCard product and is kept as a candidate
-for registry shipping addresses (#249).
+Nothing requires it. A registry owner can opt in to sharing it (`wish_lists.share_address`): a guest
+who holds a claim then sees it as "Ship it to" (`Types::WishListClaimType#ship_to`), and no one else
+does (#249).
 
 ### Inbound email (ActionMailbox)
 
