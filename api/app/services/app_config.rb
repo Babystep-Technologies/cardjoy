@@ -36,8 +36,7 @@ module AppConfig
   # Which Action Mailbox ingress controller is allowed to post inbound mail
   # (#174) — :sendgrid, :postmark, :mailgun, or :relay. nil (the default) means
   # unconfigured, which makes every ingress endpoint 404 rather than accept
-  # mail from nowhere — the same "absent key degrades, never crashes" shape as
-  # PostGrid.configured?. The provider account and its DNS live outside this
+  # mail from nowhere — the "absent key degrades, never crashes" shape. The provider account and its DNS live outside this
   # repo; see the PR for #174.
   sig { returns(T.nilable(Symbol)) }
   def self.inbound_email_ingress

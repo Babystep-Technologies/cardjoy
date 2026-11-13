@@ -14,11 +14,6 @@ class User < ApplicationRecord
   # Raised by #spend_credit! when the user cannot afford a creation.
   class InsufficientCreditsError < StandardError; end
 
-  # Raised by #spend_postage! when the postage wallet can't cover a piece of
-  # mail. Separate from InsufficientCreditsError: the two wallets are separate
-  # products, and a caller topping up postage should not be told to buy credits.
-  class InsufficientPostageError < StandardError; end
-
   # Raised by #adjust_credits! when a negative adjustment would take the
   # balance below zero. A correction is allowed to zero the balance out, not
   # overdraw it.
@@ -37,13 +32,13 @@ class User < ApplicationRecord
   # association — kept for the same reason every other has_many here is: a
   # user destroy should take their activity history with them.
   has_many :user_daily_activities, dependent: :destroy
-  has_many :postage_credits, dependent: :destroy
+  # TEMPORARY: the PostCard product (and its models) is gone, but its tables and
+  # their foreign keys to users remain until the data-drop migration (#244). This
+  # purges them with raw SQL so deleting a user who has legacy rows doesn't fail on
+  # a foreign key. Remove this callback together with those tables.
+  before_destroy :purge_legacy_postcard_rows, prepend: true
   has_many :promo_codes, dependent: :destroy
   has_many :invitations, dependent: :destroy
-  has_many :post_cards, dependent: :destroy
-  # Declared after :post_cards so a user destroy takes the cards (and their
-  # orders) first and finds nothing left to do here.
-  has_many :post_card_mail_orders, dependent: :destroy
   has_many :rsvps, dependent: :destroy
   has_many :support_tickets, dependent: :destroy
   has_many :contacts, dependent: :destroy
@@ -130,73 +125,6 @@ class User < ApplicationRecord
     )
   end
 
-  # Signed sum of the postage wallet, in US cents (#145). Mirrors
-  # #credit_balance, on the separate cents-denominated ledger physical mail is
-  # charged against. Zero for a user who has never topped up — new users get no
-  # postage grant.
-  sig { returns(Integer) }
-  def postage_balance_cents
-    postage_credits.sum(:amount_cents).to_i
-  end
-
-  # Debit `cents` from the postage wallet for a piece of mail. Same contract as
-  # #spend_credit!: must run inside a transaction, because it locks the user row
-  # for the duration of that transaction so two concurrent sends can't both pass
-  # the balance check and overdraw the wallet. Raises InsufficientPostageError
-  # (rolling back the surrounding transaction) when the balance is short.
-  #
-  # A non-positive `cents:` is an ArgumentError rather than a silent write: with
-  # a signed ledger, a sign error would otherwise turn a charge into a grant.
-  sig do
-    params(cents: Integer, reason: String, event_kind: String, event_data: T::Hash[T.untyped, T.untyped])
-      .returns(PostageCredit)
-  end
-  def spend_postage!(cents:, reason:, event_kind:, event_data: {})
-    raise ArgumentError, "Cents must be positive" unless cents.positive?
-
-    lock!
-    raise InsufficientPostageError, "Not enough postage credit" if postage_balance_cents < cents
-
-    postage_credits.create!(
-      amount_cents: -cents,
-      reason: reason,
-      events: [
-        {
-          event_kind: event_kind,
-          event_happened_at: Time.now.utc.iso8601(3),
-          event_data: event_data
-        }
-      ]
-    )
-  end
-
-  # Put `cents` back into the postage wallet — a refund for mail we failed to
-  # send, a promo grant, an admin correction. Always a new positive row: the
-  # ledger is append-only, so the negative row a refund answers is left exactly
-  # as it was written.
-  #
-  # No lock and no balance check, unlike #spend_postage!: adding to a balance
-  # can't overdraw it.
-  sig do
-    params(cents: Integer, reason: String, event_kind: String, event_data: T::Hash[T.untyped, T.untyped])
-      .returns(PostageCredit)
-  end
-  def refund_postage!(cents:, reason:, event_kind:, event_data: {})
-    raise ArgumentError, "Cents must be positive" unless cents.positive?
-
-    postage_credits.create!(
-      amount_cents: cents,
-      reason: reason,
-      events: [
-        {
-          event_kind: event_kind,
-          event_happened_at: Time.now.utc.iso8601(3),
-          event_data: event_data
-        }
-      ]
-    )
-  end
-
   # ---------------------
   # OAuth: Google
   # ---------------------
@@ -272,6 +200,15 @@ class User < ApplicationRecord
   end
 
   private
+
+  # See the TEMPORARY note on the before_destroy above. Order matters: orders
+  # reference both post_cards and postage_credits.
+  sig { void }
+  def purge_legacy_postcard_rows
+    %w[post_card_mail_orders post_cards postage_credits].each do |table|
+      self.class.connection.execute(self.class.sanitize_sql([ "DELETE FROM #{table} WHERE user_id = ?", id ]))
+    end
+  end
 
   # Checked against the raw column rather than the `active_organization`
   # association: the association is nil for an archived organization, which

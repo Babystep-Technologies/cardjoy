@@ -12,15 +12,12 @@ class GraphqlController < ApiController
   # (e.g. "UpdateCard" contains "Card") skip the controller-level auth gate.
   #
   # Everything listed here must be safe to serve to a stranger on its own terms.
-  # The post card catalogue is: it is reference data compiled into the
-  # release, identical for every caller, and touches no database.
   PUBLIC_OPERATIONS = %w[
     SignIn SignUp GoogleOauthSignIn SendPasswordReset GoogleAdminSignIn
     Card UpsertMessage ResendConfirmationCode ConfirmEmail ResetPassword
     GetOccasions GetStyles CreateRsvp GetInvitation GetInvitationWishList
     ReserveWishListItem ReleaseWishListReservation
-    OrganizationInvitationPreview PostCardTemplates PostCardStickers
-    PostCardEditorOptions
+    OrganizationInvitationPreview
   ].freeze
 
   use ApolloUploadServer::Middleware

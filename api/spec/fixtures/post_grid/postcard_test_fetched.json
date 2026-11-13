@@ -1,5 +1,0 @@
-{
-  "id": "postcard_spec1fakepostcardid",
-  "object": "postcard_url",
-  "url": "https://pg-prod-bucket-1.s3.amazonaws.com/test/postcard_spec1fakepostcardid?AWSAccessKeyId=FAKEKEYDONOTUSE&Expires=9999999999&Signature=fakesignaturedonotuse%3D"
-}

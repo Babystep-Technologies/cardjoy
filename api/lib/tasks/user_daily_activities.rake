@@ -9,14 +9,13 @@ namespace :user_daily_activities do
     # give the charts in cardjoy-admin#5 something to show before that date, and
     # is exposed as such on Types::AdminMetricsType.
     #
-    # `.unscoped` on the four soft-deletable products: a card the user later
+    # `.unscoped` on the three soft-deletable products: a card the user later
     # archived still means they were active the day they created it. Rsvp has
     # no default scope, but is the one source a guest can act on with no
     # account at all, so its rows are filtered to the ones that have one.
     sources = {
       Card => Card.unscoped,
       Invitation => Invitation.unscoped,
-      PostCard => PostCard.unscoped,
       Message => Message.unscoped,
       Rsvp => Rsvp.where.not(user_id: nil)
     }

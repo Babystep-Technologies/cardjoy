@@ -146,202 +146,6 @@ RSpec.describe User, type: :model do
     end
   end
 
-  # The postage wallet (#145): a separate, cents-denominated ledger from
-  # `credits`, which stays in whole credits and is untouched by any of this.
-  describe "#postage_balance_cents" do
-    it "is zero for a user with no postage rows — signup grants credits, not postage" do
-      user = create(:user)
-
-      expect(user.postage_credits).to be_empty
-      expect(user.postage_balance_cents).to eq(0)
-      expect(user.credit_balance).to eq(User::SIGNUP_CREDIT_GRANT)
-    end
-
-    it "returns the signed sum of the ledger" do
-      user = create(:user)
-      create(:postage_credit, user: user, amount_cents: 2000)
-      create(:postage_credit, user: user, amount_cents: -86)
-      create(:postage_credit, user: user, amount_cents: -98)
-
-      expect(user.postage_balance_cents).to eq(1816)
-    end
-
-    it "does not count another user's postage" do
-      user = create(:user)
-      create(:postage_credit, user: create(:user), amount_cents: 5000)
-
-      expect(user.postage_balance_cents).to eq(0)
-    end
-  end
-
-  describe "#spend_postage!" do
-    let(:user) { create(:user) }
-
-    before { create(:postage_credit, user: user, amount_cents: 1000, reason: "postage_purchased") }
-
-    it "writes exactly one negative row and returns it" do
-      row = nil
-
-      expect do
-        ActiveRecord::Base.transaction do
-          row = user.spend_postage!(
-            cents: 86,
-            reason: "postcard_6x4",
-            event_kind: "postage_spent_on_mail",
-            event_data: { "post_card_id" => 7 }
-          )
-        end
-      end.to change { user.postage_credits.count }.by(1)
-
-      expect(row).to be_a(PostageCredit)
-      expect(row.amount_cents).to eq(-86)
-      expect(row.reason).to eq("postcard_6x4")
-      expect(row.events.first["event_kind"]).to eq("postage_spent_on_mail")
-      expect(row.events.first["event_data"]).to eq({ "post_card_id" => 7 })
-      expect(user.postage_balance_cents).to eq(914)
-    end
-
-    it "spends the exact balance down to zero" do
-      ActiveRecord::Base.transaction do
-        user.spend_postage!(cents: 1000, reason: "postcard", event_kind: "postage_spent_on_mail")
-      end
-
-      expect(user.postage_balance_cents).to eq(0)
-    end
-
-    it "raises InsufficientPostageError and writes nothing when the balance is short" do
-      expect do
-        ActiveRecord::Base.transaction do
-          user.spend_postage!(cents: 1001, reason: "postcard", event_kind: "postage_spent_on_mail")
-        end
-      end.to raise_error(User::InsufficientPostageError)
-
-      expect(user.postage_credits.count).to eq(1)
-      expect(user.postage_balance_cents).to eq(1000)
-    end
-
-    it "rolls the surrounding transaction back, so a caller's other writes don't survive" do
-      expect do
-        ActiveRecord::Base.transaction do
-          user.postage_credits.create!(amount_cents: 5, reason: "unrelated")
-          user.spend_postage!(cents: 99_999, reason: "postcard", event_kind: "postage_spent_on_mail")
-        end
-      end.to raise_error(User::InsufficientPostageError)
-
-      expect(user.postage_credits.count).to eq(1)
-    end
-
-    it "rejects a zero cents argument before touching the ledger" do
-      expect do
-        ActiveRecord::Base.transaction do
-          user.spend_postage!(cents: 0, reason: "postcard", event_kind: "postage_spent_on_mail")
-        end
-      end.to raise_error(ArgumentError)
-
-      expect(user.postage_balance_cents).to eq(1000)
-    end
-
-    it "rejects a negative cents argument, so a sign error can't become a grant" do
-      expect do
-        ActiveRecord::Base.transaction do
-          user.spend_postage!(cents: -500, reason: "postcard", event_kind: "postage_spent_on_mail")
-        end
-      end.to raise_error(ArgumentError)
-
-      expect(user.postage_balance_cents).to eq(1000)
-    end
-
-    it "rejects an event kind outside the postage allowlist" do
-      expect do
-        ActiveRecord::Base.transaction do
-          user.spend_postage!(cents: 86, reason: "postcard", event_kind: "card_created")
-        end
-      end.to raise_error(ActiveRecord::RecordInvalid)
-
-      expect(user.postage_balance_cents).to eq(1000)
-    end
-  end
-
-  # Uses real threads on separate DB connections, so the data must be committed
-  # (truncation, not a wrapping transaction) to be visible across them.
-  describe "#spend_postage! concurrency", :truncation do
-    self.use_transactional_tests = false
-
-    it "serializes concurrent spends so the wallet never goes negative" do
-      user = create(:user)
-      create(:postage_credit, user: user, amount_cents: 86, reason: "postage_purchased")
-
-      # Two sends race for a balance that covers exactly one of them. The row
-      # lock in #spend_postage! must let exactly one win.
-      succeeded = Concurrent::AtomicFixnum.new(0)
-      failed = Concurrent::AtomicFixnum.new(0)
-
-      threads = 2.times.map do
-        Thread.new do
-          ActiveRecord::Base.connection_pool.with_connection do
-            ActiveRecord::Base.transaction do
-              User.find(user.id).spend_postage!(
-                cents: 86, reason: "postcard_6x4", event_kind: "postage_spent_on_mail"
-              )
-            end
-            succeeded.increment
-          rescue User::InsufficientPostageError
-            failed.increment
-          end
-        end
-      end
-      threads.each(&:join)
-
-      expect(succeeded.value).to eq(1)
-      expect(failed.value).to eq(1)
-      expect(user.reload.postage_balance_cents).to eq(0)
-    end
-  end
-
-  describe "#refund_postage!" do
-    let(:user) { create(:user) }
-
-    it "writes a positive row and leaves the original negative row untouched" do
-      create(:postage_credit, user: user, amount_cents: 1000, reason: "postage_purchased")
-      spend = ActiveRecord::Base.transaction do
-        user.spend_postage!(cents: 86, reason: "postcard_6x4", event_kind: "postage_spent_on_mail")
-      end
-
-      refund = user.refund_postage!(
-        cents: 86,
-        reason: "print_failed",
-        event_kind: "postage_refunded",
-        event_data: { "refunded_postage_credit_id" => spend.id }
-      )
-
-      expect(refund.amount_cents).to eq(86)
-      expect(refund.events.first["event_kind"]).to eq("postage_refunded")
-      expect(spend.reload.amount_cents).to eq(-86)
-      expect(spend).to be_persisted
-      expect(user.postage_balance_cents).to eq(1000)
-      expect(user.postage_credits.count).to eq(3)
-    end
-
-    it "does not need an existing balance — a promo grant is a refund-shaped row" do
-      row = user.refund_postage!(cents: 500, reason: "welcome_promo", event_kind: "postage_promo_grant")
-
-      expect(row.amount_cents).to eq(500)
-      expect(user.postage_balance_cents).to eq(500)
-    end
-
-    it "rejects a non-positive cents argument" do
-      expect { user.refund_postage!(cents: 0, reason: "oops", event_kind: "postage_refunded") }
-        .to raise_error(ArgumentError)
-      expect { user.refund_postage!(cents: -50, reason: "oops", event_kind: "postage_refunded") }
-        .to raise_error(ArgumentError)
-    end
-
-    it "rejects an event kind outside the postage allowlist" do
-      expect { user.refund_postage!(cents: 500, reason: "oops", event_kind: "signup_bonus") }
-        .to raise_error(ActiveRecord::RecordInvalid)
-    end
-  end
-
   describe ".from_slack" do
     let(:slack_user_id) { "U12345" }
     let(:slack_team_id) { "T67890" }
@@ -480,6 +284,29 @@ RSpec.describe User, type: :model do
 
   # The sender's own address on a physical post card (#233) — mandatory before
   # sending, with no CardJoy-wide fallback. Mirrors Contact's address handling.
+  # Temporary, with the before_destroy it covers: the PostCard tables outlive their
+  # models until the data-drop migration, and their foreign keys would otherwise
+  # block deleting a user who has legacy rows (#244).
+  describe "destroying a user with legacy PostCard rows" do
+    it "purges the rows instead of tripping the foreign keys" do
+      user = create(:user)
+      connection = described_class.connection
+      connection.execute(<<~SQL.squish)
+        INSERT INTO post_cards (user_id, external_id, template_id, created_at, updated_at)
+        VALUES (#{user.id}, 'legacy-card', 'tpl', now(), now())
+      SQL
+      connection.execute(<<~SQL.squish)
+        INSERT INTO postage_credits (user_id, amount_cents, created_at, updated_at)
+        VALUES (#{user.id}, 1000, now(), now())
+      SQL
+
+      expect { user.destroy! }.not_to raise_error
+
+      expect(connection.select_value("SELECT count(*) FROM post_cards")).to eq(0)
+      expect(connection.select_value("SELECT count(*) FROM postage_credits")).to eq(0)
+    end
+  end
+
   describe "return address" do
     it "has no return address by default, and is not return_address_complete?" do
       user = create(:user)
@@ -521,15 +348,6 @@ RSpec.describe User, type: :model do
 
     it "rejects a country code that isn't two letters" do
       expect(build(:user, :with_return_address, return_address_country_code: "USA")).not_to be_valid
-    end
-
-    it "converts to PostGrid's address shape, dropping blank fields" do
-      user = create(:user, :with_return_address, return_address_line2: nil)
-
-      expect(user.return_address_for_postgrid).to eq(
-        addressLine1: "123 Market St", city: "San Francisco",
-        provinceOrState: "CA", postalOrZip: "94103", countryCode: "US"
-      )
     end
   end
 end

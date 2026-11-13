@@ -148,9 +148,6 @@ module GeneratedPathHelpersModule
   def viewable_card_preview_path(*args); end
 
   sig { params(args: T.untyped).returns(String) }
-  def webhooks_postgrid_path(*args); end
-
-  sig { params(args: T.untyped).returns(String) }
   def webhooks_slack_path(*args); end
 
   sig { params(args: T.untyped).returns(String) }

@@ -380,20 +380,6 @@ class Contact
     sig { params(value: T::Enumerable[::Occasion]).void }
     def occasions=(value); end
 
-    sig { returns(T::Array[T.untyped]) }
-    def post_card_mail_order_ids; end
-
-    sig { params(ids: T::Array[T.untyped]).returns(T::Array[T.untyped]) }
-    def post_card_mail_order_ids=(ids); end
-
-    # This method is created by ActiveRecord on the `Contact` class because it declared `has_many :post_card_mail_orders`.
-    # 🔗 [Rails guide for `has_many` association](https://guides.rubyonrails.org/association_basics.html#the-has-many-association)
-    sig { returns(::PostCardMailOrder::PrivateCollectionProxy) }
-    def post_card_mail_orders; end
-
-    sig { params(value: T::Enumerable[::PostCardMailOrder]).void }
-    def post_card_mail_orders=(value); end
-
     sig { returns(T.nilable(::User)) }
     def reload_user; end
 

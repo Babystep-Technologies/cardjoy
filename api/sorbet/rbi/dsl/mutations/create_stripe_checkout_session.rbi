@@ -10,9 +10,8 @@ class Mutations::CreateStripeCheckoutSession
     params(
       price_id: T.nilable(::String),
       product: T.nilable(::String),
-      top_up_cents: T.nilable(::Integer),
       organization_id: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(price_id: T.unsafe(nil), product: T.unsafe(nil), top_up_cents: T.unsafe(nil), organization_id: T.unsafe(nil)); end
+  def resolve(price_id: T.unsafe(nil), product: T.unsafe(nil), organization_id: T.unsafe(nil)); end
 end

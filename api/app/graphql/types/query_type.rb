@@ -5,8 +5,6 @@ module Types
   class QueryType < Types::BaseObject
     field :admin_cards, resolver: Queries::AdminCards
     field :admin_invitations, resolver: Queries::AdminInvitations
-    field :admin_post_cards, resolver: Queries::AdminPostCards
-    field :admin_post_card, resolver: Queries::AdminPostCard
     field :admin_users, resolver: Queries::AdminUsers
     field :admin_promo_codes, resolver: Queries::AdminPromoCodes
     field :admin_organizations, resolver: Queries::AdminOrganizations
@@ -37,24 +35,6 @@ module Types
     field :contact_list, resolver: Queries::ContactList
     field :upcoming_occasions, resolver: Queries::UpcomingOccasions
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
-    field :my_post_cards, resolver: Queries::MyPostCards
-    field :post_card, resolver: Queries::PostCard
-    field :post_card_templates, resolver: Queries::PostCardTemplates
-    field :post_card_stickers, resolver: Queries::PostCardStickers
-    field :post_card_editor_options, resolver: Queries::PostCardEditorOptions
-    field :my_postage_ledger, resolver: Queries::MyPostageLedger
-    # The top-up amounts the postage wallet sells, so the page offering them and
-    # the mutation validating them read the same list (#152) rather than the
-    # client carrying its own copy to drift out of sync.
-    #
-    # The same for every caller — it is a price list, not anyone's balance — but
-    # still served through the authenticated endpoint, because the only thing
-    # that asks is the signed-in wallet page.
-    field :postage_top_up_tiers_cents, [ Integer ], null: false,
-      description: "Allowed postage top-up amounts, in US cents, cheapest first."
-    field :quote_post_card_mailing, resolver: Queries::QuotePostCardMailing
-    field :my_post_card_orders, resolver: Queries::MyPostCardOrders
-    field :post_card_mailing_availability, resolver: Queries::PostCardMailingAvailability
     field :my_support_tickets, resolver: Queries::MySupportTickets
     field :support_ticket, resolver: Queries::SupportTicket
     field :admin_support_tickets, resolver: Queries::AdminSupportTickets
@@ -66,10 +46,6 @@ module Types
 
     def occasion_reminder_lead_day_options
       ::Occasion::REMINDER_LEAD_DAY_OPTIONS
-    end
-
-    def postage_top_up_tiers_cents
-      ::PostageCredit::TOP_UP_TIERS_CENTS
     end
   end
 end
