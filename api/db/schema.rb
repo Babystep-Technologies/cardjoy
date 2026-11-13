@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_220000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,6 +103,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_220000) do
     t.string "title"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.bigint "wish_list_id"
     t.index ["created_at"], name: "index_cards_on_created_at"
     t.index ["deleted_at"], name: "index_cards_on_deleted_at"
     t.index ["external_id"], name: "index_cards_on_external_id", unique: true
@@ -111,6 +112,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_220000) do
     t.index ["source_occasion_id"], name: "index_cards_on_source_occasion_id"
     t.index ["user_id", "created_at"], name: "index_cards_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_cards_on_user_id"
+    t.index ["wish_list_id"], name: "index_cards_on_wish_list_id"
   end
 
   create_table "contact_list_memberships", force: :cascade do |t|
@@ -641,6 +643,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_220000) do
   add_foreign_key "cards", "occasions", column: "source_occasion_id", on_delete: :nullify
   add_foreign_key "cards", "organizations", on_delete: :nullify
   add_foreign_key "cards", "users"
+  add_foreign_key "cards", "wish_lists", on_delete: :nullify
   add_foreign_key "contact_list_memberships", "contact_lists"
   add_foreign_key "contact_list_memberships", "contacts"
   add_foreign_key "contact_lists", "users"

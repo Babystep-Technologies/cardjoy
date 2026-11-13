@@ -15,11 +15,13 @@ module Mutations
     argument :max_messages, Integer, required: false
     argument :require_login_to_contribute, Boolean, required: false
     argument :slug, String, required: false
+    # A registry of the caller's to link from this card; blank clears it (#250).
+    argument :registry_external_id, String, required: false
 
     field :success, Boolean, null: false
     field :errors, [ String ], null: false
 
-    def resolve(card_id:, title: nil, recipients: nil, occasion: nil, contributor_prompt: nil, style_ids: [], cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil)
+    def resolve(card_id:, title: nil, recipients: nil, occasion: nil, contributor_prompt: nil, style_ids: [], cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil, registry_external_id: nil)
       user = context[:current_user]
       return { success: false, errors: [ "Not authenticated" ] } unless user
 
@@ -29,6 +31,10 @@ module Mutations
       card = Card.find_by(external_id: card_id)
       return { success: false, errors: [ "Card not found or not owned by user" ] } unless card&.editable_by?(user)
 
+      registry = own_registry(registry_external_id)
+      return { success: false, errors: [ "Registry not found" ] } if registry == false
+
+      card.wish_list = registry unless registry_external_id.nil?
       card.title = title if title.present?
       card.recipients = recipients if recipients.present?
       card.occasion = occasion if occasion.present?

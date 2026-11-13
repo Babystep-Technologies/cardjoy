@@ -63,5 +63,17 @@ module Mutations
 
       organization
     end
+
+    # A registry the caller owns, resolved from an `registryExternalId` argument (#250). Nil for a
+    # blank id (no registry / clear it) and `false` for one that is unknown or someone else's, so
+    # a stranger can't probe which registry ids exist or link a card to another person's list.
+    def own_registry(external_id)
+      return nil if external_id.blank?
+
+      list = WishList.find_by(external_id: external_id)
+      return false unless list&.owned_by?(context[:current_user])
+
+      list
+    end
   end
 end

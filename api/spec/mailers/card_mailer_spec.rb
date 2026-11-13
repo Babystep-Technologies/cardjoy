@@ -34,6 +34,18 @@ RSpec.describe CardMailer, type: :mailer do
       expect(mail.subject).to eq("You've received a CardJoy card!")
     end
 
+    it 'points at the registry only when the card has a shared one' do
+      expect(mail.body.encoded).not_to include('registry')
+
+      registry = create(:wish_list, user: card.user, invitation: nil, visible: true)
+      card.update!(wish_list: registry)
+      expect(described_class.one_on_one_delivery(email, card).body.encoded)
+        .to include("#{frontend_url}/registry/#{registry.external_id}")
+
+      registry.update!(visible: false)
+      expect(described_class.one_on_one_delivery(email, card.reload).body.encoded).not_to include('/registry/')
+    end
+
     it 'links to the preview endpoint so the link unfurls when forwarded' do
       expect(mail.body.encoded).to include("/p/card/#{card.external_id}/viewable")
       expect(mail.body.encoded).not_to include("#{frontend_url}/card/#{card.external_id}/viewable")

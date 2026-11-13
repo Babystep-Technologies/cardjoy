@@ -28,6 +28,14 @@ module Types
     field :max_messages, Integer, null: false
     field :require_login_to_contribute, Boolean, null: false
 
+    # A link-out to the owner's registry. Null when none is attached or it is not shared (hidden),
+    # so a card never advertises a registry its owner hasn't published.
+    field :registry, Types::RegistryLinkType, null: true
+    def registry
+      list = object.wish_list
+      list if list&.visible
+    end
+
     field :messages, [ Types::MessageType ], null: true
     def messages
       if context[:show_flagged_messages]

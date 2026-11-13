@@ -18,8 +18,9 @@ class Mutations::UpdateCard
       cover_image_file: T.untyped,
       max_messages: T.nilable(::Integer),
       require_login_to_contribute: T.nilable(T::Boolean),
-      slug: T.nilable(::String)
+      slug: T.nilable(::String),
+      registry_external_id: T.nilable(::String)
     ).returns(T.untyped)
   end
-  def resolve(card_id:, title: T.unsafe(nil), recipients: T.unsafe(nil), occasion: T.unsafe(nil), contributor_prompt: T.unsafe(nil), style_ids: T.unsafe(nil), cover_image_url: T.unsafe(nil), cover_image_file: T.unsafe(nil), max_messages: T.unsafe(nil), require_login_to_contribute: T.unsafe(nil), slug: T.unsafe(nil)); end
+  def resolve(card_id:, title: T.unsafe(nil), recipients: T.unsafe(nil), occasion: T.unsafe(nil), contributor_prompt: T.unsafe(nil), style_ids: T.unsafe(nil), cover_image_url: T.unsafe(nil), cover_image_file: T.unsafe(nil), max_messages: T.unsafe(nil), require_login_to_contribute: T.unsafe(nil), slug: T.unsafe(nil), registry_external_id: T.unsafe(nil)); end
 end

@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { StyleType } from '@/types/app';
 import { useAuth } from '@/contexts/AuthContext';
 import { Toaster } from 'sonner';
-import { Send, ArrowLeft, Settings, Pencil } from 'lucide-react';
+import { Send, ArrowLeft, Settings, Pencil, Gift } from 'lucide-react';
 import ShareDialog from '@/components/ShareDialog';
 
 const GET_CARD = gql`
@@ -28,6 +28,11 @@ const GET_CARD = gql`
       messageLimitReached
       requireLoginToContribute
       contributorPrompt
+      registry {
+        externalId
+        title
+        ownerFirstName
+      }
       user {
         id
       }
@@ -285,6 +290,25 @@ const CardViewable: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Registry link-out, only present while the owner shares the registry */}
+      {cardData?.registry && (
+        <div className="max-w-2xl mx-auto px-4 pb-12">
+          <Link
+            to={`/registry/${cardData.registry.externalId}`}
+            className="flex items-center gap-3 rounded-2xl border-2 border-purple-200 bg-white/80 p-4 hover:border-purple-400 transition-colors"
+            style={{ color: textColor }}
+          >
+            <Gift className="w-6 h-6 shrink-0 text-purple-600" />
+            <span>
+              <span className="block font-semibold">
+                Want to get {cardData.registry.ownerFirstName || 'them'} a gift?
+              </span>
+              <span className="block text-sm opacity-80">See {cardData.registry.title}</span>
+            </span>
+          </Link>
         </div>
       )}
 
