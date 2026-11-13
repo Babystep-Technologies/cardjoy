@@ -180,6 +180,7 @@ export interface WishListItem {
   url?: string | null;
   imageUrl?: string | null;
   price?: string | null;
+  priceStale?: boolean;
   store?: string | null;
   note?: string | null;
   quantity: number;
@@ -372,6 +373,7 @@ export const WISH_LIST_FIELDS = `
     url
     imageUrl
     price
+    priceStale
     store
     note
     quantity
