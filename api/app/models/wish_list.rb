@@ -26,6 +26,14 @@ class WishList < ApplicationRecord
     invitation_id.nil?
   end
 
+  # Where a guest opens this list, relative to the frontend root.
+  def guest_path
+    linked_invitation = invitation
+    return "/registry/#{external_id}" unless linked_invitation
+
+    "/invitation/#{linked_invitation.external_id}/wishlist"
+  end
+
   def owned_by?(candidate)
     candidate.present? && candidate.id == user_id
   end

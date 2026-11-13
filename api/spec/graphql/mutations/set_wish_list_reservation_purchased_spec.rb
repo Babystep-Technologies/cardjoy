@@ -47,6 +47,15 @@ RSpec.describe Mutations::SetWishListReservationPurchased, type: :request do
     expect(reservation.reload).not_to be_purchased
   end
 
+  it "restarts the reminder clock when a purchase is taken back" do
+    reservation.update!(purchased_at: 1.day.ago, reminded_at: 10.days.ago)
+
+    run({ token: reservation.token, purchased: false })
+
+    expect(reservation.reload.reminded_at).to be_nil
+    expect(WishListReservation.due_for_release).not_to include(reservation)
+  end
+
   it "reports an unknown token" do
     expect(run({ token: "nope" })["errors"]).to eq([ "Reservation not found" ])
   end

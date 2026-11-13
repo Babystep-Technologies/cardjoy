@@ -37,6 +37,7 @@ module Types
     field :organization_invitation_preview, resolver: Queries::OrganizationInvitationPreview
     field :my_registries, resolver: Queries::MyRegistries
     field :registry, resolver: Queries::Registry
+    field :wish_list_claim, resolver: Queries::WishListClaim
     field :my_support_tickets, resolver: Queries::MySupportTickets
     field :support_ticket, resolver: Queries::SupportTicket
     field :admin_support_tickets, resolver: Queries::AdminSupportTickets

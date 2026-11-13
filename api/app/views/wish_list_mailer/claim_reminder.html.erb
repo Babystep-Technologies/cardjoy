@@ -1,0 +1,15 @@
+<h2>Hi <%= @reservation.guest_name %>!</h2>
+
+<p>
+  A little while ago you said you'd get <strong><%= @item.title %></strong> from
+  <strong><%= @wish_list.title %></strong>. Have you had a chance to buy it?
+</p>
+
+<p>
+  If so, let us know so it stays marked as covered. If not, no problem. If we don't hear from you
+  in <%= @release_in_days %> days, we'll free it up so someone else can get it.
+</p>
+
+<p>
+  <a href="<%= @manage_url %>" class="primary-button">Update my claim</a>
+</p>

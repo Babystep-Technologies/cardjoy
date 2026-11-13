@@ -102,4 +102,26 @@ RSpec.describe "Registry queries", type: :request do
       end
     end
   end
+
+  describe "wishListClaim" do
+    let(:query) do
+      "query GetWishListClaim($token: String!) { wishListClaim(token: $token) { wishListItemId purchased } }"
+    end
+
+    it "reads back a guest's own claim from the token alone" do
+      reservation = create(:wish_list_reservation, purchased_at: Time.current)
+
+      data = run(query, { token: reservation.token }, as: nil, operation: "GetWishListClaim")
+
+      expect(data.dig("data", "wishListClaim")).to eq(
+        "wishListItemId" => reservation.wish_list_item_id.to_s, "purchased" => true
+      )
+    end
+
+    it "reads an unknown token as nothing" do
+      data = run(query, { token: "nope" }, as: nil, operation: "GetWishListClaim")
+
+      expect(data.dig("data", "wishListClaim")).to be_nil
+    end
+  end
 end

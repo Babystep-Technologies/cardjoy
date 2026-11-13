@@ -12,6 +12,13 @@ class WishListReservation < ApplicationRecord
   validates :quantity, numericality: { only_integer: true, greater_than: 0 }
   validates :token, presence: true, uniqueness: true
 
+  # A claim that nobody has bought yet gets a reminder after REMIND_AFTER, and is released
+  # RELEASE_AFTER_REMINDER later if it is still unpurchased. A purchase never expires.
+  REMIND_AFTER = 14.days
+  RELEASE_AFTER_REMINDER = 7.days
+
+  scope :due_for_reminder, -> { unpurchased.where(reminded_at: nil).where(created_at: ..REMIND_AFTER.ago) }
+  scope :due_for_release, -> { unpurchased.where(reminded_at: ..RELEASE_AFTER_REMINDER.ago) }
   scope :purchased, -> { where.not(purchased_at: nil) }
   scope :unpurchased, -> { where(purchased_at: nil) }
 
