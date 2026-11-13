@@ -102,7 +102,16 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
 - **Jobs** (GoodJob cron, `config/initializers/good_job.rb`): `OccasionReminderJob` (14:00 UTC),
   `RegistryEventReminderJob` (14:30, owners, once within 14 days of the event, per-registry
   opt-out) and `StaleWishListClaimsJob` (15:00, remind unbought claims after 14 days, release 7
-  days later; purchases are never touched). All are idempotent via a timestamp column.
+  days later; purchases are never touched) and `ScrubGuestEmailsJob` (15:30, see below). All are
+  idempotent via a timestamp column or by matching nothing once done.
+- **Archive and retention.** Once `event_date` has passed a registry is archived
+  (`WishList#archived?`, derived, never stored): readable, but `reserveWishListItem` refuses new
+  claims and the stale-claim job leaves its claims alone. Guest emails are erased
+  `WishList::GUEST_EMAIL_RETENTION` (7 days) after the event; the claim and guest name stay for
+  thank-you notes, so `guest_email` is nullable and only required on create. A registry with no
+  date never archives and keeps its emails. A new date (the yearly reset) un-archives it.
+- **Occasion reminders.** The reminder email links the contact's registry (`Contact#registry`),
+  matched by email to an account with a shared, unarchived standalone registry.
 - **Cards link out.** `cards.wish_list_id` points a card at one of its owner's registries; the card
   page and the 1-on-1/viewer emails link to it only while it is shared.
 - **Link previews.** `WishListLinkPreview` fetches OpenGraph and schema.org JSON-LD for a pasted
