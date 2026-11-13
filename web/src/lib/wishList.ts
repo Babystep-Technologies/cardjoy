@@ -1,3 +1,5 @@
+import { differenceInCalendarDays, parseISO } from 'date-fns';
+
 export type ContributionKind = 'venmo' | 'cashapp' | 'paypal' | 'zelle' | 'trump_account';
 
 export interface ContributionKindMeta {
@@ -152,6 +154,22 @@ export const applyRegistryTemplate = (draft: WishListDraft, occasion: string): W
     intro: untouched(draft.intro, 'intro') ? template.intro : draft.intro,
     surpriseMode: template.surpriseMode,
   };
+};
+
+/**
+ * How far off the event is, for the guest page: "today", "tomorrow", "in 12 days", or "ended" once it
+ * has passed. Works in calendar days so the answer doesn't flip at some hour of the day.
+ */
+export const eventCountdown = (
+  eventDate?: string | null,
+  today: Date = new Date()
+): string | null => {
+  if (!eventDate) return null;
+  const days = differenceInCalendarDays(parseISO(eventDate), today);
+  if (days < 0) return 'ended';
+  if (days === 0) return 'today';
+  if (days === 1) return 'tomorrow';
+  return `in ${days} days`;
 };
 
 export const TRUMP_ACCOUNT_INFO_URL = 'https://www.irs.gov/trumpaccounts';
