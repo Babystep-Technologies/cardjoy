@@ -35,6 +35,7 @@ module Queries
 
       cards = day_kind_counts(::Card.where(created_at: range.sql_range))
       invitations = day_counts(::Invitation.where(created_at: range.sql_range))
+      registries = day_counts(::WishList.where(invitation_id: nil, created_at: range.sql_range))
       users = day_counts(::User.where(created_at: range.sql_range))
       rsvps = day_counts(::Rsvp.where(created_at: range.sql_range))
       rsvps_by_status = day_status_counts(::Rsvp.where(created_at: range.sql_range))
@@ -50,6 +51,7 @@ module Queries
           group_cards: cards[[ date, "group" ]] || 0,
           one_on_one_cards: cards[[ date, "one_on_one" ]] || 0,
           invitations: invitations[date] || 0,
+          registries: registries[date] || 0,
           rsvps: rsvps[date] || 0
         }
       end
@@ -66,6 +68,10 @@ module Queries
         group_cards: daily_series.sum { |d| d[:group_cards] },
         one_on_one_cards: daily_series.sum { |d| d[:one_on_one_cards] },
         invitations: invitations.values.sum,
+        registries: registries.values.sum,
+        registry_items: registry_items(range).count,
+        registry_claims: registry_reservations(range).where(created_at: range.sql_range).count,
+        registry_purchases: registry_reservations(range).where(purchased_at: range.sql_range).count,
         rsvps_going: going,
         rsvps_maybe: maybe,
         rsvps_not_going: not_going,
@@ -76,6 +82,15 @@ module Queries
       }
     rescue ArgumentError => e
       raise GraphQL::ExecutionError, e.message
+    end
+
+    # Items added to, and claims against, standalone registries only.
+    def registry_items(range)
+      ::WishListItem.joins(:wish_list).where(wish_lists: { invitation_id: nil }, created_at: range.sql_range)
+    end
+
+    def registry_reservations(_range)
+      ::WishListReservation.joins(wish_list_item: :wish_list).where(wish_lists: { invitation_id: nil })
     end
 
     # Distinct users active per day (the table's unique index means a plain
