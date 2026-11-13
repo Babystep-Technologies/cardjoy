@@ -73,6 +73,7 @@ const WishListFields: React.FC<Props> = ({
   const [previewWishListLink] = useMutation(PREVIEW_WISH_LIST_LINK);
   const [fetchingPreviewIndex, setFetchingPreviewIndex] = useState<number | null>(null);
   const [previewedUrls, setPreviewedUrls] = useState<Record<number, string>>({});
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const fetchLinkPreview = async (index: number) => {
     const item = value.items[index];
@@ -144,14 +145,47 @@ const WishListFields: React.FC<Props> = ({
             <Gift className="w-4 h-4" />
             Gift ideas
           </Label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => patch({ items: [...value.items, emptyWishListItem()] })}
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Add item
-          </Button>
+          <div className="flex flex-wrap justify-end gap-2">
+            {value.items.length > 1 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-600"
+                onClick={() => {
+                  if (!confirmClear) return setConfirmClear(true);
+                  setConfirmClear(false);
+                  patch({ items: [] });
+                }}
+                onBlur={() => setConfirmClear(false)}
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                {confirmClear ? `Really remove all ${value.items.length}?` : 'Remove all'}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                patch({
+                  items: [
+                    ...value.items,
+                    { ...emptyWishListItem(), title: 'Gift card', note: 'Any amount, any store' },
+                  ],
+                })
+              }
+            >
+              <Gift className="w-4 h-4 mr-1" />
+              Any gift card
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => patch({ items: [...value.items, emptyWishListItem()] })}
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Add item
+            </Button>
+          </div>
         </div>
 
         {value.items.length === 0 && (
