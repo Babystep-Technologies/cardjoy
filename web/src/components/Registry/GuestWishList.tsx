@@ -429,7 +429,14 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
   backLink,
 }) => {
   const share = async () => {
-    const url = window.location.href;
+    // A standalone registry shares through the API's server-rendered preview so the link unfurls with
+    // its title (the SPA's index.html is static); it redirects straight on to this page. Invitation
+    // wish lists and local setups without a preview endpoint keep sharing this page's own URL.
+    const previewBase = import.meta.env.VITE_PREVIEW_ENDPOINT;
+    const url =
+      previewBase && wishList.standalone && wishList.externalId
+        ? `${previewBase}/registry/${wishList.externalId}`
+        : window.location.href;
 
     if (navigator.share) {
       try {

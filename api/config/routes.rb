@@ -16,4 +16,7 @@ Rails.application.routes.draw do
 
   # Invitation preview routes (supports both external_id and custom slug)
   get "/p/invitation/:id", to: "previews#invitation_view", as: :invitation_preview
+
+  # Registry preview, so a shared registry link unfurls with its title (#247)
+  get "/p/registry/:id", to: "previews#registry_view", as: :registry_preview
 end
