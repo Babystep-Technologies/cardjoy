@@ -157,22 +157,40 @@ const RegistryEdit: React.FC = () => {
             idPrefix="registry"
             visibilityLabel="Share this registry"
             extraSettings={
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <Label htmlFor="registryShareAddress" className="text-base font-semibold">
-                    Share my mailing address with guests who claim a gift
-                  </Label>
-                  <p className="text-sm text-gray-500">
-                    Only people who claim an item see it, and only while this is on. It uses the
-                    address saved on your profile.
-                  </p>
+              <>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="registryShareAddress" className="text-base font-semibold">
+                      Share my mailing address with guests who claim a gift
+                    </Label>
+                    <p className="text-sm text-gray-500">
+                      Only people who claim an item see it, and only while this is on. It uses the
+                      address saved on your profile.
+                    </p>
+                  </div>
+                  <Switch
+                    id="registryShareAddress"
+                    checked={draft.shareAddress}
+                    onCheckedChange={shareAddress => setDraft({ ...draft, shareAddress })}
+                  />
                 </div>
-                <Switch
-                  id="registryShareAddress"
-                  checked={draft.shareAddress}
-                  onCheckedChange={shareAddress => setDraft({ ...draft, shareAddress })}
-                />
-              </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <Label htmlFor="registryRemindOwner" className="text-base font-semibold">
+                      Remind me before the event
+                    </Label>
+                    <p className="text-sm text-gray-500">
+                      We email you about two weeks ahead, if you've set an event date, to share the
+                      registry. Nothing is sent once the event has passed.
+                    </p>
+                  </div>
+                  <Switch
+                    id="registryRemindOwner"
+                    checked={draft.remindOwner}
+                    onCheckedChange={remindOwner => setDraft({ ...draft, remindOwner })}
+                  />
+                </div>
+              </>
             }
           />
           <div className="flex justify-end pt-2">

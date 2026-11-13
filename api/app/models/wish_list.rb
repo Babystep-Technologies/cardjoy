@@ -15,8 +15,20 @@ class WishList < ApplicationRecord
   validates :external_id, presence: true, uniqueness: true
   validates :occasion, inclusion: { in: OCCASIONS }, allow_nil: true
 
+  # How far ahead of the event the owner is nudged to share the registry (#251).
+  EVENT_REMINDER_LEAD = 14.days
+
   before_validation :inherit_owner_from_invitation
+  # A new date is a new event, so it earns a fresh reminder.
+  before_save :rearm_event_reminder, if: :event_date_changed?
   before_validation :generate_external_id, on: :create
+
+  # Registries whose event is within the lead window, with the owner opted in and not yet reminded.
+  # Past events never qualify, so nothing is sent once the event is over.
+  def self.due_for_event_reminder(today = Date.current)
+    where(remind_owner: true, event_reminded_at: nil, invitation_id: nil)
+      .where(event_date: today..(today + EVENT_REMINDER_LEAD))
+  end
 
   def empty?
     items.empty? && contributions.empty?
@@ -39,6 +51,10 @@ class WishList < ApplicationRecord
   end
 
   private
+
+  def rearm_event_reminder
+    self.event_reminded_at = nil
+  end
 
   def inherit_owner_from_invitation
     self.user ||= invitation&.user

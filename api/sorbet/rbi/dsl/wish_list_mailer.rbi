@@ -22,5 +22,8 @@ class WishListMailer
 
     sig { params(reservation: T.untyped).returns(::ActionMailer::MessageDelivery) }
     def claim_reminder(reservation); end
+
+    sig { params(wish_list: T.untyped).returns(::ActionMailer::MessageDelivery) }
+    def event_reminder(wish_list); end
   end
 end

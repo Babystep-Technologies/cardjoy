@@ -107,6 +107,7 @@ export interface WishList {
   visible: boolean;
   surpriseMode: boolean;
   shareAddress?: boolean;
+  remindOwner?: boolean;
   items: WishListItem[];
   contributions: WishListContribution[];
 }
@@ -120,6 +121,7 @@ export interface WishListDraft {
   visible: boolean;
   surpriseMode: boolean;
   shareAddress: boolean;
+  remindOwner: boolean;
   items: WishListItem[];
   contributions: WishListContribution[];
 }
@@ -132,6 +134,7 @@ export const emptyWishListDraft = (): WishListDraft => ({
   visible: true,
   surpriseMode: true,
   shareAddress: false,
+  remindOwner: true,
   items: [],
   contributions: [],
 });
@@ -159,6 +162,7 @@ export const wishListToDraft = (wishList: WishList): WishListDraft => ({
   visible: wishList.visible,
   surpriseMode: wishList.surpriseMode,
   shareAddress: wishList.shareAddress ?? false,
+  remindOwner: wishList.remindOwner ?? true,
   items: wishList.items.map(item => ({
     id: item.id,
     title: item.title,
@@ -199,6 +203,7 @@ export const wishListDraftToInput = (draft: WishListDraft) => ({
   visible: draft.visible,
   surpriseMode: draft.surpriseMode,
   shareAddress: draft.shareAddress,
+  remindOwner: draft.remindOwner,
   items: draft.items.map(item => ({
     id: item.id || null,
     title: item.title.trim(),
@@ -254,6 +259,7 @@ export const WISH_LIST_FIELDS = `
   visible
   surpriseMode
   shareAddress
+  remindOwner
   items {
     id
     title
