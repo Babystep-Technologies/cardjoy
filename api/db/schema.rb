@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_12_180000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_12_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -616,13 +616,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_180000) do
 
   create_table "wish_lists", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.date "event_date"
+    t.string "external_id", null: false
     t.text "intro"
-    t.bigint "invitation_id", null: false
+    t.bigint "invitation_id"
+    t.string "occasion"
     t.boolean "surprise_mode", default: true, null: false
     t.string "title", default: "Wish List", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
     t.boolean "visible", default: true, null: false
+    t.index ["external_id"], name: "index_wish_lists_on_external_id", unique: true
     t.index ["invitation_id"], name: "index_wish_lists_on_invitation_id", unique: true
+    t.index ["user_id"], name: "index_wish_lists_on_user_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -669,4 +675,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_12_180000) do
   add_foreign_key "wish_list_items", "wish_lists"
   add_foreign_key "wish_list_reservations", "wish_list_items"
   add_foreign_key "wish_lists", "invitations"
+  add_foreign_key "wish_lists", "users"
 end

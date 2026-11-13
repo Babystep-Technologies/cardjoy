@@ -41,6 +41,7 @@ module Types
     field :update_invitation, mutation: Mutations::UpdateInvitation
     field :approve_invitation_draft, mutation: Mutations::ApproveInvitationDraft
     field :upsert_wish_list, mutation: Mutations::UpsertWishList
+    field :delete_registry, mutation: Mutations::DeleteRegistry
     field :preview_wish_list_link, mutation: Mutations::PreviewWishListLink
     field :reserve_wish_list_item, mutation: Mutations::ReserveWishListItem
     field :release_wish_list_reservation, mutation: Mutations::ReleaseWishListReservation

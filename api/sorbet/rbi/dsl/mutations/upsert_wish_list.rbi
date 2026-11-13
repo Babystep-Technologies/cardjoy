@@ -8,11 +8,12 @@
 class Mutations::UpsertWishList
   sig do
     params(
-      invitation_external_id: ::String,
+      invitation_external_id: T.nilable(::String),
+      registry_external_id: T.nilable(::String),
       items: T.nilable(T::Array[::Types::WishListItemInputType]),
       contributions: T.nilable(T::Array[::Types::WishListContributionInputType]),
       attributes: T.untyped
     ).returns(T.untyped)
   end
-  def resolve(invitation_external_id:, items: T.unsafe(nil), contributions: T.unsafe(nil), **attributes); end
+  def resolve(invitation_external_id: T.unsafe(nil), registry_external_id: T.unsafe(nil), items: T.unsafe(nil), contributions: T.unsafe(nil), **attributes); end
 end
