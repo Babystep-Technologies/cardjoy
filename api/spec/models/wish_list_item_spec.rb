@@ -75,4 +75,31 @@ RSpec.describe WishListItem, type: :model do
       expect { item.destroy! }.to change(WishListReservation, :count).by(-1)
     end
   end
+
+  describe "price staleness (#246)" do
+    include ActiveSupport::Testing::TimeHelpers
+
+    it "stamps when the price is set and when it changes, and clears it with the price" do
+      item = create(:wish_list_item, price: "$10")
+      expect(item.price_updated_at).to be_present
+
+      travel_to(40.days.from_now) do
+        item.update!(title: "Renamed")
+        expect(item.price_updated_at).to be < 39.days.from_now
+
+        item.update!(price: "$12")
+        expect(item.price_updated_at).to be > 1.minute.ago
+      end
+
+      item.update!(price: nil)
+      expect(item.price_updated_at).to be_nil
+    end
+
+    it "is stale only for a price set over 30 days ago" do
+      item = create(:wish_list_item, price: "$10")
+      expect(item.price_stale?).to be(false)
+      expect(item.price_stale?(31.days.from_now)).to be(true)
+      expect(build(:wish_list_item, price: nil).price_stale?(1.year.from_now)).to be(false)
+    end
+  end
 end

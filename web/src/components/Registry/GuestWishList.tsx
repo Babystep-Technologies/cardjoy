@@ -286,6 +286,9 @@ const ItemCard: React.FC<{
               </span>
             )}
             {item.price && <span className="font-semibold text-gray-900">{item.price}</span>}
+            {item.price && item.priceStale && (
+              <span className="text-xs text-gray-500">price may have changed</span>
+            )}
             {item.quantity > 1 && (
               <span>
                 {remaining} of {item.quantity} still wanted

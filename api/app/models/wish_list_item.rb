@@ -9,8 +9,20 @@ class WishListItem < ApplicationRecord
   validates :url, format: { with: %r{\Ahttps?://}, message: "must start with http:// or https://" },
     allow_blank: true
 
+  # A shown price older than this gets a "may have changed" note for guests (#246).
+  PRICE_STALE_AFTER = 30.days
+
   before_validation :normalize_url
+  before_save :stamp_price_updated_at, if: :price_changed?
   before_validation :derive_store
+
+  # True when there is a price and it was last set long enough ago that the store may have moved it.
+  def price_stale?(now = Time.current)
+    return false if price.blank?
+
+    stamped = price_updated_at
+    !stamped.nil? && stamped < now - PRICE_STALE_AFTER
+  end
 
   def reserved_quantity
     reservations.sum(:quantity)
@@ -25,6 +37,10 @@ class WishListItem < ApplicationRecord
   end
 
   private
+
+  def stamp_price_updated_at
+    self.price_updated_at = price.present? ? Time.current : nil
+  end
 
   def normalize_url
     self.url = url&.strip.presence

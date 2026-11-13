@@ -8,6 +8,9 @@ module Types
     field :url, String, null: true
     field :image_url, String, null: true
     field :price, String, null: true
+    field :price_updated_at, GraphQL::Types::ISO8601DateTime, null: true
+    # The price was set a while ago and may no longer match the store.
+    field :price_stale, Boolean, null: false, method: :price_stale?
     field :store, String, null: true
     field :note, String, null: true
     field :quantity, Integer, null: false
