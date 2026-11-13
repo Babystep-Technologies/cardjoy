@@ -24,7 +24,7 @@ import {
   SelectItem,
 } from '@/components/ui/select';
 import CoverImageDialog from './CoverImageDialog';
-import { useMutation, useLazyQuery, gql } from '@apollo/client';
+import { useMutation, useLazyQuery, useQuery, gql } from '@apollo/client';
 
 interface EditCardSettingsViewProps {
   cardTitle: string;
@@ -56,7 +56,18 @@ interface EditCardSettingsViewProps {
   setRequireLoginToContribute: (val: boolean) => void;
   slug: string;
   setSlug: (val: string) => void;
+  registryExternalId: string;
+  setRegistryExternalId: (val: string) => void;
 }
+
+const GET_MY_REGISTRIES = gql`
+  query MyRegistries {
+    myRegistries {
+      externalId
+      title
+    }
+  }
+`;
 
 const REMOVE_CARD_COVER_IMAGE = gql`
   mutation RemoveCardCoverImage($input: RemoveCardCoverImageInput!) {
@@ -103,7 +114,11 @@ const EditCardSettings: React.FC<EditCardSettingsViewProps & { cardId: string }>
   setRequireLoginToContribute,
   slug,
   setSlug,
+  registryExternalId,
+  setRegistryExternalId,
 }) => {
+  const { data: registriesData } = useQuery(GET_MY_REGISTRIES);
+  const registries: { externalId: string; title: string }[] = registriesData?.myRegistries ?? [];
   const [coverDialogOpen, setCoverDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
@@ -338,6 +353,33 @@ const EditCardSettings: React.FC<EditCardSettingsViewProps & { cardId: string }>
           />
           <p className="text-xs text-gray-500 text-right">{contributorPrompt.length}/500</p>
         </div>
+
+        {/* Registry link-out */}
+        {registries.length > 0 && (
+          <div className="space-y-2 bg-white/70 p-4 rounded-xl">
+            <Label className="text-base font-semibold">Link a registry (Optional)</Label>
+            <Select
+              value={registryExternalId || 'none'}
+              onValueChange={val => setRegistryExternalId(val === 'none' ? '' : val)}
+            >
+              <SelectTrigger className="border-2">
+                <SelectValue placeholder="No registry" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No registry</SelectItem>
+                {registries.map(r => (
+                  <SelectItem key={r.externalId} value={r.externalId}>
+                    {r.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">
+              People who open this card get a link to the registry. It only shows while the registry
+              is shared.
+            </p>
+          </div>
+        )}
 
         {/* Custom URL Slug */}
         <div className="space-y-2 bg-white/70 p-4 rounded-xl">

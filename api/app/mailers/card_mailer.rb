@@ -16,6 +16,7 @@ class CardMailer < ApplicationMailer
     @card = card
     set_organization_brand(card.owning_organization)
     @shared_url = viewable_preview_url(card)
+    @registry_url = registry_url(card)
     mail(to: email, subject: "You've received a CardJoy card!", **brand_reply_to)
   end
 
@@ -23,10 +24,20 @@ class CardMailer < ApplicationMailer
     @card = card
     set_organization_brand(card.owning_organization)
     @shared_url = viewable_preview_url(card)
+    @registry_url = registry_url(card)
     mail(to: email, subject: "Someone sent you a CardJoy card!", **brand_reply_to)
   end
 
   private
+
+  # The card's registry link-out (#250), only while its owner has it shared. Nil otherwise, which
+  # the views read as "no registry line".
+  def registry_url(card)
+    list = card.wish_list
+    return nil unless list&.visible
+
+    "#{Rails.application.credentials.dig(:frontend_url)}#{list.guest_path}"
+  end
 
   # Recipients forward these links into group chats, so they need to unfurl with the
   # card's own title and image. The SPA can't do that — its index.html is static — so

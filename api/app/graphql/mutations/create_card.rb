@@ -13,6 +13,8 @@ module Mutations
     argument :max_messages, Integer, required: false
     argument :require_login_to_contribute, Boolean, required: false
     argument :slug, String, required: false
+    # A registry of the caller's to link from this card; blank clears it (#250).
+    argument :registry_external_id, String, required: false
     # Blank means Personal. Validated below rather than read from the user's
     # active_organization_id: the client owns the context, the server checks it.
     argument :organization_id, ID, required: false
@@ -20,7 +22,7 @@ module Mutations
     field :card, Types::CardType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(title:, recipients:, style_ids:, occasion: nil, contributor_prompt: nil, cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil, organization_id: nil)
+    def resolve(title:, recipients:, style_ids:, occasion: nil, contributor_prompt: nil, cover_image_url: nil, cover_image_file: nil, max_messages: nil, require_login_to_contribute: nil, slug: nil, registry_external_id: nil, organization_id: nil)
       user = context[:current_user]
       return { card: nil, errors: [ "Not authenticated" ] } unless user
 
@@ -28,6 +30,9 @@ module Mutations
       # the caller doesn't belong to spends no credit.
       organization = writable_organization(organization_id)
       return { card: nil, errors: [ NOT_AUTHORIZED_ERROR ] } if organization == false
+
+      registry = own_registry(registry_external_id)
+      return { card: nil, errors: [ "Registry not found" ] } if registry == false
 
       ApplicationRecord.transaction do
         # Debit first so an insufficient balance blocks the create before we do
@@ -43,6 +48,7 @@ module Mutations
         styles = Style.where(id: style_ids)
         card.styles << styles if styles.any?
         card.occasion = occasion if occasion
+        card.wish_list = registry
 
         if cover_image_file.present? && cover_image_file.respond_to?(:to_io)
           card.cover_image.attach(io: cover_image_file.to_io, filename: cover_image_file.original_filename)

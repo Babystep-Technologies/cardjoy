@@ -362,6 +362,9 @@ class Card
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_user(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
+    def build_wish_list(*args, &blk); end
+
     sig { returns(T::Array[T.untyped]) }
     def card_style_ids; end
 
@@ -429,6 +432,12 @@ class Card
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
+    def create_wish_list(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
+    def create_wish_list!(*args, &blk); end
 
     sig { returns(T::Array[T.untyped]) }
     def guest_message_ids; end
@@ -503,6 +512,9 @@ class Card
     sig { returns(T.nilable(::User)) }
     def reload_user; end
 
+    sig { returns(T.nilable(::WishList)) }
+    def reload_wish_list; end
+
     sig { void }
     def reset_cover_image_attachment; end
 
@@ -523,6 +535,9 @@ class Card
 
     sig { void }
     def reset_user; end
+
+    sig { void }
+    def reset_wish_list; end
 
     sig { returns(T.nilable(::Occasion)) }
     def source_occasion; end
@@ -561,6 +576,18 @@ class Card
 
     sig { returns(T::Boolean) }
     def user_previously_changed?; end
+
+    sig { returns(T.nilable(::WishList)) }
+    def wish_list; end
+
+    sig { params(value: T.nilable(::WishList)).void }
+    def wish_list=(value); end
+
+    sig { returns(T::Boolean) }
+    def wish_list_changed?; end
+
+    sig { returns(T::Boolean) }
+    def wish_list_previously_changed?; end
   end
 
   module GeneratedAssociationRelationMethods
@@ -1541,6 +1568,9 @@ class Card
     sig { void }
     def restore_user_id!; end
 
+    sig { void }
+    def restore_wish_list_id!; end
+
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_contributor_prompt; end
 
@@ -1666,6 +1696,12 @@ class Card
 
     sig { returns(T::Boolean) }
     def saved_change_to_user_id?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_wish_list_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_wish_list_id?; end
 
     sig { returns(T.nilable(::String)) }
     def slug; end
@@ -1954,6 +1990,54 @@ class Card
 
     sig { returns(T::Boolean) }
     def will_save_change_to_user_id?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_wish_list_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def wish_list_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def wish_list_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def wish_list_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def wish_list_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def wish_list_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def wish_list_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def wish_list_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def wish_list_id_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def wish_list_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def wish_list_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def wish_list_id_previous_change; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def wish_list_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def wish_list_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def wish_list_id_was; end
+
+    sig { void }
+    def wish_list_id_will_change!; end
   end
 
   module GeneratedRelationMethods

@@ -1,3 +1,6 @@
 <!-- one_on_one_delivery.html.erb -->
 <p>Someone sent you a card just for you: <strong><%= @card.title %></strong></p>
 <p>Click here to open it: <a href="<%= @shared_url %>">View Card</a></p>
+<% if @registry_url %>
+  <p>Want to get them a gift? See <a href="<%= @registry_url %>">their registry</a>.</p>
+<% end %>

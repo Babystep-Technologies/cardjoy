@@ -11,6 +11,8 @@ class Card < ApplicationRecord
   # renders with no source rather than blocking creation. Nullified, not
   # cascaded, when the occasion is deleted (see the migration).
   belongs_to :source_occasion, class_name: "Occasion", optional: true
+  # A registry the owner points guests at (#250). Only ever one of the card owner's own.
+  belongs_to :wish_list, optional: true
   has_many :card_styles, dependent: :destroy
   has_many :styles, through: :card_styles
   has_many :messages, dependent: :destroy

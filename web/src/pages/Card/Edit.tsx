@@ -42,6 +42,9 @@ const GET_CARD = gql`
       }
       occasion
       contributorPrompt
+      registry {
+        externalId
+      }
       recipients
       maxMessages
       requireLoginToContribute
@@ -179,6 +182,8 @@ function PageEdit() {
   const [maxMessages, setMaxMessages] = useState<number>(20);
   const [requireLoginToContribute, setRequireLoginToContribute] = useState<boolean>(false);
   const [slug, setSlug] = useState<string>('');
+  // '' means no registry linked; sent as-is so saving clears a previously linked one.
+  const [registryExternalId, setRegistryExternalId] = useState<string>('');
 
   // Scroll to top on component mount (especially useful for mobile)
   useEffect(() => {
@@ -231,6 +236,7 @@ function PageEdit() {
       setMaxMessages(cardData.maxMessages || 20);
       setRequireLoginToContribute(cardData.requireLoginToContribute || false);
       setSlug(cardData.slug || '');
+      setRegistryExternalId(cardData.registry?.externalId || '');
       if (userMessage) {
         setMessageTitle(userMessage.title ?? '');
         setText(userMessage.text);
@@ -316,6 +322,7 @@ function PageEdit() {
               maxMessages,
               requireLoginToContribute,
               slug: slug.trim() || null,
+              registryExternalId,
               coverImageFile: null,
             },
           },
@@ -351,6 +358,7 @@ function PageEdit() {
         maxMessages,
         requireLoginToContribute,
         slug: slug.trim() || null,
+        registryExternalId,
       };
       if (typeof coverImage === 'string' && coverImage) {
         input.coverImageUrl = coverImage;
@@ -542,6 +550,8 @@ function PageEdit() {
                 setRequireLoginToContribute={setRequireLoginToContribute}
                 slug={slug}
                 setSlug={setSlug}
+                registryExternalId={registryExternalId}
+                setRegistryExternalId={setRegistryExternalId}
               />
             ) : (
               <h1
