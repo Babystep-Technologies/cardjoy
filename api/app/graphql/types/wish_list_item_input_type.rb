@@ -15,5 +15,6 @@ module Types
     argument :quantity, Integer, required: false, default_value: 1
     argument :section, String, required: false
     argument :priority, Boolean, required: false, default_value: false
+    argument :paused, Boolean, required: false, default_value: false
   end
 end

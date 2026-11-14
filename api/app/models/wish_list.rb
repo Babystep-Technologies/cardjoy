@@ -92,7 +92,8 @@ class WishList < ApplicationRecord
   # Progress totals for the owner's dashboard: how many items are fully claimed and how many claims
   # are marked bought. Two grouped queries however many items there are.
   def insights
-    list_items = items.to_a
+    # Paused items are off the list for now, so they count toward neither total.
+    list_items = items.reject(&:paused)
     reserved = WishListReservation.where(wish_list_item_id: list_items.map(&:id))
     quantities = reserved.group(:wish_list_item_id).sum(:quantity)
 

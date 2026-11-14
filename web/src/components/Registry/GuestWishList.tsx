@@ -194,6 +194,7 @@ const ItemCard: React.FC<{
   const [releaseWishListReservation] = useMutation(RELEASE_WISH_LIST_RESERVATION);
 
   const claimed = item.claimed ?? false;
+  const paused = item.paused ?? false;
   const remaining = item.remainingQuantity ?? item.quantity;
 
   const handleReserve = async (guestName: string, guestEmail: string, alreadyBought: boolean) => {
@@ -281,7 +282,7 @@ const ItemCard: React.FC<{
   };
 
   // The guest's own claim always stays visible so they can still manage it.
-  if (hideClaimed && claimed && !myToken) return null;
+  if (hideClaimed && (claimed || paused) && !myToken) return null;
 
   return (
     <Card className="border-2 border-gray-200 bg-white/95">
@@ -300,6 +301,10 @@ const ItemCard: React.FC<{
               <Badge className="bg-green-100 text-green-800 border border-green-300 shrink-0">
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
                 {purchased ? 'You bought this' : "You're getting this"}
+              </Badge>
+            ) : paused ? (
+              <Badge variant="outline" className="border-gray-300 text-gray-500 shrink-0">
+                No longer available
               </Badge>
             ) : claimed ? (
               <Badge variant="outline" className="border-gray-300 text-gray-500 shrink-0">
@@ -362,6 +367,7 @@ const ItemCard: React.FC<{
               </>
             ) : (
               !claimed &&
+              !paused &&
               !archived && (
                 <Button
                   size="sm"
