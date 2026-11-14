@@ -202,6 +202,26 @@ RSpec.describe WishListLinkPreview do
       expect(described_class.fetch("https://store.example.com/product")).to be_nil
     end
 
+    it "treats a bot wall that answers 200 as no preview, not as the item's name" do
+      stub_dns("store.example.com", "93.184.216.1")
+      [ "Robot or human?", "Amazon.com", "Just a moment...", "Access Denied" ].each do |wall|
+        stub_request(:get, "https://store.example.com/product").to_return(
+          status: 200, headers: { "Content-Type" => "text/html" }, body: html_with(plain_title: wall)
+        )
+
+        expect(described_class.fetch("https://store.example.com/product")).to be_nil, wall
+      end
+    end
+
+    it "still accepts a real title that merely starts like a wall page" do
+      stub_dns("store.example.com", "93.184.216.1")
+      stub_request(:get, "https://store.example.com/product").to_return(
+        status: 200, headers: { "Content-Type" => "text/html" }, body: html_with(plain_title: "Amazon.com: Cast Iron Pan")
+      )
+
+      expect(described_class.fetch("https://store.example.com/product").title).to eq("Amazon.com: Cast Iron Pan")
+    end
+
     it "returns nil for a non-html content type without attempting to parse it" do
       stub_dns("store.example.com", "93.184.216.1")
       stub_request(:get, "https://store.example.com/photo.png")
