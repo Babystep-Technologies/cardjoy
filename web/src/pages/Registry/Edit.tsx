@@ -7,7 +7,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 import { Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -171,6 +171,14 @@ const RegistryEdit: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      <p className="-mt-3 mb-6 text-sm text-gray-600">
+        Shopping elsewhere?{' '}
+        <Link to="/registry/add" className="font-semibold underline">
+          Get the add-from-any-store button
+        </Link>
+        .
+      </p>
 
       {!isNew && externalId && (
         <CoverImage
