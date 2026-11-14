@@ -43,6 +43,8 @@ module Types
     field :upsert_wish_list, mutation: Mutations::UpsertWishList
     field :delete_registry, mutation: Mutations::DeleteRegistry
     field :reset_registry, mutation: Mutations::ResetRegistry
+    field :set_registry_cover_image, mutation: Mutations::SetRegistryCoverImage
+    field :remove_registry_cover_image, mutation: Mutations::RemoveRegistryCoverImage
     field :preview_wish_list_link, mutation: Mutations::PreviewWishListLink
     field :reserve_wish_list_item, mutation: Mutations::ReserveWishListItem
     field :set_wish_list_reservation_purchased, mutation: Mutations::SetWishListReservationPurchased

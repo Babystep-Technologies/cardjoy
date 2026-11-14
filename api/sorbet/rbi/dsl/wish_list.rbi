@@ -11,6 +11,12 @@ class WishList
   extend CommonRelationMethods
   extend GeneratedRelationMethods
 
+  sig { returns(ActiveStorage::Attached::One) }
+  def cover_image; end
+
+  sig { params(attachable: T.untyped).returns(T.untyped) }
+  def cover_image=(attachable); end
+
   private
 
   sig { returns(NilClass) }
@@ -329,6 +335,12 @@ class WishList
   end
 
   module GeneratedAssociationMethods
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
+    def build_cover_image_attachment(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
+    def build_cover_image_blob(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
     def build_invitation(*args, &blk); end
 
@@ -348,6 +360,30 @@ class WishList
 
     sig { params(value: T::Enumerable[::WishListContribution]).void }
     def contributions=(value); end
+
+    sig { returns(T.nilable(::ActiveStorage::Attachment)) }
+    def cover_image_attachment; end
+
+    sig { params(value: T.nilable(::ActiveStorage::Attachment)).void }
+    def cover_image_attachment=(value); end
+
+    sig { returns(T.nilable(::ActiveStorage::Blob)) }
+    def cover_image_blob; end
+
+    sig { params(value: T.nilable(::ActiveStorage::Blob)).void }
+    def cover_image_blob=(value); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
+    def create_cover_image_attachment(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Attachment) }
+    def create_cover_image_attachment!(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
+    def create_cover_image_blob(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
+    def create_cover_image_blob!(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
     def create_invitation(*args, &blk); end
@@ -387,11 +423,23 @@ class WishList
     sig { params(value: T::Enumerable[::WishListItem]).void }
     def items=(value); end
 
+    sig { returns(T.nilable(::ActiveStorage::Attachment)) }
+    def reload_cover_image_attachment; end
+
+    sig { returns(T.nilable(::ActiveStorage::Blob)) }
+    def reload_cover_image_blob; end
+
     sig { returns(T.nilable(::Invitation)) }
     def reload_invitation; end
 
     sig { returns(T.nilable(::User)) }
     def reload_user; end
+
+    sig { void }
+    def reset_cover_image_attachment; end
+
+    sig { void }
+    def reset_cover_image_blob; end
 
     sig { void }
     def reset_invitation; end
@@ -552,6 +600,9 @@ class WishList
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def with(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
+    def with_attached_cover_image(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateAssociationRelation) }
     def with_recursive(*args, &blk); end
@@ -1681,6 +1732,9 @@ class WishList
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def with(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
+    def with_attached_cover_image(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(PrivateRelation) }
     def with_recursive(*args, &blk); end

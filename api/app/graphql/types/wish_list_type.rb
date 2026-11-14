@@ -14,6 +14,7 @@ module Types
     field :passcode_protected, Boolean, null: false, method: :passcode_protected?
     field :standalone, Boolean, null: false, method: :standalone?
     field :title, String, null: false
+    field :cover_image_url, String, null: true
     field :intro, String, null: true
     field :visible, Boolean, null: false
     field :surprise_mode, Boolean, null: false

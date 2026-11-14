@@ -42,10 +42,15 @@ class PreviewsController < ApplicationController
       @title = "A registry on CardJoy"
       @description = "You've been invited to a registry. Open the link and enter the passcode."
     end
-    @image_url = DEFAULT_OG_IMAGE_URL
-    @image_alt = "CardJoy"
-    @image_width = DEFAULT_OG_IMAGE_WIDTH
-    @image_height = DEFAULT_OG_IMAGE_HEIGHT
+    # Its cover image stays behind the passcode too; everyone else unfurls with it, or the default.
+    if @registry.passcode_protected?
+      @image_url = DEFAULT_OG_IMAGE_URL
+      @image_alt = "CardJoy"
+      @image_width = DEFAULT_OG_IMAGE_WIDTH
+      @image_height = DEFAULT_OG_IMAGE_HEIGHT
+    else
+      assign_preview_image(@registry)
+    end
     @url = "#{AppConfig.frontend_url}#{@registry.guest_path}"
 
     render "previews/show", layout: false

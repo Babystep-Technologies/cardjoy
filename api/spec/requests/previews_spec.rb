@@ -222,6 +222,17 @@ RSpec.describe 'Previews', type: :request do
       expect(response.body).to include('passcode')
     end
 
+    it 'unfurls with the cover image, unless a passcode protects the registry' do
+      registry.cover_image.attach(io: File.open(Rails.root.join('spec/fixtures/files/test_image.jpg')), filename: 'c.jpg', content_type: 'image/jpeg')
+
+      get "/p/registry/#{registry.external_id}"
+      expect(response.body).to include('/rails/active_storage/')
+
+      registry.update!(passcode: 'sunflower')
+      get "/p/registry/#{registry.external_id}"
+      expect(response.body).not_to include('/rails/active_storage/')
+    end
+
     it 'does not confirm that a hidden registry exists' do
       registry.update!(visible: false)
 
