@@ -254,6 +254,46 @@ export const emptyWishListItem = (): WishListItem => ({
   quantity: 1,
 });
 
+/** The most links one paste adds; keeps the preview fetches (and the form) manageable. */
+export const MAX_PASTED_LINKS = 20;
+
+/** The distinct http(s) links in pasted text (one per line, or just whitespace-separated). */
+export const parseLinks = (text: string): string[] => {
+  const seen = new Set<string>();
+  for (const token of text.split(/\s+/)) {
+    if (!/^https?:\/\/\S+$/i.test(token)) continue;
+    try {
+      seen.add(new URL(token).toString());
+    } catch {
+      // Not a real URL after all; skip it.
+    }
+  }
+  return Array.from(seen);
+};
+
+/** A readable stand-in name for a link we couldn't preview, from its path or else its host. */
+export const titleFromUrl = (url: string): string => {
+  try {
+    const { hostname, pathname } = new URL(url);
+    const slug = pathname
+      .split('/')
+      .filter(Boolean)
+      .reverse()
+      .find(
+        part => /[a-z]{3,}/i.test(part) && !/^(dp|ip|p|itm|listing|product|products)$/i.test(part)
+      );
+    const words = slug
+      ?.replace(/\.[a-z0-9]{2,5}$/i, '')
+      .replace(/[-_+]+/g, ' ')
+      .replace(/\b[A-Z0-9]{8,}\b/g, '')
+      .trim();
+    if (words) return words.charAt(0).toUpperCase() + words.slice(1);
+    return hostname.replace(/^www\./, '');
+  } catch {
+    return 'Gift idea';
+  }
+};
+
 /** Items grouped under their section heading, in the order each section first appears. */
 export const groupItemsBySection = (
   items: WishListItem[]

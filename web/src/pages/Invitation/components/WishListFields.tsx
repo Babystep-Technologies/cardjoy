@@ -13,13 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Gift, Plus, Trash2, Wallet, Info, Loader2, ArrowUp, ArrowDown, Star } from 'lucide-react';
+import {
+  Gift,
+  Link2,
+  Plus,
+  Trash2,
+  Wallet,
+  Info,
+  Loader2,
+  ArrowUp,
+  ArrowDown,
+  Star,
+} from 'lucide-react';
 import {
   CONTRIBUTION_KINDS,
   contributionKindMeta,
   emptyWishListContribution,
   emptyWishListItem,
+  MAX_PASTED_LINKS,
+  parseLinks,
   PREVIEW_WISH_LIST_LINK_MUTATION,
+  titleFromUrl,
   TRUMP_ACCOUNT_INFO_URL,
   type ContributionKind,
   type WishListContribution,
@@ -75,6 +89,57 @@ const WishListFields: React.FC<Props> = ({
   const [fetchingPreviewIndex, setFetchingPreviewIndex] = useState<number | null>(null);
   const [previewedUrls, setPreviewedUrls] = useState<Record<number, string>>({});
   const [confirmClear, setConfirmClear] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
+  const [pasteText, setPasteText] = useState('');
+  const [pasting, setPasting] = useState(false);
+
+  // Adds one item per pasted link, filled from its preview where the store allows one and with a
+  // stand-in name where not. All previews are gathered first and applied in one update, so the
+  // concurrent fetches can't overwrite each other.
+  const addPastedLinks = async () => {
+    const links = parseLinks(pasteText).slice(0, MAX_PASTED_LINKS);
+    if (links.length === 0) {
+      toast.error('Paste product links, one per line');
+      return;
+    }
+    setPasting(true);
+    try {
+      const added: WishListItem[] = [];
+      for (let i = 0; i < links.length; i += 4) {
+        const batch = await Promise.all(
+          links.slice(i, i + 4).map(async url => {
+            let preview: {
+              title?: string;
+              imageUrl?: string;
+              price?: string;
+              store?: string;
+            } | null = null;
+            try {
+              const { data } = await previewWishListLink({ variables: { input: { url } } });
+              preview = data?.previewWishListLink?.preview ?? null;
+            } catch (error) {
+              console.error('Failed to preview wish list link', error);
+            }
+            return {
+              ...emptyWishListItem(),
+              url,
+              title: preview?.title || titleFromUrl(url),
+              imageUrl: preview?.imageUrl ?? '',
+              price: preview?.price ?? '',
+              store: preview?.store ?? '',
+            };
+          })
+        );
+        added.push(...batch);
+      }
+      patch({ items: [...value.items, ...added] });
+      setPasteText('');
+      setPasteOpen(false);
+      toast.success(`Added ${added.length} ${added.length === 1 ? 'item' : 'items'}`);
+    } finally {
+      setPasting(false);
+    }
+  };
 
   const fetchLinkPreview = async (index: number) => {
     const item = value.items[index];
@@ -186,6 +251,10 @@ const WishListFields: React.FC<Props> = ({
               <Gift className="w-4 h-4 mr-1" />
               Any gift card
             </Button>
+            <Button variant="outline" size="sm" onClick={() => setPasteOpen(!pasteOpen)}>
+              <Link2 className="w-4 h-4 mr-1" />
+              Paste links
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -196,6 +265,27 @@ const WishListFields: React.FC<Props> = ({
             </Button>
           </div>
         </div>
+
+        {pasteOpen && (
+          <div className="space-y-2 rounded-lg border-2 border-gray-200 p-4">
+            <Textarea
+              value={pasteText}
+              onChange={e => setPasteText(e.target.value)}
+              placeholder={'Paste product links, one per line\nhttps://…'}
+              rows={5}
+              aria-label="Product links"
+            />
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs text-gray-500">
+                Up to {MAX_PASTED_LINKS} at a time. Stores that block previews get a name from the
+                link, which you can edit.
+              </p>
+              <Button size="sm" onClick={addPastedLinks} disabled={pasting || !pasteText.trim()}>
+                {pasting ? 'Adding…' : 'Add items'}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {value.items.length === 0 && (
           <p className="text-sm text-gray-500">
