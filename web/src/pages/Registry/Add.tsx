@@ -25,6 +25,7 @@ import withAuth from '@/lib/with-auth';
 import { buildBookmarklet, parseCapturedItem } from '@/lib/bookmarklet';
 import {
   emptyWishListItem,
+  PREVIEW_WISH_LIST_LINK_MUTATION,
   UPSERT_WISH_LIST_MUTATION,
   WISH_LIST_FIELDS,
   wishListDraftToInput,
@@ -50,6 +51,7 @@ const GET_REGISTRY = gql`
 `;
 
 const UPSERT_WISH_LIST = gql(UPSERT_WISH_LIST_MUTATION);
+const PREVIEW_WISH_LIST_LINK = gql(PREVIEW_WISH_LIST_LINK_MUTATION);
 
 /** The install link. React 19 refuses `javascript:` hrefs, so it is set on the element directly. */
 const BookmarkletLink: React.FC = () => {
@@ -87,6 +89,31 @@ const RegistryAdd: React.FC = () => {
   const [registryId, setRegistryId] = useState('');
   const [title, setTitle] = useState(captured?.title ?? '');
   const [price, setPrice] = useState(captured?.price ?? '');
+  const [imageUrl, setImageUrl] = useState(captured?.imageUrl ?? '');
+
+  // A share (unlike the bookmarklet) carries no image or price, so try our own preview to fill the
+  // blanks. It only fills what is empty, and a store that blocks previews just leaves it as is.
+  const capturedUrl = captured?.url;
+  const needsPreview = !!captured && (!captured.imageUrl || !captured.price || !captured.title);
+  useEffect(() => {
+    if (!capturedUrl || !needsPreview) return;
+    let cancelled = false;
+    client
+      .mutate({ mutation: PREVIEW_WISH_LIST_LINK, variables: { input: { url: capturedUrl } } })
+      .then(({ data: result }) => {
+        const preview = result?.previewWishListLink?.preview;
+        if (cancelled || !preview) return;
+        setTitle(current => current || preview.title || '');
+        setPrice(current => current || preview.price || '');
+        setImageUrl(current => current || preview.imageUrl || '');
+      })
+      .catch(() => {
+        // Optional extra; the owner can still fill the fields in.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [capturedUrl, needsPreview, client]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -116,7 +143,7 @@ const RegistryAdd: React.FC = () => {
           title: title.trim(),
           price: price.trim(),
           url: captured.url,
-          imageUrl: captured.imageUrl,
+          imageUrl,
         },
       ];
       const { data: result } = await client.mutate({
@@ -149,9 +176,9 @@ const RegistryAdd: React.FC = () => {
       {captured ? (
         <Card>
           <CardContent className="space-y-4 pt-6">
-            {captured.imageUrl && (
+            {imageUrl && (
               <img
-                src={captured.imageUrl}
+                src={imageUrl}
                 alt=""
                 referrerPolicy="no-referrer"
                 className="mx-auto max-h-48 rounded-lg object-contain"

@@ -24,6 +24,14 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#ffffff',
         theme_color: '#000000',
+        // Android Chrome lists the installed app in the share sheet; sharing a product page lands on
+        // the add-item page (#300). iOS Safari doesn't support share targets. Android often puts the
+        // link in `text` rather than `url`, so both are read.
+        share_target: {
+          action: '/registry/add',
+          method: 'GET',
+          params: { title: 'title', text: 'text', url: 'url' },
+        },
         icons: [
           {
             src: '/icons/icon-192.png',
