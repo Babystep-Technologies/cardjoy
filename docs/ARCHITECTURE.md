@@ -134,6 +134,13 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
   is capture in the user's own browser, all landing on `/registry/add` (which saves nothing until the
   owner confirms): the bookmarklet (`web/src/lib/bookmarklet.ts`), the Android PWA `share_target`
   (iOS Safari has none), and pasting several links into the item form.
+- **Closing the loop with cards** (#308-#311, from `docs/research/registry-landscape.md`). The
+  thank-you list tracks `thanked_at` (`setThankYouSent`, locked while surprise mode hides claimers)
+  and opens a prefilled Thank You card in the 1-on-1 flow, passing only the registry and claim ids in
+  the URL (the guest's email is read through the owner's own query, never put in the URL). Claiming
+  can be "already bought" (`alreadyPurchased`, born purchased so it never goes stale). Items can be
+  `paused` (not claimable, left out of the totals). A received 1-on-1 card offers its recipient a link
+  to start their own list (`/registry/new?occasion=`).
 - **Admin metrics.** `Queries::AdminMetrics` counts standalone registries, items, claims and
   purchases (aggregate only). The dashboard that charts them is in the private admin repo.
 
