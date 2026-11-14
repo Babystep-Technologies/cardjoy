@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -594,6 +594,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_160000) do
     t.text "note"
     t.integer "position", default: 0, null: false
     t.string "price"
+    t.datetime "price_checked_at"
     t.datetime "price_updated_at"
     t.boolean "priority", default: false, null: false
     t.integer "quantity", default: 1, null: false
@@ -603,6 +604,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_160000) do
     t.datetime "updated_at", null: false
     t.string "url"
     t.bigint "wish_list_id", null: false
+    t.index ["price_checked_at"], name: "index_wish_list_items_on_price_checked_at"
     t.index ["wish_list_id", "position"], name: "index_wish_list_items_on_wish_list_id_and_position"
     t.index ["wish_list_id"], name: "index_wish_list_items_on_wish_list_id"
   end
