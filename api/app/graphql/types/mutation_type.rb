@@ -43,6 +43,7 @@ module Types
     field :upsert_wish_list, mutation: Mutations::UpsertWishList
     field :delete_registry, mutation: Mutations::DeleteRegistry
     field :set_invitation_registry, mutation: Mutations::SetInvitationRegistry
+    field :set_thank_you_sent, mutation: Mutations::SetThankYouSent
     field :reset_registry, mutation: Mutations::ResetRegistry
     field :set_registry_cover_image, mutation: Mutations::SetRegistryCoverImage
     field :remove_registry_cover_image, mutation: Mutations::RemoveRegistryCoverImage

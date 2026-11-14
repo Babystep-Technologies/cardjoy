@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
+import { GET_THANK_YOUS, SET_THANK_YOU_SENT } from '@/components/Registry/ThankYouList';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Check, Copy, Heart, Mail, PenLine, Send, Sparkles, Upload, X } from 'lucide-react';
@@ -202,6 +203,34 @@ const CardOneOnOneNew: React.FC = () => {
   const occasions = useMemo(() => occasionsData?.cardOccasions || [], [occasionsData]);
 
   const { data: styleData } = useQuery(GET_STYLES);
+
+  // Arriving from a registry's thank-you list: prefill the guest's name and email (read through the
+  // owner's own thank-you query, so the email never travels in the URL), and tick them off once the
+  // card has gone out.
+  const thankYouRegistry = searchParams.get('thankYouRegistry');
+  const thankYouClaim = searchParams.get('thankYouClaim');
+  const { data: thankYouData } = useQuery(GET_THANK_YOUS, {
+    variables: { externalId: thankYouRegistry },
+    skip: !thankYouRegistry || !thankYouClaim,
+  });
+  const [setThankYouSent] = useMutation(SET_THANK_YOU_SENT);
+  const thankYouGuest: { guestName: string; guestEmail: string | null } | undefined =
+    thankYouData?.registry?.thankYouList?.find((c: { id: string }) => c.id === thankYouClaim);
+  useEffect(() => {
+    if (!thankYouGuest) return;
+    setRecipient(current => current || thankYouGuest.guestName);
+    setRecipientEmail(current => current || thankYouGuest.guestEmail || '');
+  }, [thankYouGuest]);
+  const markThanked = () => {
+    if (!thankYouRegistry || !thankYouClaim) return;
+    setThankYouSent({
+      variables: {
+        input: { registryExternalId: thankYouRegistry, reservationId: thankYouClaim, sent: true },
+      },
+    }).catch(() => {
+      // The card went out; the owner can still tick them off by hand.
+    });
+  };
   const backgroundColorStyles = useMemo(() => styleData?.backgroundColorStyles || [], [styleData]);
   const textColorStyles = useMemo(() => styleData?.textColorStyles || [], [styleData]);
   const effectStyles = useMemo(() => styleData?.effectStyles || [], [styleData]);
@@ -372,6 +401,7 @@ const CardOneOnOneNew: React.FC = () => {
       });
 
       if (data.deliverCard.errors.length === 0) {
+        markThanked();
         if (deliverAtIso) {
           setScheduled(true);
           toast.success(
