@@ -16,6 +16,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // The main bundle is just past workbox's 2 MiB default precache limit, which fails the build.
+      // Raised as a stopgap; the real fix is splitting the bundle (see the code-splitting issue).
+      workbox: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024 },
       includeAssets: ['favicon.ico', 'icons/*'],
       manifest: {
         name: 'CardJoy',
