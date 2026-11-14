@@ -117,7 +117,9 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
   guest-facing read behind `WishList#open_to?`.
 - **Smaller pieces.** Items carry `price_updated_at` (guests see "price may have changed" after 30
   days) and a free-text `section` (the guest page groups by it). `WishListType#qrSvg` is owner-only
-  and drawn per request with `rqrcode`.
+  and drawn per request with `rqrcode`. The cover image is an ActiveStorage attachment set by its own
+  owner-only mutations (`setRegistryCoverImage` checks type and size *before* attaching); it appears on
+  the guest page and the `/p/registry/:id` unfurl, except behind a passcode.
 - **Occasion reminders.** The reminder email links the contact's registry (`Contact#registry`),
   matched by email to an account with a shared, unarchived standalone registry.
 - **Cards link out.** `cards.wish_list_id` points a card at one of its owner's registries; the card
