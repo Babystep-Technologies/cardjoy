@@ -116,14 +116,15 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
   and `passcode` requests are throttled (`config/initializers/rack_attack.rb`). Keep any new
   guest-facing read behind `WishList#open_to?`.
 - **Smaller pieces.** Items carry `price_updated_at` (guests see "price may have changed" after 30
-  days) and a free-text `section` (the guest page groups by it). `WishListType#qrSvg` is owner-only
+  days; `RefreshWishListPricesJob` re-reads prices daily in bounded batches, never on a page view) and a free-text `section` (the guest page groups by it). `WishListType#qrSvg` is owner-only
   and drawn per request with `rqrcode`. The cover image is an ActiveStorage attachment set by its own
   owner-only mutations (`setRegistryCoverImage` checks type and size *before* attaching); it appears on
   the guest page and the `/p/registry/:id` unfurl, except behind a passcode.
 - **Occasion reminders.** The reminder email links the contact's registry (`Contact#registry`),
   matched by email to an account with a shared, unarchived standalone registry.
-- **Cards link out.** `cards.wish_list_id` points a card at one of its owner's registries; the card
-  page and the 1-on-1/viewer emails link to it only while it is shared.
+- **Cards and invitations link out.** `cards.wish_list_id` and `invitations.registry_id` point at one
+  of the owner's registries; the card/invitation page (and the 1-on-1/viewer emails) link to it only
+  while it is shared, and `RegistryLinkType` hides the title of a passcode-protected one.
 - **Link previews.** `WishListLinkPreview` fetches OpenGraph and schema.org JSON-LD for a pasted
   URL. It treats every URL as attacker-controlled (public-IP check on every hop, the vetted IP is
   pinned for the connection, size/time/redirect caps); keep those properties when changing it.
