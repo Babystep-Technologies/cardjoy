@@ -17,6 +17,8 @@ module Types
     field :position, Integer, null: false
     field :section, String, null: true
     field :priority, Boolean, null: false
+    # No longer available: shown to guests as such, and not claimable.
+    field :paused, Boolean, null: false
     field :reserved_quantity, Integer, null: false
     field :remaining_quantity, Integer, null: false
     field :claimed, Boolean, null: false

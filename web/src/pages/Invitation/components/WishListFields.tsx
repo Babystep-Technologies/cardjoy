@@ -16,6 +16,8 @@ import {
 import {
   Gift,
   Link2,
+  PauseCircle,
+  PlayCircle,
   Plus,
   Trash2,
   Wallet,
@@ -312,6 +314,20 @@ const WishListFields: React.FC<Props> = ({
                 <Star
                   className={`w-4 h-4 ${item.priority ? 'fill-yellow-400 text-yellow-500' : 'text-gray-400'}`}
                 />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`${item.paused ? 'Resume' : 'Pause'} gift idea ${index + 1}`}
+                title={item.paused ? 'Paused: guests can’t claim it. Click to resume.' : 'Pause'}
+                aria-pressed={!!item.paused}
+                onClick={() => updateItem(index, { paused: !item.paused })}
+              >
+                {item.paused ? (
+                  <PlayCircle className="w-4 h-4 text-purple-600" />
+                ) : (
+                  <PauseCircle className="w-4 h-4 text-gray-400" />
+                )}
               </Button>
               <Button
                 variant="ghost"

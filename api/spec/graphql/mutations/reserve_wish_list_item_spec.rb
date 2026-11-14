@@ -58,6 +58,26 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
     expect(item.reservations.last).not_to be_purchased
   end
 
+  it "refuses a claim on a paused item, and resumes when unpaused" do
+    item.update!(paused: true)
+    vars = { wishListItemId: item.id.to_s, guestName: "Pat", guestEmail: "pat@example.com" }
+
+    expect(reserve(vars)["errors"].join).to include("no longer available")
+    expect(item.reservations).to be_empty
+
+    item.update!(paused: false)
+    expect(reserve(vars)["errors"]).to be_empty
+  end
+
+  it "doesn't reveal a paused item to someone without the passcode" do
+    wish_list.update!(passcode: "sunflower")
+    item.update!(paused: true)
+
+    result = reserve(wishListItemId: item.id.to_s, guestName: "Pat", guestEmail: "pat@example.com")
+
+    expect(result["errors"].join).to include("passcode")
+  end
+
   it "refuses a claim on a passcode-protected registry without the passcode" do
     wish_list.update!(passcode: "sunflower")
     vars = { wishListItemId: item.id.to_s, guestName: "Pat", guestEmail: "pat@example.com" }

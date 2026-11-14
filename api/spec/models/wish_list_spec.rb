@@ -63,4 +63,14 @@ RSpec.describe WishList, type: :model do
       expect(described_class.due_for_email_scrub).to contain_exactly(due)
     end
   end
+
+  describe "insights with paused items (#310)" do
+    it "leaves paused items out of the totals" do
+      list = create(:wish_list, :standalone)
+      create(:wish_list_item, wish_list: list)
+      create(:wish_list_item, wish_list: list, paused: true)
+
+      expect(list.insights).to include(item_count: 1)
+    end
+  end
 end
