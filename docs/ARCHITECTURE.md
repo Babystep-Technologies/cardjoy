@@ -128,6 +128,12 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
 - **Link previews.** `WishListLinkPreview` fetches OpenGraph and schema.org JSON-LD for a pasted
   URL. It treats every URL as attacker-controlled (public-IP check on every hop, the vetted IP is
   pinned for the connection, size/time/redirect caps); keep those properties when changing it.
+- **Capture.** Server-side fetching is best-effort (most large retailers block it; see
+  `docs/research/registry-product-data.md`). `WishListLinkPreview::BLOCKING_HOSTS` short-circuits the
+  known blockers, and `BLOCKED_PAGE_TITLE` rejects bot-wall pages that answer 200. The reliable path
+  is capture in the user's own browser, all landing on `/registry/add` (which saves nothing until the
+  owner confirms): the bookmarklet (`web/src/lib/bookmarklet.ts`), the Android PWA `share_target`
+  (iOS Safari has none), and pasting several links into the item form.
 - **Admin metrics.** `Queries::AdminMetrics` counts standalone registries, items, claims and
   purchases (aggregate only). The dashboard that charts them is in the private admin repo.
 
