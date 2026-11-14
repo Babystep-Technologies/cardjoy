@@ -37,8 +37,28 @@ class WishListLinkPreview
   # real stores (#257): Walmart and Amazon both answered this way.
   BLOCKED_PAGE_TITLE = /\A(?:amazon\.com\.?|robot or human\??|are you a (?:robot|human)\??|access denied|just a moment\.*|attention required!?.*|pardon our interruption.*|403 forbidden|request blocked|verify you are (?:a )?human.*|please verify you are a human)\z/i
 
+  # Stores that blocked or walled our fetcher in a probe of real product pages (#257): they answered
+  # 403, rate limited, timed out, or served a bot wall, whatever the user agent. Trying is a wait for
+  # nothing, so previews skip them and tell the host to add the details by hand. A short list on
+  # purpose: remove a host here if a store starts answering, and add one that proves a repeat blocker.
+  BLOCKING_HOSTS = %w[
+    amazon.com amazon.ca amazon.co.uk amazon.de amzn.to amzn.com a.co
+    walmart.com etsy.com ebay.com crateandbarrel.com rei.com bestbuy.com
+  ].freeze
+
   Result = Struct.new(:title, :image_url, :price, :store, keyword_init: true)
   FetchedResponse = Struct.new(:redirect, :location, :success, :content_type, :body, keyword_init: true)
+
+  # Whether this URL points at a store known to block previews (a host match, so subdomains count).
+  sig { params(url: String).returns(T::Boolean) }
+  def self.blocks_previews?(url)
+    host = URI.parse(url.strip).host&.downcase
+    return false if host.nil?
+
+    BLOCKING_HOSTS.any? { |blocked| host == blocked || host.end_with?(".#{blocked}") }
+  rescue URI::InvalidURIError
+    false
+  end
 
   sig { params(url: String).returns(T.nilable(Result)) }
   def self.fetch(url)
@@ -47,6 +67,8 @@ class WishListLinkPreview
 
   sig { params(url: String).returns(T.nilable(Result)) }
   def fetch(url)
+    return nil if self.class.blocks_previews?(url)
+
     html, final_uri = fetch_html(url, MAX_REDIRECTS)
     return nil if html.blank? || final_uri.nil?
 

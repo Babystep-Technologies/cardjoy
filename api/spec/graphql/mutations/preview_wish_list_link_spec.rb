@@ -37,6 +37,16 @@ RSpec.describe Mutations::PreviewWishListLink, type: :request do
     )
   end
 
+  it "tells the host up front when the store is known to block previews" do
+    allow(WishListLinkPreview).to receive(:fetch)
+
+    data = preview("https://www.amazon.com/dp/B0C1H26C46")
+
+    expect(data["preview"]).to be_nil
+    expect(data["errors"].join).to include("doesn't allow link previews")
+    expect(WishListLinkPreview).not_to have_received(:fetch)
+  end
+
   it "returns a friendly error when no preview could be built" do
     allow(WishListLinkPreview).to receive(:fetch).and_return(nil)
 

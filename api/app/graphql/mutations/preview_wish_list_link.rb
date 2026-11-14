@@ -15,6 +15,10 @@ module Mutations
     def resolve(url:)
       return { preview: nil, errors: [ "You must be signed in" ] } unless context[:current_user]
 
+      if WishListLinkPreview.blocks_previews?(url)
+        return { preview: nil, errors: [ "That store doesn't allow link previews. Add the name and price yourself." ] }
+      end
+
       result = WishListLinkPreview.fetch(url)
       return { preview: nil, errors: [ "Couldn't find a preview for that link" ] } unless result
 

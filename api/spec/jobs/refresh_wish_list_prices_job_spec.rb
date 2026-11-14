@@ -65,6 +65,15 @@ RSpec.describe RefreshWishListPricesJob, type: :job do
     expect([ recent, hidden, past ].map { |i| i.reload.price }).not_to include("$99")
   end
 
+  it "makes no request to a store known to block us" do
+    create(:wish_list_item, wish_list: list, url: "https://www.etsy.com/listing/1", price: "$5")
+    fetches("$9")
+
+    described_class.new.perform
+
+    expect(WishListLinkPreview).not_to have_received(:fetch)
+  end
+
   it "fetches at most a few items per store in one run" do
     8.times { |i| create(:wish_list_item, wish_list: list, url: "https://shop.example/p/#{i}", price: "$1") }
     fetches("$2")

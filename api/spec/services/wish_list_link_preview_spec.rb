@@ -194,6 +194,23 @@ RSpec.describe WishListLinkPreview do
     end
   end
 
+  describe "known blocking stores (#257)" do
+    it "recognises them, subdomains and short links included, and nothing else" do
+      expect(described_class.blocks_previews?("https://www.amazon.com/dp/B0C1H26C46")).to be(true)
+      expect(described_class.blocks_previews?("https://smile.amazon.com/dp/x")).to be(true)
+      expect(described_class.blocks_previews?("https://amzn.to/abc")).to be(true)
+      expect(described_class.blocks_previews?("https://www.etsy.com/listing/1")).to be(true)
+      expect(described_class.blocks_previews?("https://notamazon.com/p")).to be(false)
+      expect(described_class.blocks_previews?("https://store.example.com/p")).to be(false)
+      expect(described_class.blocks_previews?("not a url")).to be(false)
+    end
+
+    it "does not even make a request to one" do
+      expect(described_class.fetch("https://www.walmart.com/ip/1")).to be_nil
+      expect(a_request(:get, /walmart/)).not_to have_been_made
+    end
+  end
+
   describe "resilience" do
     it "returns nil for a non-2xx response" do
       stub_dns("store.example.com", "93.184.216.1")

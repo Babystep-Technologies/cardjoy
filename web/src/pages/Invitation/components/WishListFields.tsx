@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { gql, useMutation } from '@apollo/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,7 +86,15 @@ const WishListFields: React.FC<Props> = ({
     try {
       const { data } = await previewWishListLink({ variables: { input: { url } } });
       const preview = data?.previewWishListLink?.preview;
-      if (!preview) return;
+      if (!preview) {
+        // A store that blocks previews gets an explanation; other misses stay quiet, since typing
+        // the item in by hand is always an option.
+        const reason: string | undefined = data?.previewWishListLink?.errors?.find((e: string) =>
+          e.includes("doesn't allow link previews")
+        );
+        if (reason) toast.info(reason);
+        return;
+      }
 
       // Never clobber anything the host already typed -- the preview only fills blanks.
       const current = value.items[index];
