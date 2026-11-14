@@ -103,10 +103,11 @@ const ShipTo: React.FC<{ token: string }> = ({ token }) => {
 const ReserveDialog: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (name: string, email: string) => Promise<void>;
+  onConfirm: (name: string, email: string, alreadyBought: boolean) => Promise<void>;
 }> = ({ open, onOpenChange, onConfirm }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [alreadyBought, setAlreadyBought] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const handleConfirm = async () => {
@@ -116,7 +117,7 @@ const ReserveDialog: React.FC<{
     }
     setSubmitting(true);
     try {
-      await onConfirm(name.trim(), email.trim());
+      await onConfirm(name.trim(), email.trim(), alreadyBought);
       onOpenChange(false);
     } finally {
       setSubmitting(false);
@@ -147,6 +148,15 @@ const ReserveDialog: React.FC<{
               onChange={e => setEmail(e.target.value)}
             />
           </div>
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={alreadyBought}
+              onChange={e => setAlreadyBought(e.target.checked)}
+              className="h-4 w-4"
+            />
+            I&apos;ve already bought it
+          </label>
         </div>
         <DialogFooter>
           <Button
@@ -186,11 +196,18 @@ const ItemCard: React.FC<{
   const claimed = item.claimed ?? false;
   const remaining = item.remainingQuantity ?? item.quantity;
 
-  const handleReserve = async (guestName: string, guestEmail: string) => {
+  const handleReserve = async (guestName: string, guestEmail: string, alreadyBought: boolean) => {
     try {
       const { data } = await reserveWishListItem({
         variables: {
-          input: { wishListItemId: item.id, guestName, guestEmail, quantity: 1, passcode },
+          input: {
+            wishListItemId: item.id,
+            guestName,
+            guestEmail,
+            quantity: 1,
+            passcode,
+            alreadyPurchased: alreadyBought,
+          },
         },
       });
       const result = data?.reserveWishListItem;
@@ -203,7 +220,15 @@ const ItemCard: React.FC<{
         localStorage.setItem(tokenKey, result.token);
         setMyToken(result.token);
       }
-      toast.success("You're all set — marked as claimed!");
+      if (alreadyBought) {
+        if (purchasedKey) localStorage.setItem(purchasedKey, '1');
+        setPurchased(true);
+      }
+      toast.success(
+        alreadyBought
+          ? "You're all set — marked as bought. Thank you!"
+          : "You're all set — marked as claimed!"
+      );
     } catch (error) {
       console.error('Failed to reserve wish list item', error);
       toast.error('Could not claim this item. Please try again.');
