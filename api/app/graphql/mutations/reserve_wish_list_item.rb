@@ -13,13 +13,16 @@ module Mutations
     argument :quantity, Integer, required: false, default_value: 1
     # Needed when the registry is protected, so item ids alone can't be used to claim from it.
     argument :passcode, String, required: false
+    # The guest has already bought it: claim and mark bought in one step, so the claim never goes
+    # stale (#309).
+    argument :already_purchased, Boolean, required: false, default_value: false
 
     field :reservation, Types::WishListReservationType, null: true
     field :token, String, null: true
     field :wish_list_item, Types::WishListItemType, null: true
     field :errors, [ String ], null: false
 
-    def resolve(wish_list_item_id:, guest_name:, guest_email:, quantity: 1, passcode: nil)
+    def resolve(wish_list_item_id:, guest_name:, guest_email:, quantity: 1, passcode: nil, already_purchased: false)
       item = WishListItem.find_by(id: wish_list_item_id)
       return failure("Item not found") unless item
       return failure("That passcode isn't right") unless item.wish_list.open_to?(context[:current_user], passcode)
@@ -32,7 +35,10 @@ module Mutations
           return failure(message)
         end
 
-        reservation = item.reservations.create(guest_name: guest_name, guest_email: guest_email, quantity: quantity)
+        reservation = item.reservations.create(
+          guest_name: guest_name, guest_email: guest_email, quantity: quantity,
+          purchased_at: already_purchased ? Time.current : nil
+        )
         return failure(*reservation.errors.full_messages) unless reservation.persisted?
       end
 

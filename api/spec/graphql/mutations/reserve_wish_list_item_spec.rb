@@ -12,6 +12,7 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
         $guestEmail: String!
         $quantity: Int
         $passcode: String
+        $alreadyPurchased: Boolean
       ) {
         reserveWishListItem(
           input: {
@@ -20,6 +21,7 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
             guestEmail: $guestEmail
             quantity: $quantity
             passcode: $passcode
+            alreadyPurchased: $alreadyPurchased
           }
         ) {
           token
@@ -38,6 +40,22 @@ RSpec.describe Mutations::ReserveWishListItem, type: :request do
     parsed = JSON.parse(response.body)
     expect(parsed["errors"]).to be_nil, "unexpected GraphQL errors: #{parsed['errors'].inspect}"
     parsed.dig("data", "reserveWishListItem")
+  end
+
+  it "can claim an item the guest has already bought, so it is born purchased and never goes stale" do
+    result = reserve(wishListItemId: item.id.to_s, guestName: "Pat", guestEmail: "pat@example.com", alreadyPurchased: true)
+
+    expect(result["errors"]).to be_empty
+    claim = item.reservations.last
+    expect(claim).to be_purchased
+    expect(WishListReservation.due_for_reminder).not_to include(claim)
+    expect(WishListReservation.due_for_release).not_to include(claim)
+  end
+
+  it "leaves an ordinary claim unpurchased" do
+    reserve(wishListItemId: item.id.to_s, guestName: "Pat", guestEmail: "pat@example.com")
+
+    expect(item.reservations.last).not_to be_purchased
   end
 
   it "refuses a claim on a passcode-protected registry without the passcode" do
