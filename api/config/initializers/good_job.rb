@@ -27,6 +27,11 @@ Rails.application.configure do
       class: "StaleWishListClaimsJob",
       description: "Remind guests about unbought registry claims, and release the ones nobody acted on"
     },
+    refresh_wish_list_prices: {
+      cron: "0 16 * * *",
+      class: "RefreshWishListPricesJob",
+      description: "Re-read registry item prices from their links, a bounded batch a day"
+    },
     scrub_guest_emails: {
       cron: "30 15 * * *",
       class: "ScrubGuestEmailsJob",
