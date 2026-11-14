@@ -7,7 +7,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
 import { Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -60,7 +60,15 @@ const RegistryEdit: React.FC = () => {
   const navigate = useNavigate();
   const isNew = !externalId;
 
-  const [draft, setDraft] = useState<WishListDraft>({ ...emptyWishListDraft(), title: '' });
+  const [searchParams] = useSearchParams();
+  // A link can open a new registry for an occasion already chosen, e.g. from a received card.
+  const [draft, setDraft] = useState<WishListDraft>(() => {
+    const blank = { ...emptyWishListDraft(), title: '' };
+    const preset = searchParams.get('occasion');
+    return !externalId && REGISTRY_OCCASIONS.some(o => o.value === preset)
+      ? applyRegistryTemplate(blank, preset as string)
+      : blank;
+  });
   const [saving, setSaving] = useState(false);
   // Write-only: the API keeps just a digest, so this is only ever what the owner types now.
   const [passcode, setPasscode] = useState('');

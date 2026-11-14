@@ -70,6 +70,13 @@ export const REGISTRY_OCCASIONS = [
   { value: 'other', label: 'Something else' },
 ] as const;
 
+/** The registry occasion that fits a card's occasion ("Birthday" is "birthday"), or null if none. */
+export const registryOccasionForCard = (cardOccasion?: string | null): string | null => {
+  const key = (cardOccasion ?? '').trim().toLowerCase();
+  if (key === 'baby shower' || key === 'new baby') return 'baby';
+  return REGISTRY_OCCASIONS.some(o => o.value === key) ? key : null;
+};
+
 export const occasionLabel = (occasion?: string | null): string | null =>
   REGISTRY_OCCASIONS.find(o => o.value === occasion)?.label ?? null;
 
