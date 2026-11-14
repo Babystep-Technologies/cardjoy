@@ -495,6 +495,14 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
           </Button>
         )}
 
+        {wishList.coverImageUrl && (
+          <img
+            src={wishList.coverImageUrl}
+            alt=""
+            className="max-h-64 w-full rounded-2xl object-cover shadow-md"
+          />
+        )}
+
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
             {wishList.title}

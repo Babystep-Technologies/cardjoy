@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ThankYouList } from '@/components/Registry/ThankYouList';
+import { CoverImage } from '@/components/Registry/CoverImage';
 import { ShareQrCode } from '@/components/Registry/ShareQrCode';
 import { ResetRegistry } from '@/components/Registry/ResetRegistry';
 import {
@@ -170,6 +171,14 @@ const RegistryEdit: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {!isNew && externalId && (
+        <CoverImage
+          externalId={externalId}
+          coverImageUrl={data?.registry?.coverImageUrl}
+          onChange={() => refetch()}
+        />
+      )}
 
       {suggestions.length > 0 && (
         <Card className="mb-6">
