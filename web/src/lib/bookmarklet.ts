@@ -69,13 +69,22 @@ const httpUrl = (value: string | null): string => {
   }
 };
 
-/** Reads and sanitizes the query string: links must be http(s), text is capped. */
+/**
+ * Reads and sanitizes the query string: links must be http(s), text is capped. It serves both the
+ * bookmarklet (`url`, `title`, `image`, `price`) and an Android share (`title`, `text`, `url`), where
+ * the link is often inside `text` ("Cast iron pan https://…") and `url` is empty.
+ */
 export const parseCapturedItem = (params: URLSearchParams): CapturedItem | null => {
-  const url = httpUrl(params.get('url'));
+  const text = params.get('text') ?? '';
+  const linkInText = text.match(/https?:\/\/\S+/i)?.[0] ?? null;
+  const url = httpUrl(params.get('url')) || httpUrl(linkInText);
   if (!url) return null;
+
+  const sharedTitle = params.get('title') ?? '';
+  const textWithoutLink = linkInText ? text.replace(linkInText, '') : text;
   return {
     url,
-    title: (params.get('title') ?? '').trim().slice(0, 200),
+    title: (sharedTitle || textWithoutLink).trim().slice(0, 200),
     imageUrl: httpUrl(params.get('image')),
     price: (params.get('price') ?? '').trim().slice(0, 40),
   };
