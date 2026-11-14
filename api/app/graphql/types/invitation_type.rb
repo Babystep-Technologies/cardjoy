@@ -33,6 +33,9 @@ module Types
     field :rsvps, [ Types::RsvpType ], null: false
     field :rsvp_counts, Types::RsvpCountsType, null: false
     field :wish_list, Types::WishListType, null: true
+    # A link-out to one of the owner's registries; null unless it is shared, so an invitation never
+    # advertises a registry its owner hasn't published.
+    field :registry, Types::RegistryLinkType, null: true
 
     # A hidden wish list stays visible to the host so they can build it before publishing.
     def wish_list
@@ -42,6 +45,11 @@ module Types
 
       viewer = context[:current_user]
       viewer && viewer.id == object.user_id ? list : nil
+    end
+
+    def registry
+      list = object.registry
+      list if list&.visible
     end
 
     def rsvp_counts

@@ -104,6 +104,11 @@ const GET_INVITATION = gql`
         total
         totalAttendees
       }
+      registry {
+        externalId
+        title
+        ownerFirstName
+      }
       wishList {
         ${WISH_LIST_FIELDS}
       }
@@ -597,6 +602,24 @@ const InvitationView: React.FC = () => {
             {/* Wish List entry point — sits right above the RSVP call to action */}
             {invitation.wishList && id && (
               <WishListCallout invitationId={id} wishList={invitation.wishList} />
+            )}
+
+            {/* A linked registry, when the host points at one instead of (or beside) a wish list */}
+            {invitation.registry && (
+              <Card className="p-5 border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
+                <h3 className="font-bold text-lg leading-tight">{invitation.registry.title}</h3>
+                <p className="text-sm text-gray-600">
+                  {invitation.registry.ownerFirstName
+                    ? `${invitation.registry.ownerFirstName}'s registry`
+                    : 'A registry from the host'}
+                </p>
+                <Button
+                  asChild
+                  className="w-full mt-4 bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white font-bold h-12"
+                >
+                  <Link to={`/registry/${invitation.registry.externalId}`}>🎁 View Registry</Link>
+                </Button>
+              </Card>
             )}
 
             {/* RSVP Form */}

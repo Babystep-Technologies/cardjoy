@@ -8,6 +8,12 @@ module Types
     field :title, String, null: false
     field :owner_first_name, String, null: true
 
+    # A passcode-protected registry keeps its title behind the passcode, even on a card or invitation
+    # that links it.
+    def title
+      object.passcode_protected? ? "A private registry" : object.title
+    end
+
     def owner_first_name
       object.user&.name.to_s.split.first
     end

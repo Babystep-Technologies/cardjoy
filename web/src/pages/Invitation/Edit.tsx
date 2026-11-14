@@ -31,6 +31,7 @@ import CoverImageDialog from '../Card/components/CoverImageDialog';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import RSVPManagement from './components/RSVPManagement';
 import WishListEditor from './components/WishListEditor';
+import InvitationRegistryLink from './components/InvitationRegistryLink';
 import { WISH_LIST_FIELDS } from '@/lib/wishList';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
 import { cardTypeById } from '@/config/cardTypes';
@@ -102,6 +103,10 @@ const GET_INVITATION = gql`
         notGoing
         total
         totalAttendees
+      }
+      registry {
+        externalId
+        title
       }
       wishList {
         ${WISH_LIST_FIELDS}
@@ -897,6 +902,13 @@ const InvitationEdit: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {id && (
+          <InvitationRegistryLink
+            invitationExternalId={id}
+            registryExternalId={data?.invitation?.registry?.externalId}
+          />
+        )}
 
         {/* Wish List Section */}
         {id && (
