@@ -7,9 +7,10 @@
 #
 # Bounded on purpose: items are tried oldest-checked first, at most BATCH per run and PER_HOST from
 # any one store, so a long registry doesn't hammer a retailer. Registries past their event or hidden
-# are skipped. A fetch that fails or finds no price changes nothing (the "price may have changed"
-# marker then appears on its own after a month); a price that matches what's stored is simply
-# confirmed, which keeps the marker away.
+# are skipped, and so are stores known to block us (WishListLinkPreview::BLOCKING_HOSTS). A fetch
+# that fails or finds no price changes nothing (the "price may have changed" marker then appears on
+# its own after a month); a price that matches what's stored is simply confirmed, which keeps the
+# marker away.
 class RefreshWishListPricesJob < ApplicationJob
   queue_as :default
 
@@ -45,7 +46,7 @@ class RefreshWishListPricesJob < ApplicationJob
     per_host = Hash.new(0)
     due.select do |item|
       host = host_of(item.url)
-      next false if host.nil? || per_host[host] >= PER_HOST
+      next false if host.nil? || WishListLinkPreview.blocks_previews?(item.url.to_s) || per_host[host] >= PER_HOST
 
       per_host[host] += 1
       true
