@@ -101,4 +101,31 @@ RSpec.describe RsvpMailer, type: :mailer do
       expect(mail_going.body.encoded).to match(/update your RSVP/i)
     end
   end
+
+  describe "#event_reminder" do
+    let(:invitation) do
+      create(:invitation, title: "Summer Party", location: "123 Beach Road",
+        event_date: Date.parse("2030-07-15"), event_time: "18:00")
+    end
+    let(:going) { create(:rsvp, invitation: invitation, guest_name: "Alice", guest_email: "alice@example.com", status: "going") }
+    let(:maybe) { create(:rsvp, invitation: invitation, guest_name: "Charlie", guest_email: "charlie@example.com", status: "maybe") }
+
+    it "reminds a going guest, with the host's note and the calendar buttons" do
+      mail = RsvpMailer.event_reminder(going, "Parking is on the left")
+
+      expect(mail.to).to eq [ "alice@example.com" ]
+      expect(mail.subject).to eq "Reminder: Summer Party on July 15"
+      body = mail.body.encoded
+      expect(body).to include("Parking is on the left", "123 Beach Road", "Google Calendar", "Outlook", "Yahoo")
+      expect(body).to include("cal-btn")
+    end
+
+    it "leaves the calendar buttons out for a maybe" do
+      expect(RsvpMailer.event_reminder(maybe).body.encoded).not_to include("Add to Your Calendar")
+    end
+
+    it "escapes the host's note" do
+      expect(RsvpMailer.event_reminder(going, "<script>x</script>").body.encoded).not_to include("<script>x")
+    end
+  end
 end

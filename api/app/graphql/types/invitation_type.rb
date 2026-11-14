@@ -36,6 +36,17 @@ module Types
     # A link-out to one of the owner's registries; null unless it is shared, so an invitation never
     # advertises a registry its owner hasn't published.
     field :registry, Types::RegistryLinkType, null: true
+    # Host-only: when guests were last reminded and when the next reminder may go (#319).
+    field :reminder_sent_at, GraphQL::Types::ISO8601DateTime, null: true
+    field :next_reminder_at, GraphQL::Types::ISO8601DateTime, null: true
+
+    def reminder_sent_at
+      object.reminder_sent_at if host_viewing?
+    end
+
+    def next_reminder_at
+      object.next_reminder_at if host_viewing?
+    end
 
     # A hidden wish list stays visible to the host so they can build it before publishing.
     def wish_list
@@ -45,6 +56,11 @@ module Types
 
       viewer = context[:current_user]
       viewer && viewer.id == object.user_id ? list : nil
+    end
+
+    def host_viewing?
+      viewer = context[:current_user]
+      !viewer.nil? && object.editable_by?(viewer)
     end
 
     def registry

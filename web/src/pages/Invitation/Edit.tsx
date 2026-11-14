@@ -30,6 +30,7 @@ import { detectTimezone } from '@/lib/timezone';
 import CoverImageDialog from '../Card/components/CoverImageDialog';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import RSVPManagement from './components/RSVPManagement';
+import RemindGuests from './components/RemindGuests';
 import WishListEditor from './components/WishListEditor';
 import InvitationRegistryLink from './components/InvitationRegistryLink';
 import { WISH_LIST_FIELDS } from '@/lib/wishList';
@@ -104,6 +105,7 @@ const GET_INVITATION = gql`
         total
         totalAttendees
       }
+      nextReminderAt
       registry {
         externalId
         title
@@ -937,6 +939,16 @@ const InvitationEdit: React.FC = () => {
               invitationTitle={title}
             />
           </div>
+        )}
+
+        {id && data?.invitation?.rsvpCounts && data.invitation.eventDate && (
+          <RemindGuests
+            invitationExternalId={id}
+            eventDate={data.invitation.eventDate}
+            going={data.invitation.rsvpCounts.going}
+            maybe={data.invitation.rsvpCounts.maybe}
+            nextReminderAt={data.invitation.nextReminderAt}
+          />
         )}
 
         {/* Cover Image Dialog */}

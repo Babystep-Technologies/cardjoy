@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -298,6 +298,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_200000) do
     t.jsonb "opening_message_config"
     t.bigint "organization_id"
     t.bigint "registry_id"
+    t.datetime "reminder_sent_at"
     t.date "rsvp_deadline"
     t.string "slug"
     t.string "title"

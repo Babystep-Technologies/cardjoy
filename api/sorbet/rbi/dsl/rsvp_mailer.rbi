@@ -7,6 +7,9 @@
 
 class RsvpMailer
   class << self
+    sig { params(rsvp: T.untyped, note: T.untyped).returns(::ActionMailer::MessageDelivery) }
+    def event_reminder(rsvp, note = T.unsafe(nil)); end
+
     sig { params(rsvp: T.untyped).returns(::ActionMailer::MessageDelivery) }
     def guest_confirmation(rsvp); end
 
