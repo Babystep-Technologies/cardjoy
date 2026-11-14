@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_13_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_13_180000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -297,6 +297,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_170000) do
     t.string "opening_message"
     t.jsonb "opening_message_config"
     t.bigint "organization_id"
+    t.bigint "registry_id"
     t.date "rsvp_deadline"
     t.string "slug"
     t.string "title"
@@ -307,6 +308,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_170000) do
     t.index ["deleted_at"], name: "index_invitations_on_deleted_at"
     t.index ["external_id"], name: "index_invitations_on_external_id", unique: true
     t.index ["organization_id"], name: "index_invitations_on_organization_id"
+    t.index ["registry_id"], name: "index_invitations_on_registry_id"
     t.index ["slug"], name: "index_invitations_on_slug", unique: true, where: "(slug IS NOT NULL)"
     t.index ["user_id", "created_at"], name: "index_invitations_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_invitations_on_user_id"
@@ -660,6 +662,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_13_170000) do
   add_foreign_key "guest_messages", "cards"
   add_foreign_key "invitations", "organizations", on_delete: :nullify
   add_foreign_key "invitations", "users"
+  add_foreign_key "invitations", "wish_lists", column: "registry_id", on_delete: :nullify
   add_foreign_key "messages", "cards"
   add_foreign_key "messages", "users"
   add_foreign_key "occasions", "contacts"

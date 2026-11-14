@@ -394,6 +394,9 @@ class Invitation
     sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
     def build_organization(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
+    def build_registry(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_user(*args, &blk); end
 
@@ -430,6 +433,12 @@ class Invitation
     sig { params(args: T.untyped, blk: T.untyped).returns(::Organization) }
     def create_organization!(*args, &blk); end
 
+    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
+    def create_registry(*args, &blk); end
+
+    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
+    def create_registry!(*args, &blk); end
+
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user(*args, &blk); end
 
@@ -454,6 +463,18 @@ class Invitation
     sig { returns(T::Boolean) }
     def organization_previously_changed?; end
 
+    sig { returns(T.nilable(::WishList)) }
+    def registry; end
+
+    sig { params(value: T.nilable(::WishList)).void }
+    def registry=(value); end
+
+    sig { returns(T::Boolean) }
+    def registry_changed?; end
+
+    sig { returns(T::Boolean) }
+    def registry_previously_changed?; end
+
     sig { returns(T.nilable(::ActiveStorage::Attachment)) }
     def reload_cover_image_attachment; end
 
@@ -462,6 +483,9 @@ class Invitation
 
     sig { returns(T.nilable(::Organization)) }
     def reload_organization; end
+
+    sig { returns(T.nilable(::WishList)) }
+    def reload_registry; end
 
     sig { returns(T.nilable(::User)) }
     def reload_user; end
@@ -477,6 +501,9 @@ class Invitation
 
     sig { void }
     def reset_organization; end
+
+    sig { void }
+    def reset_registry; end
 
     sig { void }
     def reset_user; end
@@ -1554,6 +1581,51 @@ class Invitation
     sig { void }
     def organization_id_will_change!; end
 
+    sig { returns(T.nilable(::Integer)) }
+    def registry_id; end
+
+    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
+    def registry_id=(value); end
+
+    sig { returns(T::Boolean) }
+    def registry_id?; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def registry_id_before_last_save; end
+
+    sig { returns(T.untyped) }
+    def registry_id_before_type_cast; end
+
+    sig { returns(T::Boolean) }
+    def registry_id_came_from_user?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def registry_id_change; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def registry_id_change_to_be_saved; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def registry_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def registry_id_in_database; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def registry_id_previous_change; end
+
+    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
+    def registry_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
+
+    sig { returns(T.nilable(::Integer)) }
+    def registry_id_previously_was; end
+
+    sig { returns(T.nilable(::Integer)) }
+    def registry_id_was; end
+
+    sig { void }
+    def registry_id_will_change!; end
+
     sig { void }
     def restore_allow_plus_one!; end
 
@@ -1610,6 +1682,9 @@ class Invitation
 
     sig { void }
     def restore_organization_id!; end
+
+    sig { void }
+    def restore_registry_id!; end
 
     sig { void }
     def restore_rsvp_deadline!; end
@@ -1787,6 +1862,12 @@ class Invitation
 
     sig { returns(T::Boolean) }
     def saved_change_to_organization_id?; end
+
+    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
+    def saved_change_to_registry_id; end
+
+    sig { returns(T::Boolean) }
+    def saved_change_to_registry_id?; end
 
     sig { returns(T.nilable([T.nilable(::Date), T.nilable(::Date)])) }
     def saved_change_to_rsvp_deadline; end
@@ -2060,6 +2141,9 @@ class Invitation
 
     sig { returns(T::Boolean) }
     def will_save_change_to_organization_id?; end
+
+    sig { returns(T::Boolean) }
+    def will_save_change_to_registry_id?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_rsvp_deadline?; end

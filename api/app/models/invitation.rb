@@ -7,6 +7,9 @@ class Invitation < ApplicationRecord
   belongs_to :user
   has_many :rsvps, dependent: :destroy
   has_one :wish_list, dependent: :destroy
+  # A standalone registry of the owner's to link from this invitation (#250); distinct from the
+  # invitation's own `wish_list` above.
+  belongs_to :registry, class_name: "WishList", optional: true
 
   has_one_attached :cover_image
 

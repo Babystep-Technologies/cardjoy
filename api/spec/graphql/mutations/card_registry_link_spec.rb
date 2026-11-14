@@ -49,6 +49,13 @@ RSpec.describe "Linking a card to a registry", type: :request do
     expect(card_registry).to be_nil
   end
 
+  it 'hides the title of a passcode-protected registry' do
+    registry.update!(passcode: 'sunflower')
+    card.update!(wish_list: registry)
+
+    expect(card_registry['title']).to eq('A private registry')
+  end
+
   it 'leaves the card intact when the registry is deleted' do
     card.update!(wish_list: registry)
     registry.destroy!
