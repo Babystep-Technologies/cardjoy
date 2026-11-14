@@ -162,7 +162,12 @@ On iOS the realistic options are the bookmarklet, pasting a link, or a future Sa
   unavailable until someone checks.
 - The practical substitute is capture-from-the-product-page plus paste-several-links.
 
-## 6. Proposed follow-up issues
+## 6. Follow-up issues (status)
+
+Shipped: #295 (bot-wall titles), #297 (known blockers), #298 (bookmarklet), #299 (paste several
+links), #300 (Android share target). Open: #301 (extension, waits on bookmarklet usage).
+
+Original list:
 
 1. Known-blocker hosts: skip fetch at paste time, clear message, skip in refresh job (small).
 2. Bookmarklet capture with a prefilled add-item page (small-medium).
