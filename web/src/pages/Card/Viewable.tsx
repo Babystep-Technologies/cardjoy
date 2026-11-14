@@ -23,6 +23,7 @@ const GET_CARD = gql`
       title
       slug
       kind
+      occasion
       locked
       flagged
       messageLimitReached

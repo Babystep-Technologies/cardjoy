@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'motion/react';
-import { Mail, Pencil, Send } from 'lucide-react';
+import { Gift, Mail, Pencil, Send } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { CardEffect, isEffectSlug } from '@/components/effects';
 import { StyleType } from '@/types/app';
+import { occasionLabel, registryOccasionForCard } from '@/lib/wishList';
 
 interface OneOnOneMessage {
   text: string;
@@ -19,6 +20,8 @@ interface OneOnOneCard {
   coverImageUrl?: string | null;
   styles?: StyleType[] | null;
   messages?: OneOnOneMessage[] | null;
+  occasion?: string | null;
+  registry?: { externalId: string; title: string; ownerFirstName?: string | null } | null;
 }
 
 interface OneOnOneCardViewProps {
@@ -46,6 +49,7 @@ const OneOnOneCardView: React.FC<OneOnOneCardViewProps> = ({
   const effectValue = styleValue('effect');
   const effect = isEffectSlug(effectValue) ? effectValue : null;
 
+  const startOccasion = registryOccasionForCard(card.occasion);
   const message = card.messages?.[0];
   const senderName = message?.displayName || message?.user?.name || 'Someone';
   const recipient = card.recipients?.[0];
@@ -171,6 +175,33 @@ const OneOnOneCardView: React.FC<OneOnOneCardViewProps> = ({
             </div>
           )}
         </motion.button>
+
+        {opened && card.registry && (
+          <Link
+            to={`/registry/${card.registry.externalId}`}
+            className="mt-8 flex w-full max-w-md items-center gap-3 rounded-2xl border border-white/20 bg-white/10 p-4 text-white transition-colors hover:bg-white/20"
+          >
+            <Gift className="h-6 w-6 shrink-0" />
+            <span>
+              <span className="block font-semibold">
+                Want to get {card.registry.ownerFirstName || 'them'} a gift?
+              </span>
+              <span className="block text-sm opacity-80">See {card.registry.title}</span>
+            </span>
+          </Link>
+        )}
+
+        {/* A growth loop: the people who receive a card are the people with occasions of their own. */}
+        {opened && !isCreator && (
+          <Link
+            to={`/registry/new${startOccasion ? `?occasion=${startOccasion}` : ''}`}
+            className="mt-6 text-sm text-white/70 underline underline-offset-4 hover:text-white"
+          >
+            {startOccasion
+              ? `Have a ${occasionLabel(startOccasion)?.toLowerCase()} coming up? Start your own wish list`
+              : 'Start your own wish list'}
+          </Link>
+        )}
 
         {!opened && (
           <motion.p
