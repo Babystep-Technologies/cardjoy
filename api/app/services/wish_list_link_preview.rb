@@ -32,6 +32,11 @@ class WishListLinkPreview
     224.0.0.0/4 240.0.0.0/4 ::/128 64:ff9b::/96 2002::/16 ff00::/8 fec0::/10
   ].map { |cidr| IPAddr.new(cidr) }.freeze
 
+  # What a store's bot wall or error page calls itself. Such a page answers 200 with a title of its own,
+  # so without this the host would be handed "Robot or human?" as their gift's name. Probed against
+  # real stores (#257): Walmart and Amazon both answered this way.
+  BLOCKED_PAGE_TITLE = /\A(?:amazon\.com\.?|robot or human\??|are you a (?:robot|human)\??|access denied|just a moment\.*|attention required!?.*|pardon our interruption.*|403 forbidden|request blocked|verify you are (?:a )?human.*|please verify you are a human)\z/i
+
   Result = Struct.new(:title, :image_url, :price, :store, keyword_init: true)
   FetchedResponse = Struct.new(:redirect, :location, :success, :content_type, :body, keyword_init: true)
 
@@ -165,7 +170,7 @@ class WishListLinkPreview
 
     title = meta_content(doc, "og:title").presence || product[:name].presence ||
       doc.at_css("title")&.text&.strip.presence
-    return nil if title.blank?
+    return nil if title.blank? || title.strip.match?(BLOCKED_PAGE_TITLE)
 
     Result.new(
       title: title,
