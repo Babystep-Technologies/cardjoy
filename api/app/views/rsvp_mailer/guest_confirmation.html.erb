@@ -20,12 +20,7 @@
   </p>
 
   <% if @calendar_links %>
-    <h3>Add to Your Calendar</h3>
-    <p>
-      <a href="<%= @calendar_links.google %>" class="primary-button" style="border-color: #4285f4; color: #4285f4; margin-right: 8px;">Google Calendar</a>
-      <a href="<%= @calendar_links.outlook %>" class="primary-button" style="border-color: #0078d4; color: #0078d4; margin-right: 8px;">Outlook</a>
-      <a href="<%= @calendar_links.yahoo %>" class="primary-button" style="border-color: #720e9e; color: #720e9e;">Yahoo</a>
-    </p>
+    <%= render "rsvp_mailer/calendar_buttons", calendar_links: @calendar_links %>
   <% end %>
 
 <% elsif @rsvp.status == "maybe" %>

@@ -1,6 +1,9 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');
       @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@700&display=swap');
@@ -8,14 +11,29 @@
       body {
         margin: 0;
         padding: 0;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Poppins', -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+        line-height: 1.5;
         background-color: <%= @brand.body_background %>;
         color: <%= @brand.text_color %>;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
       }
 
       h1, h2, h3 {
-        font-family: 'Source Serif 4', serif;
+        font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
         font-weight: 700;
+        line-height: 1.25;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        border: 0;
+      }
+
+      /* Keeps a card from touching the screen edge when the viewport is narrower than the card. */
+      .container {
+        padding: 0 12px;
       }
 
       .logo-wrapper {
@@ -37,6 +55,9 @@
         max-width: 600px;
         margin: 0 auto 40px auto;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        box-sizing: border-box;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
       }
 
       .primary-button {
@@ -48,6 +69,25 @@
         border: 2px solid <%= @brand.accent_color %>;
         text-decoration: none;
         font-weight: 600;
+        text-align: center;
+      }
+
+      /* One option per "add to calendar" service. Inline with room around each so a wrapped row
+         still has even gaps; stacked full-width on phones (see the media query). */
+      .cal-buttons {
+        margin: 12px 0 20px 0;
+      }
+
+      .cal-btn {
+        display: inline-block;
+        margin: 0 10px 12px 0;
+        padding: 10px 20px;
+        border-radius: 6px;
+        border: 2px solid #999;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: center;
       }
 
       a {
@@ -59,22 +99,49 @@
         font-size: 12px;
         color: #999;
         margin-bottom: 24px;
+        padding: 0 16px;
+      }
+
+      @media only screen and (max-width: 480px) {
+        .container {
+          padding: 0 8px;
+        }
+
+        .card {
+          padding: 20px 16px;
+          border-radius: 10px;
+        }
+
+        .primary-button,
+        .cal-btn {
+          display: block;
+          width: 100%;
+          box-sizing: border-box;
+          margin-right: 0;
+        }
+
+        .cal-btn {
+          margin-bottom: 10px;
+          padding: 12px 16px;
+        }
       }
     </style>
   </head>
   <body>
-    <% if @brand.logo_url %>
-      <div class="logo-wrapper">
-        <img src="<%= @brand.logo_url %>" alt="<%= @brand.logo_alt %>" />
+    <div class="container">
+      <% if @brand.logo_url %>
+        <div class="logo-wrapper">
+          <img src="<%= @brand.logo_url %>" alt="<%= @brand.logo_alt %>" />
+        </div>
+      <% end %>
+
+      <div class="card">
+        <%= yield %>
       </div>
-    <% end %>
 
-    <div class="card">
-      <%= yield %>
-    </div>
-
-    <div class="footer">
-      <%= @brand.footer_text %>
+      <div class="footer">
+        <%= @brand.footer_text %>
+      </div>
     </div>
   </body>
 </html>

@@ -14,6 +14,29 @@ class Invitation < ApplicationRecord
   has_one_attached :cover_image
 
   validates :title, presence: true
+
+  # One reminder to the guest list per day, so a host can't use it to spam (#319).
+  REMINDER_INTERVAL = 24.hours
+  REMINDER_AUDIENCES = {
+    "going" => %w[going],
+    "maybe" => %w[maybe],
+    "going_and_maybe" => %w[going maybe]
+  }.freeze
+  REMINDER_NOTE_MAX_LENGTH = 500
+
+  # When the next reminder may go out, or nil if one can go now.
+  def next_reminder_at
+    sent_at = reminder_sent_at
+    return nil if sent_at.nil?
+
+    due = sent_at + REMINDER_INTERVAL
+    due > Time.current ? due : nil
+  end
+
+  def past?(today = Date.current)
+    date = event_date
+    !date.nil? && date < today
+  end
   validates :event_date, presence: true
   validates :event_time, presence: true
   validates :external_id, presence: true, uniqueness: true

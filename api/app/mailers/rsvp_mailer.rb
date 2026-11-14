@@ -57,6 +57,23 @@ class RsvpMailer < ApplicationMailer
     )
   end
 
+  # A host-triggered reminder to a guest who RSVPed going or maybe (#319). Going guests get the
+  # calendar buttons again, since the confirmation they were sent may be buried.
+  def event_reminder(rsvp, note = nil)
+    @rsvp = rsvp
+    @invitation = rsvp.invitation
+    @note = note
+    set_organization_brand(@invitation.owning_organization)
+    @invitation_url = "#{Rails.application.credentials.dig(:frontend_url)}/invitation/#{@invitation.external_id}"
+    @calendar_links = generate_calendar_links(@invitation) if @rsvp.status == "going"
+
+    mail(
+      to: @rsvp.guest_email,
+      subject: "Reminder: #{@invitation.title} on #{@invitation.event_date.strftime('%B %-d')}",
+      **brand_reply_to
+    )
+  end
+
   private
 
   def generate_calendar_links(invitation)
