@@ -4,6 +4,8 @@
 # first built as an invitation's wish list (#95) and is now a product of its own (#243), so it can
 # belong to an invitation or stand alone. Either way `user` is the owner.
 class WishList < ApplicationRecord
+  include AdminListable
+
   OCCASIONS = %w[birthday wedding baby housewarming graduation holiday other].freeze
 
   belongs_to :invitation, optional: true
@@ -187,5 +189,19 @@ class WishList < ApplicationRecord
       self.external_id = SecureRandom.alphanumeric(10).downcase
       break unless self.class.exists?(external_id: external_id)
     end
+  end
+
+  # Admin list (#317): standalone registries only, since an invitation's own wish list is managed
+  # from its invitation. There are no moderation columns, so only the "active" status applies.
+  def self.admin_sorts
+    super.merge("event_date" => "wish_lists.event_date")
+  end
+
+  def self.admin_filters
+    %w[occasion]
+  end
+
+  def self.admin_preloads
+    [ :user, { items: :reservations } ]
   end
 end
