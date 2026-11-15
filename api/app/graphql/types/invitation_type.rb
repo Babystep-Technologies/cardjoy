@@ -30,7 +30,8 @@ module Types
     field :user, Types::UserType, null: false
     # The organization that owns this invitation; null means it is personal.
     field :organization, Types::OrganizationType, null: true
-    field :rsvps, [ Types::RsvpType ], null: false
+    field :rsvps, [ Types::RsvpType ], null: false, description: "Hosts and admins only; empty for everyone else."
+    field :viewer_can_edit, Boolean, null: false
     field :rsvp_counts, Types::RsvpCountsType, null: false
     field :wish_list, Types::WishListType, null: true
     # A link-out to one of the owner's registries; null unless it is shared, so an invitation never
@@ -56,6 +57,18 @@ module Types
 
       viewer = context[:current_user]
       viewer && viewer.id == object.user_id ? list : nil
+    end
+
+    # The guest list holds names and emails, so only the people who run the invitation (its owner,
+    # an admin of the owning organization) and CardJoy admins can read it. Everyone else, including
+    # a guest with the link, gets an empty list.
+    def rsvps
+      host_viewing? || context[:current_admin] ? object.rsvps : []
+    end
+
+    # Lets the web app show the host's view without guessing from user ids.
+    def viewer_can_edit
+      host_viewing?
     end
 
     def host_viewing?
