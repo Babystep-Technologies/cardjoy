@@ -35,7 +35,7 @@ module Queries
 
       cards = day_kind_counts(::Card.where(created_at: range.sql_range))
       invitations = day_counts(::Invitation.where(created_at: range.sql_range))
-      registries = day_counts(::WishList.where(invitation_id: nil, created_at: range.sql_range))
+      registries = day_counts(::WishList.where(created_at: range.sql_range))
       users = day_counts(::User.where(created_at: range.sql_range))
       rsvps = day_counts(::Rsvp.where(created_at: range.sql_range))
       rsvps_by_status = day_status_counts(::Rsvp.where(created_at: range.sql_range))
@@ -84,13 +84,13 @@ module Queries
       raise GraphQL::ExecutionError, e.message
     end
 
-    # Items added to, and claims against, standalone registries only.
+    # Items added to, and claims against, registries.
     def registry_items(range)
-      ::WishListItem.joins(:wish_list).where(wish_lists: { invitation_id: nil }, created_at: range.sql_range)
+      ::WishListItem.joins(:wish_list).where(created_at: range.sql_range)
     end
 
     def registry_reservations(_range)
-      ::WishListReservation.joins(wish_list_item: :wish_list).where(wish_lists: { invitation_id: nil })
+      ::WishListReservation.joins(:wish_list_item)
     end
 
     # Distinct users active per day (the table's unique index means a plain

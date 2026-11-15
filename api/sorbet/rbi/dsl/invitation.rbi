@@ -400,9 +400,6 @@ class Invitation
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_user(*args, &blk); end
 
-    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
-    def build_wish_list(*args, &blk); end
-
     sig { returns(T.nilable(::ActiveStorage::Attachment)) }
     def cover_image_attachment; end
 
@@ -445,12 +442,6 @@ class Invitation
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user!(*args, &blk); end
 
-    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
-    def create_wish_list(*args, &blk); end
-
-    sig { params(args: T.untyped, blk: T.untyped).returns(::WishList) }
-    def create_wish_list!(*args, &blk); end
-
     sig { returns(T.nilable(::Organization)) }
     def organization; end
 
@@ -490,9 +481,6 @@ class Invitation
     sig { returns(T.nilable(::User)) }
     def reload_user; end
 
-    sig { returns(T.nilable(::WishList)) }
-    def reload_wish_list; end
-
     sig { void }
     def reset_cover_image_attachment; end
 
@@ -507,9 +495,6 @@ class Invitation
 
     sig { void }
     def reset_user; end
-
-    sig { void }
-    def reset_wish_list; end
 
     sig { returns(T::Array[T.untyped]) }
     def rsvp_ids; end
@@ -536,12 +521,6 @@ class Invitation
 
     sig { returns(T::Boolean) }
     def user_previously_changed?; end
-
-    sig { returns(T.nilable(::WishList)) }
-    def wish_list; end
-
-    sig { params(value: T.nilable(::WishList)).void }
-    def wish_list=(value); end
   end
 
   module GeneratedAssociationRelationMethods

@@ -80,10 +80,11 @@ CardJoy is a Rails GraphQL API with a React/TypeScript frontend.
 
 A registry is a list of things someone wants, for an occasion, that friends and family can claim.
 It grew out of an invitation's wish list, so the model and GraphQL names are still `WishList*`
-(`upsertWishList`, `WishListType`); the product name is Registry.
+(`upsertWishList`, `WishListType`); the product name is Registry. An invitation no longer owns a
+wish list: it links a registry (below). The migration that folded the old invitation wish lists
+into registries (`FoldInvitationWishListsIntoRegistries`) is one-way.
 
-- **Data.** `wish_lists` belong to a `user` and optionally to an `invitation`; with no invitation
-  it is a *standalone* registry (`standalone?`) with an `occasion`, `event_date` and a public
+- **Data.** `wish_lists` belong to a `user` and have an `occasion`, `event_date` and a public
   `external_id`. `wish_list_items` carry `quantity`, `position` and `priority` ("most wanted").
   A guest's claim is a `wish_list_reservations` row (`purchased_at`, `reminded_at`); the claim's
   `token` is the guest's only credential and is a bearer secret, so treat it like a
@@ -123,7 +124,8 @@ It grew out of an invitation's wish list, so the model and GraphQL names are sti
 - **Occasion reminders.** The reminder email links the contact's registry (`Contact#registry`),
   matched by email to an account with a shared, unarchived standalone registry.
 - **Cards and invitations link out.** `cards.wish_list_id` and `invitations.registry_id` point at one
-  of the owner's registries; the card/invitation page (and the 1-on-1/viewer emails) link to it only
+  of the owner's registries (an invitation's host can pick one or start a new one from the invitation,
+  `/registry/new?forInvitation=`); the card/invitation page (and the 1-on-1/viewer emails) link to it only
   while it is shared, and `RegistryLinkType` hides the title of a passcode-protected one.
 - **Link previews.** `WishListLinkPreview` fetches OpenGraph and schema.org JSON-LD for a pasted
   URL. It treats every URL as attacker-controlled (public-IP check on every hop, the vetted IP is

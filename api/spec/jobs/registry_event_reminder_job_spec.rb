@@ -53,9 +53,4 @@ RSpec.describe RegistryEventReminderJob, type: :job do
     list.reload.update!(event_date: today + 12)
     expect(list.reload.event_reminded_at).to be_nil
   end
-
-  it 'does not touch invitation-owned wish lists' do
-    create(:wish_list, event_date: today + 3)
-    expect(run).to be_empty
-  end
 end

@@ -21,9 +21,9 @@ import CardEdit from '@/pages/Card/Edit';
 import CardEditable from '@/pages/Card/Editable';
 import CardViewable from '@/pages/Card/Viewable';
 import InvitationNew from '@/pages/Invitation/New';
+import InvitationWishListRedirect from '@/pages/Invitation/WishListRedirect';
 import InvitationView from '@/pages/Invitation/View';
 import InvitationEdit from '@/pages/Invitation/Edit';
-import InvitationWishList from '@/pages/Invitation/WishList';
 import Maintenance from '@/pages/Maintenance';
 import Careers from '@/pages/Careers';
 import ForBusiness from '@/pages/ForBusiness';
@@ -248,7 +248,7 @@ const App: React.FC = () => {
           <Route path="/invitation/new" element={<InvitationNew />} />
           <Route path="/invitation/:id" element={<InvitationView />} />
           <Route path="/invitation/:id/edit" element={<InvitationEdit />} />
-          <Route path="/invitation/:id/wishlist" element={<InvitationWishList />} />
+          <Route path="/invitation/:id/wishlist" element={<InvitationWishListRedirect />} />
 
           <Route
             path="/for/valentines-day"

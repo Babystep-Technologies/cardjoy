@@ -12,7 +12,8 @@ module Types
     field :archived, Boolean, null: false, method: :archived?
     # Whether guests need a passcode to open it. The passcode itself is only ever stored as a digest.
     field :passcode_protected, Boolean, null: false, method: :passcode_protected?
-    field :standalone, Boolean, null: false, method: :standalone?
+    # Every registry is its own product now; kept only so a web build from before that still loads.
+    field :standalone, Boolean, null: false, deprecation_reason: "Always true."
     field :title, String, null: false
     field :cover_image_url, String, null: true
     field :intro, String, null: true
@@ -37,6 +38,8 @@ module Types
     field :thank_you_list, [ Types::WishListThankYouType ], null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: false
     field :updated_at, GraphQL::Types::ISO8601DateTime, null: false
+
+    def standalone = true
 
     def insights
       object.insights if object.owned_by?(context[:current_user])

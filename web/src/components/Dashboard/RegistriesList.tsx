@@ -11,7 +11,6 @@ export interface DashboardRegistry {
   title: string;
   occasion?: string | null;
   eventDate?: string | null;
-  standalone: boolean;
   items: { id: string }[];
   insights?: { itemCount: number; coveredCount: number; purchasedCount: number } | null;
 }
@@ -64,7 +63,6 @@ export const RegistriesList: React.FC<RegistriesListProps> = ({ registries, onDe
                       registry.eventDate
                         ? format(parseISO(registry.eventDate), 'MMM d, yyyy')
                         : null,
-                      registry.standalone ? null : 'Invitation wish list',
                     ]
                       .filter(Boolean)
                       .join(' · ') || 'Registry'}

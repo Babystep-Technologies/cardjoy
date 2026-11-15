@@ -61,12 +61,11 @@ RSpec.describe Queries::AdminMetrics, type: :request do
   end
 
   describe "registry metrics" do
-    it "counts standalone registries and what happened on them, ignoring invitation wish lists" do
+    it "counts registries and what happened on them" do
       list = create(:wish_list, :standalone, created_at: 3.days.ago)
       item = create(:wish_list_item, wish_list: list, created_at: 3.days.ago)
       create(:wish_list_reservation, wish_list_item: item, created_at: 2.days.ago, purchased_at: 1.day.ago)
       create(:wish_list_reservation, wish_list_item: item, created_at: 2.days.ago)
-      create(:wish_list, created_at: 3.days.ago) # invitation-owned
       create(:wish_list, :standalone, created_at: 40.days.ago) # outside the window
 
       result = data(window: "THIRTY_DAYS")

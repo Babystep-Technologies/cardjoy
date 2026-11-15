@@ -16,7 +16,6 @@ module Mutations
 
       list = user.wish_lists.find_by(external_id: external_id)
       return failure("Registry not found") unless list
-      return failure("Only a standalone registry can be reset") unless list.standalone?
 
       WishList.transaction do
         WishListReservation.where(wish_list_item_id: list.items.select(:id)).destroy_all

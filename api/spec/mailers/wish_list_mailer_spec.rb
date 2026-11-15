@@ -21,15 +21,6 @@ RSpec.describe WishListMailer, type: :mailer do
       expect(mail.body.encoded).to include("https://cardjoy.test/registry/#{registry.external_id}?claim=#{reservation.token}")
       expect(mail.body.encoded).to include("https://shop.test/pan")
     end
-
-    it "links an invitation's wish list to its own page" do
-      invitation_list = create(:wish_list)
-      booked = create(:wish_list_reservation, wish_list_item: create(:wish_list_item, wish_list: invitation_list))
-
-      body = described_class.claim_confirmation(booked).body.encoded
-
-      expect(body).to include("/invitation/#{invitation_list.invitation.external_id}/wishlist?claim=#{booked.token}")
-    end
   end
 
   describe "#claim_reminder" do

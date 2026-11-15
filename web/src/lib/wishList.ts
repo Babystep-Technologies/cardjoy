@@ -216,7 +216,6 @@ export interface WishList {
   archived?: boolean;
   coverImageUrl?: string | null;
   passcodeProtected?: boolean;
-  standalone?: boolean;
   title: string;
   intro?: string | null;
   visible: boolean;
@@ -431,7 +430,6 @@ export const WISH_LIST_FIELDS = `
   archived
   coverImageUrl
   passcodeProtected
-  standalone
   title
   intro
   visible

@@ -1,14 +1,13 @@
 # typed: true
 
 # A registry: the things someone wants, for an occasion, that friends and family can claim. It was
-# first built as an invitation's wish list (#95) and is now a product of its own (#243), so it can
-# belong to an invitation or stand alone. Either way `user` is the owner.
+# first built as an invitation's wish list (#95) and is now a product of its own (#243). Invitations
+# and cards link to one (`invitations.registry_id`, `cards.wish_list_id`) rather than owning one.
 class WishList < ApplicationRecord
   include AdminListable
 
   OCCASIONS = %w[birthday wedding baby housewarming graduation holiday other].freeze
 
-  belongs_to :invitation, optional: true
   belongs_to :user
   has_many :items, -> { order(:position, :id) }, class_name: "WishListItem", dependent: :destroy
   has_many :contributions, -> { order(:position, :id) }, class_name: "WishListContribution", dependent: :destroy
@@ -36,7 +35,6 @@ class WishList < ApplicationRecord
 
   validate :passcode_long_enough
 
-  before_validation :inherit_owner_from_invitation
   # A new date is a new event, so it earns a fresh reminder.
   before_save :rearm_event_reminder, if: :event_date_changed?
   before_validation :generate_external_id, on: :create
@@ -44,14 +42,14 @@ class WishList < ApplicationRecord
   # Registries whose event is within the lead window, with the owner opted in and not yet reminded.
   # Past events never qualify, so nothing is sent once the event is over.
   def self.due_for_event_reminder(today = Date.current)
-    where(remind_owner: true, event_reminded_at: nil, invitation_id: nil)
+    where(remind_owner: true, event_reminded_at: nil)
       .where(event_date: today..(today + EVENT_REMINDER_LEAD))
   end
 
   # Standalone registries a guest can still claim from: shared, not past their event, and not behind
   # a passcode (nobody is handed a link they can't open).
   scope :open_to_guests, lambda {
-    where(visible: true, invitation_id: nil, passcode_digest: nil)
+    where(visible: true, passcode_digest: nil)
       .where("wish_lists.event_date IS NULL OR wish_lists.event_date >= ?", Date.current)
   }
 
@@ -79,16 +77,9 @@ class WishList < ApplicationRecord
     items.empty? && contributions.empty?
   end
 
-  def standalone?
-    invitation_id.nil?
-  end
-
   # Where a guest opens this list, relative to the frontend root.
   def guest_path
-    linked_invitation = invitation
-    return "/registry/#{external_id}" unless linked_invitation
-
-    "/invitation/#{linked_invitation.external_id}/wishlist"
+    "/registry/#{external_id}"
   end
 
   # Progress totals for the owner's dashboard: how many items are fully claimed and how many claims
@@ -178,10 +169,6 @@ class WishList < ApplicationRecord
     self.event_reminded_at = nil
   end
 
-  def inherit_owner_from_invitation
-    self.user ||= invitation&.user
-  end
-
   def generate_external_id
     return if external_id.present?
 
@@ -191,8 +178,7 @@ class WishList < ApplicationRecord
     end
   end
 
-  # Admin list (#317): standalone registries only, since an invitation's own wish list is managed
-  # from its invitation. There are no moderation columns, so only the "active" status applies.
+  # Admin list (#317). There are no moderation columns, so only the "active" status applies.
   def self.admin_sorts
     super.merge("event_date" => "wish_lists.event_date")
   end

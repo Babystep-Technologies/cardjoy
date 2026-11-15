@@ -19,7 +19,7 @@ module Mutations
       return failure("Invitation not found") unless invitation&.editable_by?(user)
 
       registry = own_registry(registry_external_id)
-      return failure("Registry not found") if registry == false || (registry && !registry.standalone?)
+      return failure("Registry not found") if registry == false
 
       invitation.update!(registry: registry)
       { invitation: invitation.reload, errors: [] }

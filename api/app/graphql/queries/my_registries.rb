@@ -1,8 +1,7 @@
 # typed: true
 
 module Queries
-  # The caller's own registries, newest first, for the dashboard (#245). Includes the ones that
-  # hang off an invitation, so everything the user has asked for is in one list.
+  # The caller's own registries, newest first, for the dashboard (#245).
   class MyRegistries < BaseQuery
     type [ Types::WishListType ], null: false
 

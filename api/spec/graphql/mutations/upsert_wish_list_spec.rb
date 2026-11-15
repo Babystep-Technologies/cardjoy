@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Mutations::UpsertWishList, type: :request do
   let(:user) { create(:user) }
-  let(:invitation) { create(:invitation, user: user) }
+  let!(:registry) { create(:wish_list, user: user, title: "Wish List") }
 
   let(:secret) { Rails.application.credentials.dig(:jwt, :secret) }
   let(:token) { JWT.encode({ user_id: user.id }, secret, 'HS256') }
@@ -11,7 +11,7 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
   let(:query) do
     <<~GRAPHQL
       mutation UpsertWishList(
-        $invitationExternalId: String!
+        $registryExternalId: String
         $title: String
         $intro: String
         $visible: Boolean
@@ -21,7 +21,7 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
       ) {
         upsertWishList(
           input: {
-            invitationExternalId: $invitationExternalId
+            registryExternalId: $registryExternalId
             title: $title
             intro: $intro
             visible: $visible
@@ -54,7 +54,7 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
 
   it "creates a wish list with items and contributions" do
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       title: "Mia's 1st Birthday",
       intro: "No gift required!",
       items: [
@@ -75,18 +75,18 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
     expect(data["wishList"]["contributions"].first["actionUrl"]).to eq("https://venmo.com/u/mia-mom")
     expect(data["wishList"]["contributions"].last["actionUrl"]).to be_nil
 
-    expect(invitation.reload.wish_list.items.count).to eq(2)
+    expect(registry.reload.items.count).to eq(2)
   end
 
   it "replaces items and contributions on a second upsert" do
     upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       items: [ { title: "Old item" } ],
       contributions: [ { kind: "venmo", handle: "@old" } ]
     })
 
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       items: [ { title: "New item" } ],
       contributions: [ { kind: "cashapp", handle: "$new" } ]
     })
@@ -99,9 +99,9 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
   end
 
   it "leaves existing items alone when the argument is omitted" do
-    upsert({ invitationExternalId: invitation.external_id, items: [ { title: "Keep me" } ] })
+    upsert({ registryExternalId: registry.external_id, items: [ { title: "Keep me" } ] })
 
-    data = upsert({ invitationExternalId: invitation.external_id, title: "Renamed" })
+    data = upsert({ registryExternalId: registry.external_id, title: "Renamed" })
 
     expect(data["wishList"]["title"]).to eq("Renamed")
     expect(data["wishList"]["items"].map { |i| i["title"] }).to eq([ "Keep me" ])
@@ -109,14 +109,14 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
 
   it "preserves an item's identity (and its reservations) when the id is round-tripped" do
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       items: [ { title: "Play gym" }, { title: "Books" } ]
     })
     play_gym_id, books_id = data["wishList"]["items"].map { |i| i["id"] }
     create(:wish_list_reservation, wish_list_item: WishListItem.find(play_gym_id))
 
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       items: [
         { id: play_gym_id, title: "Play gym (updated)" },
         { title: "New item" }
@@ -131,20 +131,20 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
 
   it "destroys reservations for an item that's dropped from the list" do
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       items: [ { title: "Play gym" } ]
     })
     item = WishListItem.find(data["wishList"]["items"].first["id"])
     create(:wish_list_reservation, wish_list_item: item)
 
-    upsert({ invitationExternalId: invitation.external_id, items: [ { title: "Replacement" } ] })
+    upsert({ registryExternalId: registry.external_id, items: [ { title: "Replacement" } ] })
 
     expect(WishListReservation.count).to eq(0)
   end
 
   it "rejects an unsupported contribution kind" do
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       contributions: [ { kind: "bitcoin", handle: "abc" } ]
     })
 
@@ -154,7 +154,7 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
 
   it "surfaces validation errors and rolls back" do
     data = upsert({
-      invitationExternalId: invitation.external_id,
+      registryExternalId: registry.external_id,
       items: [ { title: "Fine" }, { title: "" } ]
     })
 
@@ -165,25 +165,25 @@ RSpec.describe Mutations::UpsertWishList, type: :request do
 
   it "is rejected by the controller auth gate when signed out" do
     upsert(
-      { invitationExternalId: invitation.external_id },
+      { registryExternalId: registry.external_id },
       request_headers: { 'Content-Type' => 'application/json' }
     )
 
     # UpsertWishList is not in GraphqlController::PUBLIC_OPERATIONS, so the request never
     # reaches the resolver.
     expect(JSON.parse(response.body)["errors"]).to eq([ "Unauthorized" ])
-    expect(WishList.count).to eq(0)
+    expect(WishList.count).to eq(1) # only the one the spec started with
   end
 
   it "does not let another user edit the wish list" do
     other_token = JWT.encode({ user_id: create(:user).id }, secret, 'HS256')
 
     data = upsert(
-      { invitationExternalId: invitation.external_id, title: "Hijacked" },
+      { registryExternalId: registry.external_id, title: "Hijacked" },
       request_headers: { 'Authorization' => "Bearer #{other_token}", 'Content-Type' => 'application/json' }
     )
 
     expect(data["wishList"]).to be_nil
-    expect(data["errors"]).to eq([ "Invitation not found" ])
+    expect(data["errors"]).to eq([ "Registry not found" ])
   end
 end

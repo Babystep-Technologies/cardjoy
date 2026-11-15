@@ -33,7 +33,7 @@ module Types
     field :rsvps, [ Types::RsvpType ], null: false, description: "Hosts and admins only; empty for everyone else."
     field :viewer_can_edit, Boolean, null: false
     field :rsvp_counts, Types::RsvpCountsType, null: false
-    field :wish_list, Types::WishListType, null: true
+    field :wish_list, Types::WishListType, null: true, deprecation_reason: "Use `registry`."
     # A link-out to one of the owner's registries; null unless it is shared, so an invitation never
     # advertises a registry its owner hasn't published.
     field :registry, Types::RegistryLinkType, null: true
@@ -49,14 +49,10 @@ module Types
       object.next_reminder_at if host_viewing?
     end
 
-    # A hidden wish list stays visible to the host so they can build it before publishing.
+    # An invitation no longer owns a wish list: it links a registry (`registry`). Always null; kept
+    # only so a web build from before that still loads.
     def wish_list
-      list = object.wish_list
-      return nil if list.nil?
-      return list if list.visible
-
-      viewer = context[:current_user]
-      viewer && viewer.id == object.user_id ? list : nil
+      nil
     end
 
     # The guest list holds names and emails, so only the people who run the invitation (its owner,

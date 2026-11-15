@@ -1,22 +1,6 @@
 require "rails_helper"
 
 RSpec.describe WishList, type: :model do
-  it "inherits its owner from the invitation it belongs to" do
-    invitation = create(:invitation)
-
-    list = described_class.create!(invitation: invitation, title: "Gifts")
-
-    expect(list.user).to eq(invitation.user)
-    expect(list).not_to be_standalone
-  end
-
-  it "can stand alone with its own owner" do
-    list = create(:wish_list, :standalone)
-
-    expect(list).to be_standalone
-    expect(list.invitation).to be_nil
-  end
-
   it "needs an owner" do
     expect(described_class.new(title: "x")).not_to be_valid
   end
