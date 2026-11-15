@@ -1,11 +1,9 @@
 FactoryBot.define do
   factory :wish_list do
-    invitation { association :invitation }
-    user { invitation&.user || association(:user) }
+    user
 
+    # Kept for the specs that name it; every registry is standalone now.
     trait :standalone do
-      invitation { nil }
-      user
       occasion { "birthday" }
     end
     title { "Wish List" }

@@ -41,12 +41,6 @@ RSpec.describe "Linking an invitation to a registry", type: :request do
     expect(invitation.reload.registry).to be_nil
   end
 
-  it "refuses an invitation's own wish list as a registry" do
-    own = create(:wish_list, invitation: invitation, user: user)
-
-    expect(link(own.external_id)['errors']).to eq([ 'Registry not found' ])
-  end
-
   it "won't edit an invitation the caller can't edit" do
     stranger = { 'Authorization' => "Bearer #{JWT.encode({ user_id: create(:user).id }, secret, 'HS256')}" }
 

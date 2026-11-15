@@ -4,7 +4,7 @@ RSpec.describe "Linking a card to a registry", type: :request do
   let(:user) { create(:user) }
   let(:other) { create(:user) }
   let(:card) { create(:card, user: user) }
-  let(:registry) { create(:wish_list, user: user, invitation: nil, visible: true) }
+  let(:registry) { create(:wish_list, user: user, visible: true) }
   let(:secret) { Rails.application.credentials.dig(:jwt, :secret) }
   let(:headers) { { 'Authorization' => "Bearer #{JWT.encode({ user_id: user.id }, secret, 'HS256')}" } }
 
@@ -37,7 +37,7 @@ RSpec.describe "Linking a card to a registry", type: :request do
   end
 
   it 'refuses someone else\'s registry' do
-    theirs = create(:wish_list, user: other, invitation: nil, visible: true)
+    theirs = create(:wish_list, user: other, visible: true)
     result = update_card(theirs.external_id)
     expect(result['success']).to be(false)
     expect(card.reload.wish_list).to be_nil

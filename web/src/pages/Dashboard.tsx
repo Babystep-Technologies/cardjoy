@@ -57,7 +57,6 @@ const GET_MY_REGISTRIES = gql`
       title
       occasion
       eventDate
-      standalone
       items {
         id
       }

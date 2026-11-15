@@ -5,7 +5,7 @@
  * asks which registry to add it to; nothing is saved until the owner confirms, since anyone can
  * craft a link to this page. With no details it explains and offers the bookmarklet to install.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { gql, useApolloClient, useQuery } from '@apollo/client';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner';
@@ -37,7 +37,6 @@ const GET_MY_REGISTRIES = gql`
     myRegistries {
       externalId
       title
-      standalone
     }
   }
 `;
@@ -82,8 +81,9 @@ const RegistryAdd: React.FC = () => {
   const captured = parseCapturedItem(params);
 
   const { data } = useQuery(GET_MY_REGISTRIES);
-  const registries: { externalId: string; title: string }[] = (data?.myRegistries ?? []).filter(
-    (r: { standalone: boolean }) => r.standalone
+  const registries: { externalId: string; title: string }[] = useMemo(
+    () => data?.myRegistries ?? [],
+    [data]
   );
 
   const [registryId, setRegistryId] = useState('');

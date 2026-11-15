@@ -156,6 +156,8 @@ const HostView: React.FC<Props> = ({
             <InvitationRegistryLink
               invitationExternalId={externalId}
               registryExternalId={host.registry?.externalId}
+              title={title}
+              eventDate={eventDate}
             />
           </>
         )}

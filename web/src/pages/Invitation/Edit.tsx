@@ -31,9 +31,7 @@ import CoverImageDialog from '../Card/components/CoverImageDialog';
 import { OpeningMessageEditor } from './components/OpeningMessageEditor';
 import RSVPManagement from './components/RSVPManagement';
 import RemindGuests from './components/RemindGuests';
-import WishListEditor from './components/WishListEditor';
 import InvitationRegistryLink from './components/InvitationRegistryLink';
-import { WISH_LIST_FIELDS } from '@/lib/wishList';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
 import { cardTypeById } from '@/config/cardTypes';
 import LoadingScreen from '@/components/Loading';
@@ -109,9 +107,6 @@ const GET_INVITATION = gql`
       registry {
         externalId
         title
-      }
-      wishList {
-        ${WISH_LIST_FIELDS}
       }
     }
   }
@@ -909,17 +904,9 @@ const InvitationEdit: React.FC = () => {
           <InvitationRegistryLink
             invitationExternalId={id}
             registryExternalId={data?.invitation?.registry?.externalId}
+            title={data?.invitation?.title}
+            eventDate={data?.invitation?.eventDate}
           />
-        )}
-
-        {/* Wish List Section */}
-        {id && (
-          <div className="mt-8">
-            <WishListEditor
-              invitationExternalId={id}
-              wishList={data?.invitation?.wishList ?? null}
-            />
-          </div>
         )}
 
         {/* RSVP Management Section */}

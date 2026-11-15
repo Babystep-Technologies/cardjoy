@@ -1,9 +1,9 @@
 /**
  * `/registry/new` and `/registry/:externalId/edit` — create or edit a registry (#245).
  *
- * One page for both: the form is the same, and a registry is saved with the same
- * `upsertWishList` mutation the invitation wish list uses. With no id it creates a standalone
- * registry; with `registryExternalId` it updates the caller's own.
+ * One page for both: the form is the same, saved with `upsertWishList`. With no id it creates a
+ * registry; with `registryExternalId` it updates the caller's own. Opened with `?forInvitation=<id>`
+ * (from an invitation's page) it also links the new registry to that invitation and goes back.
  */
 import React, { useEffect, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
@@ -29,7 +29,8 @@ import {
 import LoadingScreen from '@/components/Loading';
 import ErrorScreen from '@/components/Error';
 import withAuth from '@/lib/with-auth';
-import WishListFields from '@/pages/Invitation/components/WishListFields';
+import WishListFields from '@/components/Registry/WishListFields';
+import { SET_INVITATION_REGISTRY } from '@/pages/Invitation/components/InvitationRegistryLink';
 import {
   emptyWishListDraft,
   applyRegistryTemplate,
@@ -63,7 +64,11 @@ const RegistryEdit: React.FC = () => {
   const [searchParams] = useSearchParams();
   // A link can open a new registry for an occasion already chosen, e.g. from a received card.
   const [draft, setDraft] = useState<WishListDraft>(() => {
-    const blank = { ...emptyWishListDraft(), title: '' };
+    const blank = {
+      ...emptyWishListDraft(),
+      title: !externalId ? (searchParams.get('title') ?? '') : '',
+      eventDate: !externalId ? (searchParams.get('eventDate') ?? '') : '',
+    };
     const preset = searchParams.get('occasion');
     return !externalId && REGISTRY_OCCASIONS.some(o => o.value === preset)
       ? applyRegistryTemplate(blank, preset as string)
@@ -80,6 +85,8 @@ const RegistryEdit: React.FC = () => {
     fetchPolicy: 'network-only',
   });
   const [upsertWishList] = useMutation(UPSERT_WISH_LIST);
+  const [setInvitationRegistry] = useMutation(SET_INVITATION_REGISTRY);
+  const forInvitation = isNew ? searchParams.get('forInvitation') : null;
 
   useEffect(() => {
     if (data?.registry) setDraft(wishListToDraft(data.registry));
@@ -118,7 +125,24 @@ const RegistryEdit: React.FC = () => {
       setClearPasscode(false);
       if (!isNew) refetch();
       const savedId = result?.upsertWishList?.wishList?.externalId;
-      if (isNew && savedId) navigate(`/registry/${savedId}/edit`, { replace: true });
+      if (isNew && savedId && forInvitation) {
+        // Created from an invitation: link it there and go back to the invitation.
+        const { data: link } = await setInvitationRegistry({
+          variables: {
+            input: { invitationExternalId: forInvitation, registryExternalId: savedId },
+          },
+        });
+        const linkErrors: string[] = link?.setInvitationRegistry?.errors ?? [];
+        if (linkErrors.length > 0) {
+          toast.error(`Registry saved, but it couldn't be linked: ${linkErrors.join(', ')}`);
+          navigate(`/registry/${savedId}/edit`, { replace: true });
+        } else {
+          toast.success('Registry linked to your invitation');
+          navigate(`/invitation/${forInvitation}`, { replace: true });
+        }
+      } else if (isNew && savedId) {
+        navigate(`/registry/${savedId}/edit`, { replace: true });
+      }
     } catch (e) {
       console.error('Failed to save registry', e);
       toast.error('Failed to save the registry. Please try again.');
@@ -305,9 +329,7 @@ const RegistryEdit: React.FC = () => {
 
       {!isNew && externalId && <ShareQrCode externalId={externalId} />}
       {!isNew && externalId && <ThankYouList externalId={externalId} />}
-      {!isNew && externalId && data?.registry?.standalone && (
-        <ResetRegistry externalId={externalId} onReset={() => refetch()} />
-      )}
+      {!isNew && externalId && <ResetRegistry externalId={externalId} onReset={() => refetch()} />}
     </div>
   );
 };

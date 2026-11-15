@@ -341,9 +341,6 @@ class WishList
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def build_cover_image_blob(*args, &blk); end
 
-    sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
-    def build_invitation(*args, &blk); end
-
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def build_user(*args, &blk); end
 
@@ -385,29 +382,11 @@ class WishList
     sig { params(args: T.untyped, blk: T.untyped).returns(::ActiveStorage::Blob) }
     def create_cover_image_blob!(*args, &blk); end
 
-    sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
-    def create_invitation(*args, &blk); end
-
-    sig { params(args: T.untyped, blk: T.untyped).returns(::Invitation) }
-    def create_invitation!(*args, &blk); end
-
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user(*args, &blk); end
 
     sig { params(args: T.untyped, blk: T.untyped).returns(::User) }
     def create_user!(*args, &blk); end
-
-    sig { returns(T.nilable(::Invitation)) }
-    def invitation; end
-
-    sig { params(value: T.nilable(::Invitation)).void }
-    def invitation=(value); end
-
-    sig { returns(T::Boolean) }
-    def invitation_changed?; end
-
-    sig { returns(T::Boolean) }
-    def invitation_previously_changed?; end
 
     sig { returns(T::Array[T.untyped]) }
     def item_ids; end
@@ -429,9 +408,6 @@ class WishList
     sig { returns(T.nilable(::ActiveStorage::Blob)) }
     def reload_cover_image_blob; end
 
-    sig { returns(T.nilable(::Invitation)) }
-    def reload_invitation; end
-
     sig { returns(T.nilable(::User)) }
     def reload_user; end
 
@@ -440,9 +416,6 @@ class WishList
 
     sig { void }
     def reset_cover_image_blob; end
-
-    sig { void }
-    def reset_invitation; end
 
     sig { void }
     def reset_user; end
@@ -937,51 +910,6 @@ class WishList
     sig { void }
     def intro_will_change!; end
 
-    sig { returns(T.nilable(::Integer)) }
-    def invitation_id; end
-
-    sig { params(value: T.nilable(::Integer)).returns(T.nilable(::Integer)) }
-    def invitation_id=(value); end
-
-    sig { returns(T::Boolean) }
-    def invitation_id?; end
-
-    sig { returns(T.nilable(::Integer)) }
-    def invitation_id_before_last_save; end
-
-    sig { returns(T.untyped) }
-    def invitation_id_before_type_cast; end
-
-    sig { returns(T::Boolean) }
-    def invitation_id_came_from_user?; end
-
-    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
-    def invitation_id_change; end
-
-    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
-    def invitation_id_change_to_be_saved; end
-
-    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
-    def invitation_id_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
-
-    sig { returns(T.nilable(::Integer)) }
-    def invitation_id_in_database; end
-
-    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
-    def invitation_id_previous_change; end
-
-    sig { params(from: T.nilable(::Integer), to: T.nilable(::Integer)).returns(T::Boolean) }
-    def invitation_id_previously_changed?(from: T.unsafe(nil), to: T.unsafe(nil)); end
-
-    sig { returns(T.nilable(::Integer)) }
-    def invitation_id_previously_was; end
-
-    sig { returns(T.nilable(::Integer)) }
-    def invitation_id_was; end
-
-    sig { void }
-    def invitation_id_will_change!; end
-
     sig { returns(T.nilable(::String)) }
     def occasion; end
 
@@ -1139,9 +1067,6 @@ class WishList
     def restore_intro!; end
 
     sig { void }
-    def restore_invitation_id!; end
-
-    sig { void }
     def restore_occasion!; end
 
     sig { void }
@@ -1209,12 +1134,6 @@ class WishList
 
     sig { returns(T::Boolean) }
     def saved_change_to_intro?; end
-
-    sig { returns(T.nilable([T.nilable(::Integer), T.nilable(::Integer)])) }
-    def saved_change_to_invitation_id; end
-
-    sig { returns(T::Boolean) }
-    def saved_change_to_invitation_id?; end
 
     sig { returns(T.nilable([T.nilable(::String), T.nilable(::String)])) }
     def saved_change_to_occasion; end
@@ -1560,9 +1479,6 @@ class WishList
 
     sig { returns(T::Boolean) }
     def will_save_change_to_intro?; end
-
-    sig { returns(T::Boolean) }
-    def will_save_change_to_invitation_id?; end
 
     sig { returns(T::Boolean) }
     def will_save_change_to_occasion?; end

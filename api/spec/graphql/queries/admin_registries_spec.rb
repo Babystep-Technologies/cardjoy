@@ -41,12 +41,11 @@ RSpec.describe "Admin registries", type: :request do
     expect(exec(token: token_for(user_id: user.id))["errors"].first["message"]).to eq "Not authorized"
   end
 
-  it "lists standalone registries with their counts and leaves out an invitation's own wish list" do
-    registry = create(:wish_list, user: owner, title: "Dana's birthday", occasion: "birthday", invitation_id: nil)
+  it "lists registries with their counts" do
+    registry = create(:wish_list, user: owner, title: "Dana's birthday", occasion: "birthday")
     item = create(:wish_list_item, wish_list: registry, title: "Kettle")
     create(:wish_list_item, wish_list: registry, title: "Mug")
     create(:wish_list_reservation, wish_list_item: item, purchased_at: Time.current)
-    create(:wish_list, user: owner, title: "Party list", invitation: create(:invitation, user: owner))
 
     rows = registries
 
@@ -57,8 +56,8 @@ RSpec.describe "Admin registries", type: :request do
   end
 
   it "searches by title or owner and filters by occasion" do
-    create(:wish_list, user: owner, title: "Kitchen", occasion: "wedding", invitation_id: nil)
-    create(:wish_list, user: create(:user, email: "sam@example.com"), title: "Toys", occasion: "birthday", invitation_id: nil)
+    create(:wish_list, user: owner, title: "Kitchen", occasion: "wedding")
+    create(:wish_list, user: create(:user, email: "sam@example.com"), title: "Toys", occasion: "birthday")
 
     expect(registries("search" => "dana").map { |r| r["title"] }).to eq [ "Kitchen" ]
     expect(registries("occasion" => "birthday").map { |r| r["title"] }).to eq [ "Toys" ]

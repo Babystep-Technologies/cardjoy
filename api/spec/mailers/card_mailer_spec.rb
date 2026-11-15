@@ -37,7 +37,7 @@ RSpec.describe CardMailer, type: :mailer do
     it 'points at the registry only when the card has a shared one' do
       expect(mail.body.encoded).not_to include('registry')
 
-      registry = create(:wish_list, user: card.user, invitation: nil, visible: true)
+      registry = create(:wish_list, user: card.user, visible: true)
       card.update!(wish_list: registry)
       expect(described_class.one_on_one_delivery(email, card).body.encoded)
         .to include("#{frontend_url}/registry/#{registry.external_id}")

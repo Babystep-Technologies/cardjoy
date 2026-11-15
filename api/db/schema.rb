@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -634,7 +634,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.datetime "event_reminded_at"
     t.string "external_id", null: false
     t.text "intro"
-    t.bigint "invitation_id"
     t.string "occasion"
     t.string "passcode_digest"
     t.boolean "remind_owner", default: true, null: false
@@ -645,7 +644,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
     t.bigint "user_id", null: false
     t.boolean "visible", default: true, null: false
     t.index ["external_id"], name: "index_wish_lists_on_external_id", unique: true
-    t.index ["invitation_id"], name: "index_wish_lists_on_invitation_id", unique: true
     t.index ["user_id"], name: "index_wish_lists_on_user_id"
   end
 
@@ -694,6 +692,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_120000) do
   add_foreign_key "wish_list_contributions", "wish_lists"
   add_foreign_key "wish_list_items", "wish_lists"
   add_foreign_key "wish_list_reservations", "wish_list_items"
-  add_foreign_key "wish_lists", "invitations"
   add_foreign_key "wish_lists", "users"
 end

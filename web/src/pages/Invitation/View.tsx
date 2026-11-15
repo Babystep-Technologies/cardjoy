@@ -18,10 +18,8 @@ import RSVPForm from './components/RSVPForm';
 import RSVPGuestEntry from './components/RSVPGuestEntry';
 import OpeningScreen from './components/OpeningScreen';
 import { OpeningMessagePlayer } from './components/OpeningMessagePlayer';
-import WishListCallout from './components/WishListCallout';
 import HostView from './components/HostView';
 import LoadingScreen from '@/components/Loading';
-import { WISH_LIST_FIELDS } from '@/lib/wishList';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import type { OpeningMessageConfig } from '@/types/openingMessage';
@@ -110,9 +108,6 @@ const GET_INVITATION = gql`
         externalId
         title
         ownerFirstName
-      }
-      wishList {
-        ${WISH_LIST_FIELDS}
       }
     }
   }
@@ -624,12 +619,7 @@ const InvitationView: React.FC = () => {
               </div>
             </Card>
 
-            {/* Wish List entry point — sits right above the RSVP call to action */}
-            {invitation.wishList && id && (
-              <WishListCallout invitationId={id} wishList={invitation.wishList} />
-            )}
-
-            {/* A linked registry, when the host points at one instead of (or beside) a wish list */}
+            {/* The host's registry, right above the RSVP call to action */}
             {invitation.registry && (
               <Card className="p-5 border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-purple-50">
                 <h3 className="font-bold text-lg leading-tight">{invitation.registry.title}</h3>
@@ -739,13 +729,16 @@ const InvitationView: React.FC = () => {
                   </div>
                 )}
 
-                {/* Wish list reminder in the post-RSVP confirmation */}
-                {invitation.wishList && id && (
-                  <WishListCallout
-                    invitationId={id}
-                    wishList={invitation.wishList}
-                    variant="onDark"
-                  />
+                {/* The registry again after RSVPing, when the host linked one */}
+                {invitation.registry && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <Link
+                      to={`/registry/${invitation.registry.externalId}`}
+                      className="flex items-center gap-2 text-sm text-white/80 hover:text-white"
+                    >
+                      🎁 See the registry: {invitation.registry.title}
+                    </Link>
+                  </div>
                 )}
 
                 {/* Update Response Button */}

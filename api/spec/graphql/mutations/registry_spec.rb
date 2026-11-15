@@ -1,6 +1,6 @@
 require "rails_helper"
 
-# Standalone registries (#245): the same upsertWishList mutation, with no invitation behind it.
+# Registries (#245): create, update, delete and reset through upsertWishList and friends.
 RSpec.describe "Registry mutations", type: :request do
   let(:user) { create(:user) }
   let(:other) { create(:user) }
@@ -19,11 +19,11 @@ RSpec.describe "Registry mutations", type: :request do
   let(:upsert) do
     <<~GRAPHQL
       mutation Upsert(
-        $invitationExternalId: String, $registryExternalId: String, $title: String,
+        $registryExternalId: String, $title: String,
         $occasion: String, $eventDate: ISO8601Date, $items: [WishListItemInput!]
       ) {
         upsertWishList(input: {
-          invitationExternalId: $invitationExternalId, registryExternalId: $registryExternalId,
+          registryExternalId: $registryExternalId,
           title: $title, occasion: $occasion, eventDate: $eventDate, items: $items
         }) {
           wishList { externalId title occasion eventDate standalone items { title } }
@@ -48,7 +48,6 @@ RSpec.describe "Registry mutations", type: :request do
       expect(data["wishList"]["externalId"]).to match(/\A[a-z0-9]{10}\z/)
 
       list = user.wish_lists.sole
-      expect(list.invitation).to be_nil
       expect(list.items.map(&:title)).to eq([ "Cast-iron pan" ])
     end
 
@@ -79,13 +78,6 @@ RSpec.describe "Registry mutations", type: :request do
       expect(data["wishList"]).to be_nil
       expect(data["errors"].join).to match(/Occasion/)
       expect(WishList.count).to eq(0)
-    end
-
-    it "refuses an invitation and a registry in the same call" do
-      data = run(upsert, { invitationExternalId: "abc", registryExternalId: "def" })
-        .dig("data", "upsertWishList")
-
-      expect(data["errors"]).to eq([ "Pass an invitation or a registry, not both" ])
     end
   end
 
@@ -189,14 +181,6 @@ RSpec.describe "Registry mutations", type: :request do
 
       expect(data["errors"]).to eq([ "Registry not found" ])
       expect(WishListReservation.count).to eq(1)
-    end
-
-    it "refuses an invitation's wish list" do
-      invitation_list = create(:wish_list, user: user)
-
-      data = run(reset, { externalId: invitation_list.external_id }).dig("data", "resetRegistry")
-
-      expect(data["errors"]).to eq([ "Only a standalone registry can be reset" ])
     end
   end
 end

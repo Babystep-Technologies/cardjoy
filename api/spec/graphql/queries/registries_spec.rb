@@ -21,15 +21,14 @@ RSpec.describe "Registry queries", type: :request do
   describe "myRegistries" do
     let(:query) { "{ myRegistries { externalId title standalone } }" }
 
-    it "lists the caller's registries, standalone and invitation-based, newest first" do
+    it "lists the caller's registries, newest first" do
       older = create(:wish_list, :standalone, user: user, title: "Older", created_at: 2.days.ago)
-      newer = create(:wish_list, invitation: create(:invitation, user: user), title: "Newer")
+      newer = create(:wish_list, :standalone, user: user, title: "Newer")
       create(:wish_list, :standalone, user: other, title: "Not mine")
 
       rows = run(query).dig("data", "myRegistries")
 
       expect(rows.map { |r| r["externalId"] }).to eq([ newer.external_id, older.external_id ])
-      expect(rows.map { |r| r["standalone"] }).to eq([ false, true ])
     end
 
     it "requires sign-in" do

@@ -30,7 +30,6 @@ class WishListMailer < ApplicationMailer
     @guest_name = guest_name
     @item_title = item_title
     @wish_list = wish_list
-    set_organization_brand(wish_list.invitation&.owning_organization)
     @list_url = "#{frontend_url}#{wish_list.guest_path}"
 
     mail(
@@ -63,7 +62,6 @@ class WishListMailer < ApplicationMailer
     @reservation = reservation
     @item = reservation.wish_list_item
     @wish_list = @item.wish_list
-    set_organization_brand(@wish_list.invitation&.owning_organization)
     # `claim` carries the bearer token so the link works from any browser, not just the one that made
     # the claim. Treat this email like the token itself: anyone holding it can manage the claim.
     @manage_url = "#{frontend_url}#{@wish_list.guest_path}?claim=#{reservation.token}"

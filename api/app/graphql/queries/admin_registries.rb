@@ -23,7 +23,7 @@ module Queries
       page = [ page.to_i, 1 ].max
 
       # T.unsafe: `paginated` comes from AdminListable's class_methods, which Sorbet can't see on a relation.
-      registries, total = T.unsafe(::WishList.where(invitation_id: nil))
+      registries, total = T.unsafe(::WishList)
         .paginated(page: page, per_page: per_page, **filters)
 
       { registries: registries, total_count: total, current_page: page, per_page: per_page }
