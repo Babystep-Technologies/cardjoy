@@ -19,6 +19,7 @@ import RSVPGuestEntry from './components/RSVPGuestEntry';
 import OpeningScreen from './components/OpeningScreen';
 import { OpeningMessagePlayer } from './components/OpeningMessagePlayer';
 import WishListCallout from './components/WishListCallout';
+import HostView from './components/HostView';
 import LoadingScreen from '@/components/Loading';
 import { WISH_LIST_FIELDS } from '@/lib/wishList';
 import { useAuth } from '@/contexts/AuthContext';
@@ -97,6 +98,7 @@ const GET_INVITATION = gql`
       user {
         id
       }
+      viewerCanEdit
       rsvpCounts {
         going
         maybe
@@ -170,6 +172,8 @@ const InvitationView: React.FC = () => {
   const [isGuestMode, setIsGuestMode] = useState(false);
   const [existingRsvp, setExistingRsvp] = useState<ExistingRsvp | null>(null);
   const [isUpdatingRsvp, setIsUpdatingRsvp] = useState(false);
+  // The host lands on their own management view; this flips them to what a guest sees.
+  const [viewAsGuest, setViewAsGuest] = useState(false);
 
   const { data, loading, error } = useQuery(GET_INVITATION, {
     variables: { externalId: id },
@@ -184,7 +188,7 @@ const InvitationView: React.FC = () => {
   const invitation = data?.invitation;
 
   // Check if current user is the creator of this invitation
-  const isCreator = user?.user_id && invitation?.user?.id && user.user_id === invitation.user.id;
+  const isCreator = Boolean(invitation?.viewerCanEdit);
 
   const [createRsvp] = useMutation(CREATE_RSVP, {
     refetchQueries: [{ query: GET_INVITATION, variables: { externalId: id } }],
@@ -306,6 +310,19 @@ const InvitationView: React.FC = () => {
 
   const openingConfig = getOpeningMessageConfig();
 
+  if (isCreator && !viewAsGuest) {
+    return (
+      <HostView
+        externalId={invitation.externalId}
+        title={invitation.title}
+        eventDate={invitation.eventDate}
+        eventTime={invitation.eventTime}
+        location={invitation.location}
+        onViewAsGuest={() => setViewAsGuest(true)}
+      />
+    );
+  }
+
   // Show opening screen if not yet opened (skip for creators)
   if (!isOpened && !isCreator) {
     // Use new OpeningMessagePlayer if config exists
@@ -422,7 +439,15 @@ const InvitationView: React.FC = () => {
               <span className="font-medium">Dashboard</span>
             </Link>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">Viewing as creator</span>
+              <span className="hidden text-sm text-gray-500 sm:inline">Viewing as guest</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setViewAsGuest(false)}
+              >
+                Host view
+              </Button>
               <Link to={`/invitation/${id}/edit`}>
                 <Button variant="outline" size="sm" className="gap-2">
                   <Settings className="w-4 h-4" />
