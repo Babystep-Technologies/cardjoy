@@ -77,7 +77,7 @@ class SlackWebhooksController < ApplicationController
     unless installation
       render json: {
         response_type: "ephemeral",
-        text: "CardJoy is not installed in this workspace. Please ask a workspace admin to install it."
+        text: "Felicito is not installed in this workspace. Please ask a workspace admin to install it."
       } and return
     end
 
@@ -94,7 +94,7 @@ class SlackWebhooksController < ApplicationController
 
       # No email on the Slack profile (mainly Slack Connect / external guests):
       # we no longer synthesize a shadow account. Prompt the user to connect a
-      # real CardJoy account and stop here — the modal opens once they're
+      # real Felicito account and stop here — the modal opens once they're
       # connected and re-run /cardjoy. See issue #81.
       unless user
         render json: {
@@ -128,7 +128,7 @@ class SlackWebhooksController < ApplicationController
 
     connection = SlackUserConnection.find_by(slack_user_id: slack_user_id, slack_team_id: slack_team_id)
     unless connection
-      render json: { response_action: "errors", errors: { recipient_block: "Your Cardjoy account is not connected." } } and return
+      render json: { response_action: "errors", errors: { recipient_block: "Your Felicito account is not connected." } } and return
     end
 
     installation = SlackInstallation.find_by(team_id: slack_team_id)
@@ -173,7 +173,7 @@ class SlackWebhooksController < ApplicationController
 
     render json: {
       response_action: "errors",
-      errors: { recipient_block: "You're out of CardJoy credits. Check the message from CardJoy in Slack to buy more, then try again." }
+      errors: { recipient_block: "You're out of Felicito credits. Check the message from Felicito in Slack to buy more, then try again." }
     }
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("[SlackWebhook] Card creation failed: #{e.message}")
@@ -347,11 +347,11 @@ class SlackWebhooksController < ApplicationController
 
   # Message shown when a Slack user has no profile email and can't be
   # auto-provisioned. Links to the connect flow with a short-lived signed state
-  # token that ConnectSlackAccount decodes to link their real CardJoy account.
+  # token that ConnectSlackAccount decodes to link their real Felicito account.
   def connect_prompt_text(slack_user_id, slack_team_id)
     connect_url = "#{frontend_url}/connect-slack?state=#{connect_state_token(slack_user_id, slack_team_id)}"
-    "Before you can create a card, connect your CardJoy account: " \
-      "<#{connect_url}|Connect CardJoy>. Once connected, run `/cardjoy` again."
+    "Before you can create a card, connect your Felicito account: " \
+      "<#{connect_url}|Connect Felicito>. Once connected, run `/cardjoy` again."
   end
 
   # Follow-up message shown when a card creation is blocked for insufficient
@@ -364,7 +364,7 @@ class SlackWebhooksController < ApplicationController
 
     buy_credits_url =
       "#{frontend_url}/buy_credits?reason=insufficient_balance&token=#{generate_auth_token(user)}"
-    text = "You're out of CardJoy credits, so that card wasn't created. " \
+    text = "You're out of Felicito credits, so that card wasn't created. " \
            "Buy more credits and run `/cardjoy` again."
 
     post_response_url(

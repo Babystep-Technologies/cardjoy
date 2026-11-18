@@ -1,7 +1,7 @@
 # Development guide: how to build a feature
 
 This is the shared reference for **humans, Claude skills, and the GitHub Action**. It shows the
-conventions CardJoy follows so a change fits the codebase and passes CI. For the big-picture map, see
+conventions Felicito follows so a change fits the codebase and passes CI. For the big-picture map, see
 [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 Everything runs in Docker. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup; the short version:
@@ -13,7 +13,7 @@ make dev     # start api :3000, web :3001
 
 ### Secrets in local development
 
-You do **not** need any secret to run CardJoy locally. `config/credentials/development.key` is
+You do **not** need any secret to run Felicito locally. `config/credentials/development.key` is
 gitignored and never committed, so on a fresh clone `Rails.application.credentials` decrypts to an
 empty hash — that is expected.
 

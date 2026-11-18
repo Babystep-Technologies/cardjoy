@@ -16,7 +16,7 @@ RSpec.describe OrganizationMailer, type: :mailer do
 
     it "goes to the invited address and names the inviter and organization" do
       expect(mail.to).to eq([ "invitee@example.com" ])
-      expect(mail.subject).to eq("Dana Host invited you to join Acme Corp on CardJoy")
+      expect(mail.subject).to eq("Dana Host invited you to join Acme Corp on Felicito")
     end
 
     it "links to the join page with the invitation token" do

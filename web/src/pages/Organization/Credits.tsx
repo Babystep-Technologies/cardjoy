@@ -150,7 +150,7 @@ const describeEntry = (entry: LedgerEntry): string => {
     case 'chargeback':
       return 'Reversed after a chargeback';
     case 'admin_grant':
-      return 'Granted by CardJoy';
+      return 'Granted by Felicito';
     default:
       return entry.reason ? entry.reason.replace(/_/g, ' ') : 'Adjustment';
   }

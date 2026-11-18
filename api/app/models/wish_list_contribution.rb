@@ -3,7 +3,7 @@
 # A cash-gift destination on a wish list.
 #
 # COMPLIANCE: these records only ever store a handle or URL pointing at the *host's own* payment
-# account. CardJoy links out to the payment app and never holds, moves, splits or refunds funds,
+# account. Felicito links out to the payment app and never holds, moves, splits or refunds funds,
 # which is what keeps it out of money-transmitter and PCI scope. Do not add in-app processing here
 # without legal review — see issue #95.
 class WishListContribution < ApplicationRecord

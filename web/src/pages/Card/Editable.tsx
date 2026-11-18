@@ -205,7 +205,7 @@ const CardEditable: React.FC = () => {
 
   useEffect(() => {
     if (!cardTitle) return;
-    document.title = `${cardTitle} | CardJoy`;
+    document.title = `${cardTitle} | Felicito`;
   }, [cardTitle]);
 
   if (loading) return <LoadingScreen />;

@@ -2,7 +2,7 @@
 
 <p>
   <strong><%= @inviter.name %></strong> invited you to join
-  <strong><%= @organization.name %></strong> on CardJoy as
+  <strong><%= @organization.name %></strong> on Felicito as
   <%= @invitation.role == OrganizationMembership::ADMIN ? "an admin" : "a member" %>.
 </p>
 
@@ -18,7 +18,7 @@
 
 <p style="font-size: 13px;">
   This invitation expires on <strong><%= @invitation.expires_at.strftime("%B %-d, %Y") %></strong>.
-  You'll be asked to sign in or create a CardJoy account with this email address first.
+  You'll be asked to sign in or create a Felicito account with this email address first.
 </p>
 
 <hr>

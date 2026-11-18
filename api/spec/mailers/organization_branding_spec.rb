@@ -13,7 +13,7 @@ RSpec.describe 'organization branding', type: :mailer do
            name: 'Acme Corp',
            created_by: owner,
            accent_color: '#ff0055',
-           email_footer_text: '© 2026 Acme Corp — sent with CardJoy',
+           email_footer_text: '© 2026 Acme Corp — sent with Felicito',
            email_reply_to: 'people@acme.example')
   end
 
@@ -45,7 +45,7 @@ RSpec.describe 'organization branding', type: :mailer do
 
     before { attach_logo(organization) }
 
-    it "renders the organization's logo rather than CardJoy's" do
+    it "renders the organization's logo rather than Felicito's" do
       body = mail.body.decoded
 
       expect(body).to include(organization.logo_url)
@@ -53,7 +53,7 @@ RSpec.describe 'organization branding', type: :mailer do
       expect(body).not_to include(cardjoy_logo_url)
     end
 
-    it "renders the organization's accent color everywhere the CardJoy accent used to be" do
+    it "renders the organization's accent color everywhere the Felicito accent used to be" do
       body = mail.body.decoded
 
       expect(body).to include('color: #ff0055;')
@@ -62,11 +62,11 @@ RSpec.describe 'organization branding', type: :mailer do
     end
 
     it "renders the organization's footer text" do
-      expect(mail.body.decoded).to include('© 2026 Acme Corp — sent with CardJoy')
+      expect(mail.body.decoded).to include('© 2026 Acme Corp — sent with Felicito')
       expect(mail.body.decoded).not_to include('BabyStep Technologies')
     end
 
-    it "replies to the organization but still sends from CardJoy" do
+    it "replies to the organization but still sends from Felicito" do
       expect(mail.reply_to).to eq([ 'people@acme.example' ])
       expect(mail.from).to eq([ 'team.cardjoy@gmail.com' ])
     end
@@ -86,11 +86,11 @@ RSpec.describe 'organization branding', type: :mailer do
 
     subject(:mail) { CardMailer.collaborator_invite('invitee@example.com', card) }
 
-    it 'falls back to every CardJoy default, including the logo' do
+    it 'falls back to every Felicito default, including the logo' do
       body = mail.body.decoded
 
       expect(body).to include(cardjoy_logo_url)
-      expect(body).to include('alt="CardJoy Logo"')
+      expect(body).to include('alt="Felicito Logo"')
       expect(body).to include(MailerBrand::ACCENT_COLOR)
       expect(body).to include('BabyStep Technologies, Inc. All rights reserved.')
     end
@@ -105,7 +105,7 @@ RSpec.describe 'organization branding', type: :mailer do
   describe 'an archived organization' do
     let(:card) { create(:card, user: owner, organization: organization) }
 
-    it 'falls back to CardJoy branding' do
+    it 'falls back to Felicito branding' do
       attach_logo(organization)
       card
       organization.archive!
@@ -127,8 +127,8 @@ RSpec.describe 'organization branding', type: :mailer do
       user
     end
 
-    # Account mail is about the CardJoy account itself, not about anything the
-    # organization owns, so it must stay CardJoy-branded even for a user whose
+    # Account mail is about the Felicito account itself, not about anything the
+    # organization owns, so it must stay Felicito-branded even for a user whose
     # active organization is fully branded.
     it 'is never organization-branded, even for a member of a branded organization' do
       mail = UserMailer.confirmation_code(user: member)
@@ -149,7 +149,7 @@ RSpec.describe 'organization branding', type: :mailer do
     it 'is branded by the inviting organization' do
       body = OrganizationMailer.invitation(invitation).body.decoded
 
-      expect(body).to include('© 2026 Acme Corp — sent with CardJoy')
+      expect(body).to include('© 2026 Acme Corp — sent with Felicito')
     end
   end
 end

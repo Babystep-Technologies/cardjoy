@@ -3,7 +3,7 @@
 
 # Picks a "curated design" for an occasion reminder.
 #
-# Design decision (issue #28): CardJoy's Style/Tag data models a card's colours
+# Design decision (issue #28): Felicito's Style/Tag data models a card's colours
 # and effects, not occasion-specific artwork — there are no seeded "cover"
 # styles and the `style_tags` join is empty in every environment, so mapping
 # `Occasion#kind` onto style tags would resolve to nothing. Instead this is a

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Github } from 'lucide-react';
 import { GITHUB_REPO_URL } from '@/lib/constants';
+import Wordmark from '@/components/Wordmark';
 
 const Footer: React.FC = () => {
   const year = new Date().getFullYear();
@@ -11,12 +12,9 @@ const Footer: React.FC = () => {
         {/* Column 1: Logo + Rights */}
         <div className="space-y-4">
           <Link to="/" className="inline-block">
-            <img
-              src="/font-logo.svg"
-              alt="CardJoy Logo"
+            <Wordmark
               width={140}
-              height={30}
-              className="grayscale opacity-70"
+              className="h-auto grayscale opacity-70 transition hover:grayscale-0 hover:opacity-100"
             />
           </Link>
           <p className="text-sm text-gray-500 leading-relaxed">

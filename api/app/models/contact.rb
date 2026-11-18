@@ -1,6 +1,6 @@
 # typed: true
 
-# A person a user cares about, stored in their occasion book so CardJoy can
+# A person a user cares about, stored in their occasion book so Felicito can
 # proactively remind them of the person's occasions (birthdays, work
 # anniversaries…). Always user-scoped.
 class Contact < ApplicationRecord
@@ -64,7 +64,7 @@ class Contact < ApplicationRecord
     REQUIRED_ADDRESS_FIELDS.all? { |field| public_send(field).present? }
   end
 
-  # The registry this person has shared, found by matching their email to a CardJoy account (#250).
+  # The registry this person has shared, found by matching their email to a Felicito account (#250).
   # A hidden or already-archived registry never matches. Prefers one for the given occasion kind
   # ("Birthday" finds a birthday registry), then the soonest event, so a reminder points at the
   # registry that is actually about to matter.
@@ -87,7 +87,7 @@ class Contact < ApplicationRecord
     ADDRESS_FIELDS.any? { |field| public_send(field).present? }
   end
 
-  # Accept what a human (or a non-CardJoy client) might send — "(415) 555-0123",
+  # Accept what a human (or a non-Felicito client) might send — "(415) 555-0123",
   # "+1 415-555-0123" — and reduce it to E.164 so validation and storage stay canonical.
   # Anything still malformed after this falls through to the format validation.
   def normalize_phone

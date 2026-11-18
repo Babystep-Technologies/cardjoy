@@ -1,7 +1,7 @@
 # Registry: landscape, positioning & MVP cut-line (#255)
 
 Research for #255, done 2026-11-13. It answers: what is table stakes for gift registries and wish
-lists, where do existing products fall short, how do they make money, and what should CardJoy's
+lists, where do existing products fall short, how do they make money, and what should Felicito's
 Registry be and launch for.
 
 **How much to trust this.** Desk research from web search, not hands-on use of each product. Many
@@ -13,7 +13,7 @@ figures change often; re-check a vendor's own terms before quoting a number. Sev
 ## Recommendation in one page
 
 1. **Launch for the birthday and holiday wish list, not the wedding or baby registry.** It is
-   lightweight, recurs yearly, and sits next to what CardJoy already does best (birthday cards and
+   lightweight, recurs yearly, and sits next to what Felicito already does best (birthday cards and
    reminders). Wedding and baby registries are won on cash funds, group gifting, and retailer
    completion discounts, which we have chosen not to build.
 2. **Position on three things the big registries can't say:** no fees and no commissions to
@@ -59,7 +59,7 @@ All **[weak]**: forum posts and app-review summaries, not studies.
 - **Fees and lock-in:** cash fund fees that surprise couples; discounts that apply only to the
   registry's own store.
 
-What CardJoy already does about these: claims are a promise with a reminder and release (so stale
+What Felicito already does about these: claims are a promise with a reminder and release (so stale
 claims clear), prices carry a "may have changed" note and refresh in the background, surprise mode
 and a private ship-to address are built in, any store works, and there are no fees.
 
@@ -72,7 +72,7 @@ returns or duplicates after the fact, or help the owner thank people.
 and no accounts for the people buying. Nobody spoils the surprise, and your address stays yours.*
 
 **Launch occasion: birthday and holiday.** Reasons: it is recurring (a yearly reset already ships),
-lightweight (no cash funds needed), and CardJoy's strongest card occasion is birthdays, with
+lightweight (no cash funds needed), and Felicito's strongest card occasion is birthdays, with
 reminders already wired to registries. Baby and wedding registries are a harder fight against
 products with retail stores, completion discounts, and cash funds, so treat them as a later,
 opt-in expansion, not the launch story.
@@ -131,6 +131,6 @@ card gift ideas.
 - Hands-on use of each product, including whether guests need accounts (several answers above are
   "not confirmed").
 - The Knot, Target and Walmart registries were not looked at individually.
-- Real usage data for CardJoy: which occasions owners pick, claim rates, how many cards link a
+- Real usage data for Felicito: which occasions owners pick, claim rates, how many cards link a
   registry. These should decide the launch focus more than any competitor survey; the
   recommendation above is a prior, not a result.

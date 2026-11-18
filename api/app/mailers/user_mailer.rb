@@ -3,7 +3,7 @@
 class UserMailer < ApplicationMailer
   def confirmation_code(user:)
     @user = user
-    mail(to: user.email, subject: "Your CardJoy Confirmation Code")
+    mail(to: user.email, subject: "Your Felicito Confirmation Code")
   end
 
   def purchase_confirmation_email(user, amount)
@@ -16,6 +16,6 @@ class UserMailer < ApplicationMailer
     @user = user
     @promo_code = promo_code
     @redeem_url = "#{Rails.application.credentials.dig(:frontend_url)}/redeem?code=#{promo_code.code}"
-    mail(to: user.email, subject: "You've received CardJoy credits 🎁")
+    mail(to: user.email, subject: "You've received Felicito credits 🎁")
   end
 end

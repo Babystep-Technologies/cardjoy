@@ -137,7 +137,7 @@ RSpec.describe 'Previews', type: :request do
     it 'names the site and describes the image' do
       get "/p/card/#{card.external_id}/viewable"
 
-      expect(response.body).to include('<meta property="og:site_name" content="CardJoy" />')
+      expect(response.body).to include('<meta property="og:site_name" content="Felicito" />')
       expect(response.body).to include('og:image:alt')
     end
 

@@ -440,7 +440,7 @@ const WishListFields: React.FC<Props> = ({
 
         <p className="text-sm text-gray-500 flex items-start gap-2">
           <Info className="w-4 h-4 mt-0.5 shrink-0" />
-          Guests pay you directly in your own app. CardJoy never holds or handles the money.
+          Guests pay you directly in your own app. Felicito never holds or handles the money.
         </p>
 
         {value.contributions.map((contribution, index) => {

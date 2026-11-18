@@ -117,7 +117,7 @@ const RegistryView: React.FC = () => {
             The link may be mistyped, or the owner hasn&apos;t published it yet.
           </p>
           <Button asChild variant="outline" className="border-2">
-            <Link to="/">Go to CardJoy</Link>
+            <Link to="/">Go to Felicito</Link>
           </Button>
         </div>
       </div>

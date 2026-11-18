@@ -165,7 +165,7 @@ module Mutations
       <<~ICS
         BEGIN:VCALENDAR
         VERSION:2.0
-        PRODID:-//CardJoy//Event//EN
+        PRODID:-//Felicito//Event//EN
         BEGIN:VEVENT
         UID:#{uid}
         DTSTAMP:#{dtstamp}

@@ -23,7 +23,7 @@ RSpec.describe OccasionReminderMailer, type: :mailer do
       expect(mail.subject).to include("Birthday")
     end
 
-    describe "when the contact has a registry on CardJoy" do
+    describe "when the contact has a registry on Felicito" do
       let(:contact) { create(:contact, user:, name: "Jordan", email: "Jordan@Example.com") }
       let(:friend) { create(:user, email: "jordan@example.com") }
 

@@ -21,8 +21,8 @@ export default defineConfig({
       workbox: { maximumFileSizeToCacheInBytes: 4 * 1024 * 1024 },
       includeAssets: ['favicon.ico', 'icons/*'],
       manifest: {
-        name: 'CardJoy',
-        short_name: 'CardJoy',
+        name: 'Felicito',
+        short_name: 'Felicito',
         start_url: '/dashboard',
         display: 'standalone',
         background_color: '#ffffff',

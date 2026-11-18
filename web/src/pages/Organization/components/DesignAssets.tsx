@@ -7,7 +7,7 @@ import { validateImageFile } from '@/lib/image-upload';
 
 /**
  * The organization's own cover artwork (#124): what its members see in the cover picker on top of
- * CardJoy's curated gallery. Admins add and retire it here; members see the grid read-only.
+ * Felicito's curated gallery. Admins add and retire it here; members see the grid read-only.
  */
 
 const ORGANIZATION_ASSETS = gql`

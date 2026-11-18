@@ -283,7 +283,7 @@ RSpec.describe User, type: :model do
   end
 
   # The sender's own address on a physical post card (#233) — mandatory before
-  # sending, with no CardJoy-wide fallback. Mirrors Contact's address handling.
+  # sending, with no Felicito-wide fallback. Mirrors Contact's address handling.
   describe "return address" do
     it "has no return address by default, and is not return_address_complete?" do
       user = create(:user)

@@ -11,7 +11,7 @@ import { useOrganization } from '@/contexts/OrganizationContext';
 /**
  * The join-by-link landing page: `/organizations/join?token=…`.
  *
- * Deliberately **not** wrapped in `withAuth`. The person holding this link may not have a CardJoy
+ * Deliberately **not** wrapped in `withAuth`. The person holding this link may not have a Felicito
  * account at all, and bouncing them to sign-in before they know who invited them or to what is how
  * an invitation gets ignored. `organizationInvitationPreview` is on the API's public allowlist so
  * the page can introduce itself while signed out; accepting still requires authentication.
@@ -242,7 +242,7 @@ const OrganizationJoin: React.FC = () => {
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-black">Join {organizationName}</h1>
         <p className="text-gray-600">
-          {invitedByName} invited you to join {organizationName} on CardJoy — sharing its credits,
+          {invitedByName} invited you to join {organizationName} on Felicito — sharing its credits,
           cards, and branding with the rest of the team.
         </p>
       </div>

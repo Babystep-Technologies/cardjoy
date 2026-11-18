@@ -56,7 +56,7 @@ module Types
     end
 
     # The guest list holds names and emails, so only the people who run the invitation (its owner,
-    # an admin of the owning organization) and CardJoy admins can read it. Everyone else, including
+    # an admin of the owning organization) and Felicito admins can read it. Everyone else, including
     # a guest with the link, gets an empty list.
     def rsvps
       host_viewing? || context[:current_admin] ? object.rsvps : []

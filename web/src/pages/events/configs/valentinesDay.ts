@@ -23,7 +23,7 @@ export const valentinesDayConfig: EventLandingConfig = {
       icon: Users,
       title: 'Share with Anyone',
       description:
-        "Send via link—no signup required. Everyone can contribute, even if they've never used CardJoy.",
+        "Send via link—no signup required. Everyone can contribute, even if they've never used Felicito.",
     },
     {
       icon: Sparkles,

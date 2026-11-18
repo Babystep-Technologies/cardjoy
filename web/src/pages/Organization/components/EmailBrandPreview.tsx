@@ -40,12 +40,12 @@ const EmailBrandPreview: React.FC<EmailBrandPreviewProps> = ({
   footerText,
   replyTo,
 }) => {
-  // Each value falls back the way MailerBrand does, so a blank field previews the CardJoy default
+  // Each value falls back the way MailerBrand does, so a blank field previews the Felicito default
   // rather than an empty space. An invalid accent color is left to the server to reject; previewing
   // it as typed is what tells the admin the value isn't a color.
   const brandedLogo = logoUrl?.trim() ? logoUrl.trim() : null;
   const resolvedLogo = brandedLogo ?? CARDJOY_LOGO_URL;
-  const resolvedLogoAlt = brandedLogo ? organizationName : 'CardJoy Logo';
+  const resolvedLogoAlt = brandedLogo ? organizationName : 'Felicito Logo';
   const resolvedAccent = accentColor.trim() || CARDJOY_ACCENT_COLOR;
   const resolvedFooter = footerText.trim() || cardjoyFooterText();
   const resolvedReplyTo = replyTo.trim();
@@ -91,9 +91,9 @@ const EmailBrandPreview: React.FC<EmailBrandPreviewProps> = ({
             Replies go to <span className="font-medium text-gray-700">{resolvedReplyTo}</span>.
           </>
         ) : (
-          <>Replies go to CardJoy. Set a reply-to address to route them to your team instead.</>
+          <>Replies go to Felicito. Set a reply-to address to route them to your team instead.</>
         )}{' '}
-        Email is always sent from CardJoy's own address, so your domain's deliverability is
+        Email is always sent from Felicito's own address, so your domain's deliverability is
         untouched.
       </p>
     </div>

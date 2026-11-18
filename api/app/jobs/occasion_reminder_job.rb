@@ -1,7 +1,7 @@
 # typed: true
 # frozen_string_literal: true
 
-# Daily cron job (see config/initializers/good_job.rb) that drives CardJoy's
+# Daily cron job (see config/initializers/good_job.rb) that drives Felicito's
 # proactive retention loop (issue #28): it finds occasion-book occasions whose
 # next occurrence is within the reminder lead window and emails each contact's
 # owner a reminder with a curated design suggestion and a deep link into the

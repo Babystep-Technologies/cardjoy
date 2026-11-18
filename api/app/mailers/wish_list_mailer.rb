@@ -1,7 +1,7 @@
 # typed: false
 
 # Mail to the guests of a registry or wish list about the things they claimed (#248). Branded by
-# whoever owns the list: the organization for an organization's invitation, CardJoy otherwise.
+# whoever owns the list: the organization for an organization's invitation, Felicito otherwise.
 class WishListMailer < ApplicationMailer
   def claim_confirmation(reservation)
     prepare_claim(reservation)

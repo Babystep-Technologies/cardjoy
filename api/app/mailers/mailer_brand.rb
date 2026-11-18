@@ -3,7 +3,7 @@
 # The visual identity applied to one outgoing email (#123).
 #
 # Wraps an optional Organization and answers every question the mailer layout
-# asks. Each reader falls back to CardJoy's own value, so an unbranded
+# asks. Each reader falls back to Felicito's own value, so an unbranded
 # organization — and a personal send, which has no organization at all — renders
 # exactly what shipped before organizations existed. That property is pinned by
 # spec/mailers/mailer_layout_spec.rb against a recorded fixture; treat a diff
@@ -18,7 +18,7 @@ class MailerBrand
   ACCENT_COLOR = "#433c69"
   BODY_BACKGROUND = "#fefaf9"
   TEXT_COLOR = "#573b6f"
-  LOGO_ALT = "CardJoy Logo"
+  LOGO_ALT = "Felicito Logo"
 
   sig { params(organization: T.nilable(Organization)).void }
   def initialize(organization: nil)
@@ -61,7 +61,7 @@ class MailerBrand
   end
 
   # The address a recipient's reply goes to. nil leaves the header off entirely,
-  # which is the CardJoy default. `From` is never changed: we don't control a
+  # which is the Felicito default. `From` is never changed: we don't control a
   # customer's SPF/DKIM records, so sending as their domain would wreck
   # deliverability. See ApplicationMailer#brand_reply_to.
   sig { returns(T.nilable(String)) }

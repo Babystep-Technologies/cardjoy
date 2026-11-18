@@ -596,7 +596,7 @@ export const GuestWishList: React.FC<GuestWishListProps> = ({
             ))}
             <p className="text-xs text-gray-500 flex items-start gap-2">
               <Info className="w-4 h-4 mt-0.5 shrink-0" />
-              Payments happen in the host's own payment app. CardJoy never holds or handles your
+              Payments happen in the host's own payment app. Felicito never holds or handles your
               money, and takes no fee.
             </p>
           </section>

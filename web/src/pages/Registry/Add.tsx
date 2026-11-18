@@ -1,5 +1,5 @@
 /**
- * `/registry/add` — the landing page for the "Add to CardJoy registry" bookmarklet (#298).
+ * `/registry/add` — the landing page for the "Add to Felicito registry" bookmarklet (#298).
  *
  * With product details in the query string (from the bookmarklet) it shows an editable item and
  * asks which registry to add it to; nothing is saved until the owner confirms, since anyone can
@@ -69,7 +69,7 @@ const BookmarkletLink: React.FC = () => {
       className="inline-flex cursor-grab items-center gap-2 rounded-md border-2 border-dashed border-pink-400 bg-pink-50 px-4 py-2 font-semibold text-pink-700"
     >
       <Bookmark className="h-4 w-4" />
-      Add to CardJoy
+      Add to Felicito
     </a>
   );
 };
@@ -246,7 +246,7 @@ const RegistryAdd: React.FC = () => {
             </div>
             <p className="text-xs text-gray-500">
               A few sites block bookmarklets with their security settings; paste the link into your
-              registry instead. Nothing is sent to CardJoy until you press Add item.
+              registry instead. Nothing is sent to Felicito until you press Add item.
             </p>
           </CardContent>
         </Card>

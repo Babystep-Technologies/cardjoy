@@ -13,7 +13,7 @@ export interface ContributionKindMeta {
 }
 
 /**
- * Cash gifts are pass-through only: CardJoy links out to the host's own payment account and never
+ * Cash gifts are pass-through only: Felicito links out to the host's own payment account and never
  * holds or moves funds. Keep this list in sync with WishListContribution::KINDS in the API.
  */
 export const CONTRIBUTION_KINDS: ContributionKindMeta[] = [

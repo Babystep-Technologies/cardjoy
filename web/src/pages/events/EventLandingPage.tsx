@@ -11,7 +11,7 @@ interface EventLandingPageProps {
 export const EventLandingPage: React.FC<EventLandingPageProps> = ({ config }) => {
   useEffect(() => {
     // Set page title
-    document.title = `${config.hero.headline} - CardJoy`;
+    document.title = `${config.hero.headline} - Felicito`;
 
     // Set meta description
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -39,7 +39,7 @@ export const EventLandingPage: React.FC<EventLandingPageProps> = ({ config }) =>
     return () => {
       const themeColor = document.querySelector('meta[name="theme-color"]');
       if (themeColor) {
-        themeColor.setAttribute('content', '#ff69d5'); // Default CardJoy pink
+        themeColor.setAttribute('content', '#ff69d5'); // Default Felicito pink
       }
     };
   }, [config]);

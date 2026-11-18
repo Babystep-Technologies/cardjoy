@@ -14,14 +14,14 @@ export default function UserPolicy() {
             <div className="space-y-6 text-base leading-relaxed">
               <p>
                 This User Policy outlines the acceptable use and behavior expectations for anyone
-                using the CardJoy platform (“we”, “us”, or “our”). By using CardJoy, you agree to
+                using the Felicito platform (“we”, “us”, or “our”). By using Felicito, you agree to
                 follow these guidelines.
               </p>
 
               <h2 className="text-xl font-semibold">1. Be Respectful</h2>
               <p>
-                CardJoy is a platform for celebration and connection. Users must respect others when
-                submitting messages, images, or other content. Harassment, hate speech,
+                Felicito is a platform for celebration and connection. Users must respect others
+                when submitting messages, images, or other content. Harassment, hate speech,
                 discrimination, or personal attacks are strictly prohibited.
               </p>
 
@@ -72,14 +72,14 @@ export default function UserPolicy() {
 
               <h2 className="text-xl font-semibold">7. Changes to this Policy</h2>
               <p>
-                We may update this policy as needed. Continued use of CardJoy after changes means
+                We may update this policy as needed. Continued use of Felicito after changes means
                 you agree to the updated terms.
               </p>
 
               <h2 className="text-xl font-semibold">8. Contact</h2>
               <p>If you have questions about this policy, please contact us:</p>
               <p>
-                <strong>CardJoy Team</strong>
+                <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
                 <a className="underline" href="mailto:team.cardjoy@gmail.com">

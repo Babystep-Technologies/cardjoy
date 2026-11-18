@@ -1,7 +1,7 @@
 /**
  * Slack OAuth install helpers.
  *
- * Bot scopes are kept to the minimum the CardJoy flow actually uses:
+ * Bot scopes are kept to the minimum the Felicito flow actually uses:
  *   - `commands`         — register and receive the `/cardjoy` slash command, open
  *                          modals (`views.open`), and post the follow-up message via
  *                          `response_url`.

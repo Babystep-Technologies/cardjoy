@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { CalendarClock, UserPlus, Mail, Send, NotebookPen, Repeat, ArrowRight } from 'lucide-react';
 
 /**
- * Marketing page for CardJoy's second business use case: an owner whose business runs
+ * Marketing page for Felicito's second business use case: an owner whose business runs
  * on client relationships keeps their clients' occasions here so a card never gets
  * missed. Public on purpose — the feature itself lives behind auth at `/contacts`, so
  * without this page a prospect has no way to discover it.
@@ -30,13 +30,13 @@ const steps = [
     icon: CalendarClock,
     label: 'Record their occasions',
     detail:
-      'Birthdays, anniversaries, a closing date, a new job — mark the ones that come around every year and CardJoy rolls them forward on its own.',
+      'Birthdays, anniversaries, a closing date, a new job — mark the ones that come around every year and Felicito rolls them forward on its own.',
   },
   {
     icon: Mail,
     label: 'Get the nudge a week out',
     detail:
-      'CardJoy emails you seven days before the date, names the client and the occasion, and suggests a design to match.',
+      'Felicito emails you seven days before the date, names the client and the occasion, and suggests a design to match.',
   },
   {
     icon: Send,
@@ -51,7 +51,7 @@ const details = [
     icon: Repeat,
     title: 'Annual dates roll forward',
     description:
-      'Mark a birthday or work anniversary as recurring once. CardJoy tracks the next occurrence every year after that, and never reminds you twice for the same one.',
+      'Mark a birthday or work anniversary as recurring once. Felicito tracks the next occurrence every year after that, and never reminds you twice for the same one.',
   },
   {
     icon: NotebookPen,
@@ -73,7 +73,7 @@ const ClientOccasions: React.FC = () => {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'Client occasions — never forget a client’s birthday | CardJoy';
+    document.title = 'Client occasions — never forget a client’s birthday | Felicito';
     return () => {
       document.title = previousTitle;
     };
@@ -104,7 +104,7 @@ const ClientOccasions: React.FC = () => {
             </h1>
             <p className="text-white/80 text-lg md:text-2xl font-medium max-w-2xl mx-auto">
               Add the clients you care about keeping, record their birthdays and milestones, and
-              CardJoy emails you a week ahead — with the card already half-written.
+              Felicito emails you a week ahead — with the card already half-written.
             </p>
           </div>
         </Reveal>
@@ -141,7 +141,7 @@ const ClientOccasions: React.FC = () => {
             <p className="text-gray-600 text-lg md:text-2xl font-medium max-w-3xl mx-auto">
               Realtors, stylists, advisors, dentists, consultants — the work is repeat business, and
               repeat business is a relationship. Everyone intends to send the birthday card. It
-              slips because nothing reminds you until you see the date go by. CardJoy is the thing
+              slips because nothing reminds you until you see the date go by. Felicito is the thing
               that reminds you, early enough to actually do something about it.
             </p>
           </div>
@@ -267,7 +267,7 @@ const ClientOccasions: React.FC = () => {
                 to="/for-business"
                 className="bg-white/15 text-white border border-white/40 rounded-2xl px-9 py-5 font-bold text-lg hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto text-center"
               >
-                CardJoy for Business
+                Felicito for Business
               </Link>
             </div>
           </div>

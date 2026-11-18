@@ -16,7 +16,7 @@ module Mutations
     argument :slug, String, required: false
 
     # Email branding (#123). Every one of these is optional and clearable: pass
-    # an empty string to drop back to CardJoy's own branding for that field.
+    # an empty string to drop back to Felicito's own branding for that field.
     argument :logo, ApolloUploadServer::Upload, required: false
     argument :accent_color, String, required: false
     argument :email_footer_text, String, required: false
@@ -38,7 +38,7 @@ module Mutations
       # already shared for this organization.
       # `unless nil?` rather than `if present?` throughout: an omitted argument
       # leaves the field alone, but an explicit empty string clears it, which is
-      # how an admin drops a brand field back to the CardJoy default.
+      # how an admin drops a brand field back to the Felicito default.
       attributes = {}
       attributes[:name] = name unless name.nil?
       attributes[:description] = description unless description.nil?
