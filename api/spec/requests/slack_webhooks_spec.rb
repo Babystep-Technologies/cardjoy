@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe "SlackWebhooks", type: :request do
   let(:signing_secret) { "test_slack_signing_secret" }
-  let(:frontend_url) { "https://app.cardjoy.test" }
-  let(:preview_url) { "https://preview.cardjoy.test" }
+  let(:frontend_url) { "https://app.felicito.test" }
+  let(:preview_url) { "https://preview.felicito.test" }
   let(:jwt_secret) { Rails.application.credentials.dig(:jwt, :secret) }
 
   before do

@@ -23,7 +23,7 @@ class WishListLinkPreview
   READ_TIMEOUT = 6
   MAX_REDIRECTS = 3
   MAX_BODY_BYTES = 2 * 1024 * 1024
-  USER_AGENT = "CardJoyLinkPreview/1.0 (+https://cardjoy.app)"
+  USER_AGENT = "FelicitoLinkPreview/1.0 (+https://felicito.app)"
   ZERO_NETWORK = IPAddr.new("0.0.0.0/8")
   # Beyond loopback/private/link-local: ranges that are never a public web server. Includes the
   # IPv6 forms that embed an IPv4 address (NAT64, 6to4), which could otherwise smuggle a private one.

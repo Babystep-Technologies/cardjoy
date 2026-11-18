@@ -15,7 +15,7 @@ RSpec.describe InboundEmailReplyExtractor do
       body = <<~BODY
         Still broken on my end.
 
-        On Fri, Sep 12, 2026 at 1:00 PM Support <support@cardjoy.app> wrote:
+        On Fri, Sep 12, 2026 at 1:00 PM Support <support@felicito.app> wrote:
         > Have you tried turning it off and on again?
       BODY
 
@@ -27,7 +27,7 @@ RSpec.describe InboundEmailReplyExtractor do
         Sounds good, thanks!
 
         -----Original Message-----
-        From: Support <support@cardjoy.app>
+        From: Support <support@felicito.app>
         Sent: Friday
         Subject: Re: ticket
       BODY

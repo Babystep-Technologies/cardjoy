@@ -5,7 +5,7 @@ require 'rails_helper'
 # as importantly, what it must never reach.
 RSpec.describe 'organization branding', type: :mailer do
   let(:frontend_url) { 'https://example.com' }
-  let(:cardjoy_logo_url) { 'https://cdn.example.com/logo.gif' }
+  let(:felicito_logo_url) { 'https://cdn.example.com/logo.gif' }
 
   let(:owner) { create(:user) }
   let(:organization) do
@@ -19,7 +19,7 @@ RSpec.describe 'organization branding', type: :mailer do
 
   around do |example|
     original_logo = Rails.application.config.x.app_logo_for_email
-    Rails.application.config.x.app_logo_for_email = cardjoy_logo_url
+    Rails.application.config.x.app_logo_for_email = felicito_logo_url
     example.run
     Rails.application.config.x.app_logo_for_email = original_logo
   end
@@ -27,7 +27,7 @@ RSpec.describe 'organization branding', type: :mailer do
   before do
     allow(Rails.application.credentials).to receive(:dig).and_call_original
     allow(Rails.application.credentials).to receive(:dig).with(:frontend_url).and_return(frontend_url)
-    stub_request(:head, cardjoy_logo_url)
+    stub_request(:head, felicito_logo_url)
   end
 
   def attach_logo(organization)
@@ -50,7 +50,7 @@ RSpec.describe 'organization branding', type: :mailer do
 
       expect(body).to include(organization.logo_url)
       expect(body).to include('alt="Acme Corp"')
-      expect(body).not_to include(cardjoy_logo_url)
+      expect(body).not_to include(felicito_logo_url)
     end
 
     it "renders the organization's accent color everywhere the Felicito accent used to be" do
@@ -68,7 +68,7 @@ RSpec.describe 'organization branding', type: :mailer do
 
     it "replies to the organization but still sends from Felicito" do
       expect(mail.reply_to).to eq([ 'people@acme.example' ])
-      expect(mail.from).to eq([ 'team.cardjoy@gmail.com' ])
+      expect(mail.from).to eq([ 'team.felicito@gmail.com' ])
     end
 
     # The reason MailerBrand resolves the logo lazily: an attached blob is known
@@ -76,7 +76,7 @@ RSpec.describe 'organization branding', type: :mailer do
     it 'makes no HTTP request to render the organization logo' do
       mail.body.decoded
 
-      expect(a_request(:head, cardjoy_logo_url)).not_to have_been_made
+      expect(a_request(:head, felicito_logo_url)).not_to have_been_made
     end
   end
 
@@ -89,7 +89,7 @@ RSpec.describe 'organization branding', type: :mailer do
     it 'falls back to every Felicito default, including the logo' do
       body = mail.body.decoded
 
-      expect(body).to include(cardjoy_logo_url)
+      expect(body).to include(felicito_logo_url)
       expect(body).to include('alt="Felicito Logo"')
       expect(body).to include(MailerBrand::ACCENT_COLOR)
       expect(body).to include('BabyStep Technologies, Inc. All rights reserved.')

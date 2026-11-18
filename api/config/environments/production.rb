@@ -1,6 +1,6 @@
 require "active_support/core_ext/integer/time"
 
-Rails.application.routes.default_url_options[:host] = "https://api.cardjoy.app"
+Rails.application.routes.default_url_options[:host] = "https://api.felicito.app"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -62,7 +62,7 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "https://cardjoy.app" }
+  config.action_mailer.default_url_options = { host: "https://felicito.app" }
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
     address: "smtp.gmail.com",
@@ -108,5 +108,5 @@ Rails.application.configure do
   config.x.cdn_enabled = true
   config.x.cdn_host = cdn_host
   config.x.app_logo_for_email = "#{cdn_host}/logo.gif"
-  config.x.preview_url = "https://preview.cardjoy.app"
+  config.x.preview_url = "https://preview.felicito.app"
 end

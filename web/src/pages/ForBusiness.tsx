@@ -37,7 +37,7 @@ const paths = [
     summary:
       'Your team already celebrates each other. Felicito gives them one command to do it without the DM thread and the passed-around doc.',
     points: [
-      'Run /cardjoy in Slack, pick the person and the occasion.',
+      'Run /felicito in Slack, pick the person and the occasion.',
       'Share the card in the channel so everyone can sign it.',
       'Coworkers add messages and photos, then it goes to the person.',
     ],

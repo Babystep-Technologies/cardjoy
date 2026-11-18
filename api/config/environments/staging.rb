@@ -1,6 +1,6 @@
 require "active_support/core_ext/integer/time"
 
-Rails.application.routes.default_url_options[:host] = "https://api-staging.cardjoy.app"
+Rails.application.routes.default_url_options[:host] = "https://api-staging.felicito.app"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -60,7 +60,7 @@ Rails.application.configure do
 
   # Set host to be used by links generated in mailer templates.
   config.action_mailer.default_url_options = {
-    host: "api-staging.cardjoy.app",
+    host: "api-staging.felicito.app",
     protocol: "https"
   }
   config.action_mailer.delivery_method = :smtp
@@ -102,6 +102,7 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
   config.x.cdn_enabled = true
-  config.x.cdn_host = "https://storage.googleapis.com/staging-cardjoy-uploads"
-  config.x.app_logo_for_email = "https://storage.googleapis.com/staging-cardjoy-uploads/logo.gif"
+  staging_cdn_host = "https://storage.googleapis.com/#{ENV.fetch('GCS_BUCKET', 'staging-cardjoy-uploads')}"
+  config.x.cdn_host = staging_cdn_host
+  config.x.app_logo_for_email = "#{staging_cdn_host}/logo.gif"
 end

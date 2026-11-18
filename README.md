@@ -1,7 +1,7 @@
 # Felicito
 
 A platform for creating and sharing group cards and invitations. The hosted product lives at
-[cardjoy.app](https://cardjoy.app); this repository is its open-source codebase.
+[felicito.app](https://felicito.app); this repository is its open-source codebase.
 
 ## Project structure
 

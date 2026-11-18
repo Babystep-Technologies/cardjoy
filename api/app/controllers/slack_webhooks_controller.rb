@@ -95,7 +95,7 @@ class SlackWebhooksController < ApplicationController
       # No email on the Slack profile (mainly Slack Connect / external guests):
       # we no longer synthesize a shadow account. Prompt the user to connect a
       # real Felicito account and stop here — the modal opens once they're
-      # connected and re-run /cardjoy. See issue #81.
+      # connected and re-run /felicito. See issue #81.
       unless user
         render json: {
           response_type: "ephemeral",
@@ -351,7 +351,7 @@ class SlackWebhooksController < ApplicationController
   def connect_prompt_text(slack_user_id, slack_team_id)
     connect_url = "#{frontend_url}/connect-slack?state=#{connect_state_token(slack_user_id, slack_team_id)}"
     "Before you can create a card, connect your Felicito account: " \
-      "<#{connect_url}|Connect Felicito>. Once connected, run `/cardjoy` again."
+      "<#{connect_url}|Connect Felicito>. Once connected, run `/felicito` again."
   end
 
   # Follow-up message shown when a card creation is blocked for insufficient
@@ -365,7 +365,7 @@ class SlackWebhooksController < ApplicationController
     buy_credits_url =
       "#{frontend_url}/buy_credits?reason=insufficient_balance&token=#{generate_auth_token(user)}"
     text = "You're out of Felicito credits, so that card wasn't created. " \
-           "Buy more credits and run `/cardjoy` again."
+           "Buy more credits and run `/felicito` again."
 
     post_response_url(
       response_url,

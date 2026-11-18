@@ -30,7 +30,7 @@ const features = [
     icon: Zap,
     title: 'Start a card without leaving Slack',
     description:
-      'Run /cardjoy, pick a coworker and an occasion, and Felicito creates the group card for you — no tab-switching, no copy-pasting links.',
+      'Run /felicito, pick a coworker and an occasion, and Felicito creates the group card for you — no tab-switching, no copy-pasting links.',
   },
   {
     icon: Users,
@@ -58,7 +58,7 @@ const steps = [
     detail: 'Install Felicito in your workspace with one click — any workspace admin can do it.',
   },
   {
-    label: 'Run /cardjoy',
+    label: 'Run /felicito',
     detail: 'Choose who the card is for and the occasion. Felicito sets up the card in seconds.',
   },
   {
@@ -134,8 +134,8 @@ const DemoSection: React.FC = () => (
           See it in action
         </h2>
         <p className="text-gray-600 text-lg text-center mb-12 max-w-2xl mx-auto">
-          Watch how a group card goes from <code className="font-mono">/cardjoy</code> to signed and
-          sent — without anyone leaving Slack.
+          Watch how a group card goes from <code className="font-mono">/felicito</code> to signed
+          and sent — without anyone leaving Slack.
         </p>
       </Reveal>
       <Reveal>{DEMO_VIDEO_URL ? <DemoVideo src={DEMO_VIDEO_URL} /> : <DemoPlaceholder />}</Reveal>
@@ -185,7 +185,7 @@ const Slack: React.FC = () => {
             </h1>
             <p className="text-white/80 text-lg md:text-2xl font-medium max-w-2xl mx-auto">
               Celebrate birthdays, farewells, promotions, and work anniversaries with a group card
-              your whole team signs — all from a single <code className="font-mono">/cardjoy</code>{' '}
+              your whole team signs — all from a single <code className="font-mono">/felicito</code>{' '}
               command in Slack.
             </p>
           </div>

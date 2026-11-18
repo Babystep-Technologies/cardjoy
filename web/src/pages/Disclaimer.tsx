@@ -66,8 +66,8 @@ export default function Disclaimer() {
                 <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
-                <a className="underline" href="mailto:team.cardjoy@gmail.com">
-                  team.cardjoy@gmail.com
+                <a className="underline" href="mailto:team.felicito@gmail.com">
+                  team.felicito@gmail.com
                 </a>
               </p>
             </div>

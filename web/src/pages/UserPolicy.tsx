@@ -40,8 +40,8 @@ export default function UserPolicy() {
               <p>
                 You are responsible for any activity conducted under your account. Do not share your
                 login credentials. If you suspect unauthorized access, notify us immediately at{' '}
-                <a href="mailto:team.cardjoy@gmail.com" className="underline">
-                  team.cardjoy@gmail.com
+                <a href="mailto:team.felicito@gmail.com" className="underline">
+                  team.felicito@gmail.com
                 </a>
                 .
               </p>
@@ -56,8 +56,8 @@ export default function UserPolicy() {
               <p>
                 If you see content or behavior that violates this User Policy, please report it to
                 us at{' '}
-                <a href="mailto:team.cardjoy@gmail.com" className="underline">
-                  team.cardjoy@gmail.com
+                <a href="mailto:team.felicito@gmail.com" className="underline">
+                  team.felicito@gmail.com
                 </a>
                 . We review all reports and may remove content or suspend accounts as necessary.
               </p>
@@ -82,8 +82,8 @@ export default function UserPolicy() {
                 <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
-                <a className="underline" href="mailto:team.cardjoy@gmail.com">
-                  team.cardjoy@gmail.com
+                <a className="underline" href="mailto:team.felicito@gmail.com">
+                  team.felicito@gmail.com
                 </a>
               </p>
             </div>

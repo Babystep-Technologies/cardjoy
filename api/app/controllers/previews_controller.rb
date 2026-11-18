@@ -1,7 +1,7 @@
 # typed: true
 
 class PreviewsController < ApplicationController
-  DEFAULT_OG_IMAGE_URL = "https://cardjoy.app/og-image.png"
+  DEFAULT_OG_IMAGE_URL = "https://felicito.app/og-image.png"
   DEFAULT_OG_IMAGE_WIDTH = 1224
   DEFAULT_OG_IMAGE_HEIGHT = 792
 

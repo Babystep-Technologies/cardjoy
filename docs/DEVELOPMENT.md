@@ -59,7 +59,7 @@ mailbox, bypassing the HTTP ingress entirely.
 |---|---|---|
 | `RAILS_INBOUND_EMAIL_INGRESS` | `action_mailbox.ingress` | `sendgrid`, `postmark`, `mailgun`, or `relay`. Unset ⇒ every ingress endpoint 404s. |
 | `RAILS_INBOUND_EMAIL_PASSWORD` | `action_mailbox.ingress_password` | HTTP Basic password the ingress authenticates with (Rails' own convention, not this app's). |
-| `SUPPORT_INBOUND_EMAIL_DOMAIN` | — | Domain in a ticket's `support+<token>@` address. Defaults to `cardjoy.app`. |
+| `SUPPORT_INBOUND_EMAIL_DOMAIN` | — | Domain in a ticket's `support+<token>@` address. Defaults to `felicito.app`. |
 
 See `AppConfig.inbound_email_ingress`/`AppConfig.support_inbound_email_domain`,
 `SupportTicket#reply_to_address`, and `SupportTicketMailbox`.

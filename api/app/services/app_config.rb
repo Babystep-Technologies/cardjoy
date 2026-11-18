@@ -30,7 +30,7 @@ module AppConfig
   # records pointing at whichever ingress `inbound_email_ingress` selects.
   sig { returns(String) }
   def self.support_inbound_email_domain
-    ENV.fetch("SUPPORT_INBOUND_EMAIL_DOMAIN", "cardjoy.app")
+    ENV.fetch("SUPPORT_INBOUND_EMAIL_DOMAIN", "felicito.app")
   end
 
   # Which Action Mailbox ingress controller is allowed to post inbound mail

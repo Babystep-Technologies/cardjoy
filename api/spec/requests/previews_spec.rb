@@ -29,11 +29,11 @@ RSpec.describe 'Previews', type: :request do
     end
 
     it 'redirects to an absolute frontend URL, not a bare path resolved against the API host' do
-      allow(AppConfig).to receive(:frontend_url).and_return('https://cardjoy.app')
+      allow(AppConfig).to receive(:frontend_url).and_return('https://felicito.app')
 
       get "/p/card/#{card.external_id}/viewable"
 
-      expect(response.body).to include('url=https://cardjoy.app/card/ABCDEFG/viewable')
+      expect(response.body).to include('url=https://felicito.app/card/ABCDEFG/viewable')
       expect(response.body).not_to include('url=/card/')
     end
   end
@@ -144,7 +144,7 @@ RSpec.describe 'Previews', type: :request do
     it 'declares the dimensions of the default image' do
       get "/p/card/#{card.external_id}/viewable"
 
-      expect(response.body).to include('<meta property="og:image" content="https://cardjoy.app/og-image.png" />')
+      expect(response.body).to include('<meta property="og:image" content="https://felicito.app/og-image.png" />')
       expect(meta_property('og:image:width')).to eq('1224')
       expect(meta_property('og:image:height')).to eq('792')
       expect(meta_name('twitter:card')).to eq('summary_large_image')
@@ -201,14 +201,14 @@ RSpec.describe 'Previews', type: :request do
     let(:registry) { create(:wish_list, :standalone, title: "Sam's 30th", intro: "Thanks for celebrating!", visible: true) }
 
     it 'unfurls with the registry title, intro and a link to the public page' do
-      allow(AppConfig).to receive(:frontend_url).and_return('https://cardjoy.app')
+      allow(AppConfig).to receive(:frontend_url).and_return('https://felicito.app')
 
       get "/p/registry/#{registry.external_id}"
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Sam&#39;s 30th")
       expect(response.body).to include('Thanks for celebrating!')
-      expect(response.body).to include("url=https://cardjoy.app/registry/#{registry.external_id}")
+      expect(response.body).to include("url=https://felicito.app/registry/#{registry.external_id}")
     end
 
     it 'keeps the title and note of a passcode-protected registry out of the unfurl' do

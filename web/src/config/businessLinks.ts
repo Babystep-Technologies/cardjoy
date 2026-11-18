@@ -21,7 +21,7 @@ export const businessLinks: BusinessLink[] = [
   {
     id: 'slack',
     label: 'Group cards in Slack',
-    description: 'Start a card with /cardjoy and let the whole team sign it.',
+    description: 'Start a card with /felicito and let the whole team sign it.',
     route: '/slack',
     icon: MessageSquare,
     gradient: 'from-[var(--color-brand-pink)] to-[var(--color-brand-blue)]',

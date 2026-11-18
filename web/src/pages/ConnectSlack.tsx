@@ -26,7 +26,7 @@ function ConnectSlack() {
 
     if (!state) {
       setStatus('error');
-      setErrorMessage('Missing connection token. Please run /cardjoy in Slack again.');
+      setErrorMessage('Missing connection token. Please run /felicito in Slack again.');
       return;
     }
 
@@ -64,7 +64,7 @@ function ConnectSlack() {
               <p className="text-4xl">🎉</p>
               <p className="text-lg font-semibold text-black">Your Slack account is connected!</p>
               <p className="text-gray-600">
-                Go back to Slack and run <code className="bg-gray-100 px-1 rounded">/cardjoy</code>{' '}
+                Go back to Slack and run <code className="bg-gray-100 px-1 rounded">/felicito</code>{' '}
                 to create your first card.
               </p>
             </>

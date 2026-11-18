@@ -25,7 +25,7 @@ User-agent: YouBot
 Allow: /
 
 # Sitemap location
-Sitemap: https://cardjoy.app/sitemap.xml
+Sitemap: https://felicito.app/sitemap.xml
 
 # Crawl delay (be nice to servers)
 Crawl-delay: 1

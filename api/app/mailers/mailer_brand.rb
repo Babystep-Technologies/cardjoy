@@ -26,12 +26,12 @@ class MailerBrand
   end
 
   # Resolved lazily and memoized, because working it out can cost a network
-  # round trip — see #cardjoy_logo_url.
+  # round trip — see #felicito_logo_url.
   sig { returns(T.nilable(String)) }
   def logo_url
     return @logo_url if defined?(@logo_url)
 
-    @logo_url = T.let(organization_logo_url || cardjoy_logo_url, T.nilable(String))
+    @logo_url = T.let(organization_logo_url || felicito_logo_url, T.nilable(String))
   end
 
   sig { returns(String) }
@@ -86,7 +86,7 @@ class MailerBrand
   # rendered rather than risking a broken image in every email. Reached only
   # when there is no organization logo to use instead.
   sig { returns(T.nilable(String)) }
-  def cardjoy_logo_url
+  def felicito_logo_url
     url = Rails.configuration.x.app_logo_for_email
     return nil if url.blank?
 

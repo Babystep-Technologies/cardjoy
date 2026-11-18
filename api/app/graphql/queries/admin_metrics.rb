@@ -6,7 +6,7 @@ module Queries
   # Queries::BusinessMetrics — 24 independent COUNT(*)s, none grouped, none
   # cached — with ~8 grouped queries total, cached for a few minutes.
   # BusinessMetrics and DailyMetrics are left unchanged; deprecating them is a
-  # follow-up once cardjoy-admin#5 has migrated off them.
+  # follow-up once felicito-admin#5 has migrated off them.
   #
   # Cached keyed by window and today's date: short enough that a correction (an
   # admin fixing a chargeback, say) shows up within minutes, and the date in

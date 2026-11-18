@@ -6,7 +6,7 @@ namespace :user_daily_activities do
     # "Made something" is a narrower, different metric than "made a request" —
     # the real definition, tracked live from UserDailyActivity::BACKFILL_CUTOFF_ON
     # onward (see GraphqlController#record_user_activity). This is only meant to
-    # give the charts in cardjoy-admin#5 something to show before that date, and
+    # give the charts in felicito-admin#5 something to show before that date, and
     # is exposed as such on Types::AdminMetricsType.
     #
     # `.unscoped` on the three soft-deletable products: a card the user later
