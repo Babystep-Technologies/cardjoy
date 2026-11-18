@@ -68,7 +68,7 @@ RSpec.describe 'organization branding', type: :mailer do
 
     it "replies to the organization but still sends from Felicito" do
       expect(mail.reply_to).to eq([ 'people@acme.example' ])
-      expect(mail.from).to eq([ 'team.felicito@gmail.com' ])
+      expect(mail.from).to eq([ 'team.cardjoy@gmail.com' ])
     end
 
     # The reason MailerBrand resolves the logo lazily: an attached blob is known

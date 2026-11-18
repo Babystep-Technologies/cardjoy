@@ -59,8 +59,8 @@ export default function PrivacyPolicy() {
                 <li>Delete cards and their content</li>
                 <li>
                   Contact us at{' '}
-                  <a className="underline" href="mailto:team.felicito@gmail.com">
-                    team.felicito@gmail.com
+                  <a className="underline" href="mailto:team.cardjoy@gmail.com">
+                    team.cardjoy@gmail.com
                   </a>{' '}
                   for data inquiries
                 </li>
@@ -86,8 +86,8 @@ export default function PrivacyPolicy() {
                 <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
-                <a className="underline" href="mailto:team.felicito@gmail.com">
-                  team.felicito@gmail.com
+                <a className="underline" href="mailto:team.cardjoy@gmail.com">
+                  team.cardjoy@gmail.com
                 </a>
               </p>
             </div>

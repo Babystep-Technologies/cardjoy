@@ -6,7 +6,7 @@ require "uri"
 class ApplicationMailer < ActionMailer::Base
   # `From` stays Felicito on every send, including organization-branded ones —
   # see MailerBrand#reply_to for why.
-  default from: "Felicito <team.felicito@gmail.com>"
+  default from: "Felicito <team.cardjoy@gmail.com>"
   layout "mailer"
 
   before_action :set_default_brand
