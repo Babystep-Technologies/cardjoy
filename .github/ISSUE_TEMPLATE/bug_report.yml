@@ -56,9 +56,9 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Where did you see this? (hosted cardjoy.app or local Docker; browser; OS)
+      description: Where did you see this? (hosted felicito.app or local Docker; browser; OS)
       placeholder: |
-        - Where: local (`make dev`) / cardjoy.app
+        - Where: local (`make dev`) / felicito.app
         - Browser: Chrome 130
         - OS: macOS 15
     validations:

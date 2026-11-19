@@ -220,7 +220,7 @@ const OrganizationSettingsPage: React.FC = () => {
     setSavingBrand(true);
 
     // Empty strings rather than nulls: the server treats an empty string as "clear this field back
-    // to CardJoy's default", which is exactly what an admin emptying the input means.
+    // to Felicito's default", which is exactly what an admin emptying the input means.
     const input: Record<string, unknown> = {
       organizationId: organization.id,
       accentColor: accentColor.trim(),
@@ -323,7 +323,7 @@ const OrganizationSettingsPage: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Profile</CardTitle>
-              <CardDescription>How this organization appears across CardJoy.</CardDescription>
+              <CardDescription>How this organization appears across Felicito.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSaveProfile} className="max-w-xl space-y-5">
@@ -384,7 +384,7 @@ const OrganizationSettingsPage: React.FC = () => {
               <CardTitle>Email branding</CardTitle>
               <CardDescription>
                 Applied to every email this organization's cards and invitations send. Anything left
-                blank falls back to CardJoy's own branding.
+                blank falls back to Felicito's own branding.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -499,7 +499,7 @@ const OrganizationSettingsPage: React.FC = () => {
             <CardHeader>
               <CardTitle>Design assets</CardTitle>
               <CardDescription>
-                Cover artwork only this organization can use, offered alongside CardJoy's gallery
+                Cover artwork only this organization can use, offered alongside Felicito's gallery
                 whenever a member picks a cover.
               </CardDescription>
             </CardHeader>

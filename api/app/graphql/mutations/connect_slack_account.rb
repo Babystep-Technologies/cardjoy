@@ -30,7 +30,7 @@ module Mutations
 
       { success: true, errors: [] }
     rescue JWT::ExpiredSignature
-      { success: false, errors: [ "Connection link has expired. Please run /cardjoy again in Slack." ] }
+      { success: false, errors: [ "Connection link has expired. Please run /felicito again in Slack." ] }
     rescue JWT::DecodeError
       { success: false, errors: [ "Invalid connection link." ] }
     rescue ActiveRecord::RecordInvalid => e

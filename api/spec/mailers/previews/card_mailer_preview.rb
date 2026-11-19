@@ -10,7 +10,7 @@ class CardMailerPreview < ActionMailer::Preview
     CardMailer.collaborator_invite('invitee@example.com', card_for(branded_organization))
   end
 
-  # The same email for a personal card — no organization, so CardJoy's own
+  # The same email for a personal card — no organization, so Felicito's own
   # branding throughout. This is the output pinned byte-for-byte by
   # spec/mailers/mailer_layout_spec.rb.
   def collaborator_invite_personal
@@ -38,7 +38,7 @@ class CardMailerPreview < ActionMailer::Preview
       name: 'Acme Corp',
       slug: 'acme-corp',
       accent_color: '#ff0055',
-      email_footer_text: '© 2026 Acme Corp — sent with CardJoy',
+      email_footer_text: '© 2026 Acme Corp — sent with Felicito',
       email_reply_to: 'people@acme.example'
     ).tap do |organization|
       organization.define_singleton_method(:logo) { Struct.new(:attached?).new(true) }

@@ -1,7 +1,7 @@
 # typed: true
 
 # A pending offer of membership in an Organization, addressed to an email rather
-# than to a User: the invited person may not have a CardJoy account yet.
+# than to a User: the invited person may not have a Felicito account yet.
 #
 # That detour is why `token` is a persisted random string and not a JWT like the
 # Slack and password-reset links. The token has to survive a sign-up round trip,

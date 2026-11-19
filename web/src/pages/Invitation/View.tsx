@@ -153,7 +153,7 @@ const CHECK_RSVP = gql`
 
 const getSessionStorageKey = (invitationId: string) => `invitation_opened_${invitationId}`;
 const getRsvpEmailKey = (invitationId: string) => `rsvp_email_${invitationId}`;
-const getLocalStorageRsvpKey = (invitationId: string) => `cardjoy_rsvp_${invitationId}`;
+const getLocalStorageRsvpKey = (invitationId: string) => `felicito_rsvp_${invitationId}`;
 
 const InvitationView: React.FC = () => {
   const { id } = useParams<{ id: string }>();

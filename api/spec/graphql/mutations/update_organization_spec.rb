@@ -232,7 +232,7 @@ RSpec.describe Mutations::UpdateOrganization, type: :request do
       expect(organization.reload.accent_color).to eq("#ff0055")
     end
 
-    it "clears a brand field back to the CardJoy default when passed an empty string" do
+    it "clears a brand field back to the Felicito default when passed an empty string" do
       organization.update!(accent_color: "#ff0055")
 
       data = exec_brand({ organizationId: organization.id, accentColor: "" })

@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 module Mutations
-  # Public/unauthenticated: a guest reserving a gift never needs a CardJoy account (see
+  # Public/unauthenticated: a guest reserving a gift never needs a Felicito account (see
   # GraphqlController::PUBLIC_OPERATIONS). The returned token is the guest's only way to release the
   # reservation later -- the client is responsible for holding onto it (see
   # Mutations::ReleaseWishListReservation).

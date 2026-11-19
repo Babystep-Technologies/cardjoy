@@ -5,7 +5,7 @@ require "rails_helper"
 RSpec.describe WishListMailer, type: :mailer do
   before do
     allow(Rails.application.credentials).to receive(:dig).and_call_original
-    allow(Rails.application.credentials).to receive(:dig).with(:frontend_url).and_return("https://cardjoy.test")
+    allow(Rails.application.credentials).to receive(:dig).with(:frontend_url).and_return("https://felicito.test")
   end
 
   let(:registry) { create(:wish_list, :standalone, title: "Sam's 30th") }
@@ -18,7 +18,7 @@ RSpec.describe WishListMailer, type: :mailer do
     it "goes to the guest with a manage link carrying their token" do
       expect(mail.to).to eq([ "alex@example.com" ])
       expect(mail.subject).to eq("You're getting Cast-iron pan")
-      expect(mail.body.encoded).to include("https://cardjoy.test/registry/#{registry.external_id}?claim=#{reservation.token}")
+      expect(mail.body.encoded).to include("https://felicito.test/registry/#{registry.external_id}?claim=#{reservation.token}")
       expect(mail.body.encoded).to include("https://shop.test/pan")
     end
   end
@@ -43,7 +43,7 @@ RSpec.describe WishListMailer, type: :mailer do
     it "tells the guest the item is free again, without a token" do
       expect(mail.to).to eq([ "alex@example.com" ])
       expect(mail.subject).to eq("We've freed up Cast-iron pan")
-      expect(mail.body.encoded).to include("https://cardjoy.test/registry/#{registry.external_id}")
+      expect(mail.body.encoded).to include("https://felicito.test/registry/#{registry.external_id}")
       expect(mail.body.encoded).not_to include("claim=")
     end
   end

@@ -2,87 +2,87 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Main Pages -->
   <url>
-    <loc>https://cardjoy.app/</loc>
+    <loc>https://felicito.app/</loc>
     <priority>1.0</priority>
     <changefreq>weekly</changefreq>
   </url>
 
   <!-- Group Card Use Cases -->
   <url>
-    <loc>https://cardjoy.app/birthday</loc>
+    <loc>https://felicito.app/birthday</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/wedding</loc>
+    <loc>https://felicito.app/wedding</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/retirement</loc>
+    <loc>https://felicito.app/retirement</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/farewell_coworker</loc>
+    <loc>https://felicito.app/farewell_coworker</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/new_coworker</loc>
+    <loc>https://felicito.app/new_coworker</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/babyshower</loc>
+    <loc>https://felicito.app/babyshower</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/graduation</loc>
+    <loc>https://felicito.app/graduation</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/anniversary</loc>
+    <loc>https://felicito.app/anniversary</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
 
   <!-- Party Invitation Features -->
   <url>
-    <loc>https://cardjoy.app/invitation/new</loc>
+    <loc>https://felicito.app/invitation/new</loc>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
 
   <!-- Group Card Features -->
   <url>
-    <loc>https://cardjoy.app/group-card/new</loc>
+    <loc>https://felicito.app/group-card/new</loc>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
 
   <!-- 1-on-1 Card Features -->
   <url>
-    <loc>https://cardjoy.app/one-on-one-card/new</loc>
+    <loc>https://felicito.app/one-on-one-card/new</loc>
     <priority>0.9</priority>
     <changefreq>monthly</changefreq>
   </url>
 
   <!-- Business Use Cases -->
   <url>
-    <loc>https://cardjoy.app/for-business</loc>
+    <loc>https://felicito.app/for-business</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/slack</loc>
+    <loc>https://felicito.app/slack</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>
   <url>
-    <loc>https://cardjoy.app/client-occasions</loc>
+    <loc>https://felicito.app/client-occasions</loc>
     <priority>0.8</priority>
     <changefreq>monthly</changefreq>
   </url>

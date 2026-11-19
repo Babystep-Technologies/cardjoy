@@ -71,7 +71,7 @@ const RedeemPromo: React.FC = () => {
           <Sparkles className="w-6 h-6 text-yellow-400" />
         </h1>
         <p className="text-gray-600">
-          Enter your promo code below to receive bonus credits to your CardJoy account.
+          Enter your promo code below to receive bonus credits to your Felicito account.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">

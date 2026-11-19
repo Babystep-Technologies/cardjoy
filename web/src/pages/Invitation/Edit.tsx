@@ -840,7 +840,7 @@ const InvitationEdit: React.FC = () => {
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 text-sm whitespace-nowrap">
-                    cardjoy.app/p/invitation/
+                    felicito.app/p/invitation/
                   </span>
                   <div className="relative flex-1">
                     <Input

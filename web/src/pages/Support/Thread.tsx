@@ -112,7 +112,7 @@ function SupportThread() {
                   </CardContent>
                 </Card>
                 <p className="text-xs text-gray-400 px-1">
-                  {isCustomer ? 'You' : (message.authorName ?? 'CardJoy Support')} &middot;{' '}
+                  {isCustomer ? 'You' : (message.authorName ?? 'Felicito Support')} &middot;{' '}
                   {format(parseISO(message.createdAt), 'MMM d, h:mm a')}
                 </p>
               </div>

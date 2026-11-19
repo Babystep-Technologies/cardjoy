@@ -1,5 +1,5 @@
 /**
- * The "Add to CardJoy registry" bookmarklet (#298). It runs on the product page the user is
+ * The "Add to Felicito registry" bookmarklet (#298). It runs on the product page the user is
  * already looking at, in their own browser, so it isn't blocked the way a server-side fetch is: it
  * reads the title, image and price the page itself declares (OpenGraph, then schema.org JSON-LD),
  * and opens our add-item page with them prefilled. Nothing is sent anywhere until the user confirms

@@ -1,11 +1,11 @@
 # Architecture
 
-A high-level map of how CardJoy fits together. For how to *build* something, see
+A high-level map of how Felicito fits together. For how to *build* something, see
 [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## Overview
 
-CardJoy is a Rails GraphQL API with a React/TypeScript frontend.
+Felicito is a Rails GraphQL API with a React/TypeScript frontend.
 
 ```
             ┌─────────────────┐
@@ -147,7 +147,7 @@ into registries (`FoldInvitationWishListsIntoRegistries`) is one-way.
   purchases (aggregate only). The dashboard that charts them is in the private admin repo.
 
 Money is deliberately out of scope: guests buy from the retailer, or send cash through the owner's
-own payment app. CardJoy never holds funds (see `WishListContribution`).
+own payment app. Felicito never holds funds (see `WishListContribution`).
 
 When a change adds a column or field the web reads, deploy the API before the web.
 

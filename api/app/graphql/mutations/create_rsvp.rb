@@ -157,7 +157,7 @@ module Mutations
     end
 
     def generate_ics_content(invitation, start_time, end_time)
-      uid = "#{invitation.external_id}@cardjoy.app"
+      uid = "#{invitation.external_id}@felicito.app"
       dtstamp = Time.now.utc.strftime("%Y%m%dT%H%M%SZ")
       dtstart = start_time.utc.strftime("%Y%m%dT%H%M%SZ")
       dtend = end_time.utc.strftime("%Y%m%dT%H%M%SZ")
@@ -165,7 +165,7 @@ module Mutations
       <<~ICS
         BEGIN:VCALENDAR
         VERSION:2.0
-        PRODID:-//CardJoy//Event//EN
+        PRODID:-//Felicito//Event//EN
         BEGIN:VEVENT
         UID:#{uid}
         DTSTAMP:#{dtstamp}

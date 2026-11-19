@@ -370,8 +370,8 @@ const OrganizationMembersPage: React.FC = () => {
               <CardHeader>
                 <CardTitle>Invite people</CardTitle>
                 <CardDescription>
-                  They'll get a join link by email. Anyone without a CardJoy account can sign up and
-                  still land here.
+                  They'll get a join link by email. Anyone without a Felicito account can sign up
+                  and still land here.
                 </CardDescription>
               </CardHeader>
               <CardContent>

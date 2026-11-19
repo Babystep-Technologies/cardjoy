@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 /**
- * The Business hub. CardJoy supports exactly two business use cases, and this page
+ * The Business hub. Felicito supports exactly two business use cases, and this page
  * exists to tell them apart:
  *
  *   1. Companies celebrating their own people — group cards started from Slack.
@@ -35,14 +35,14 @@ const paths = [
     eyebrow: 'For teams',
     title: 'Group cards, started from Slack',
     summary:
-      'Your team already celebrates each other. CardJoy gives them one command to do it without the DM thread and the passed-around doc.',
+      'Your team already celebrates each other. Felicito gives them one command to do it without the DM thread and the passed-around doc.',
     points: [
-      'Run /cardjoy in Slack, pick the person and the occasion.',
+      'Run /felicito in Slack, pick the person and the occasion.',
       'Share the card in the channel so everyone can sign it.',
       'Coworkers add messages and photos, then it goes to the person.',
     ],
     route: '/slack',
-    cta: 'See CardJoy for Slack',
+    cta: 'See Felicito for Slack',
     gradient: 'from-[var(--color-brand-pink)] to-[var(--color-brand-blue)]',
   },
   {
@@ -51,10 +51,10 @@ const paths = [
     eyebrow: 'For client relationships',
     title: 'Never forget a client’s occasion',
     summary:
-      'If your business runs on relationships, remembering the date is the whole game. Add your clients once and CardJoy carries the calendar for you.',
+      'If your business runs on relationships, remembering the date is the whole game. Add your clients once and Felicito carries the calendar for you.',
     points: [
       'Add clients to your contact book with their birthdays and milestones.',
-      'CardJoy emails you a week ahead, with a design already picked out.',
+      'Felicito emails you a week ahead, with a design already picked out.',
       'One click opens a pre-filled card you can schedule for the day itself.',
     ],
     route: '/client-occasions',
@@ -82,7 +82,7 @@ const shared = [
     icon: Users,
     title: 'Start free, on your own',
     description:
-      'Sign up and send without a sales call or a contract. CardJoy is open source, and you can try a card before committing to anything.',
+      'Sign up and send without a sales call or a contract. Felicito is open source, and you can try a card before committing to anything.',
   },
 ];
 
@@ -91,7 +91,7 @@ const ForBusiness: React.FC = () => {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'CardJoy for Business — team cards in Slack & client occasions';
+    document.title = 'Felicito for Business — team cards in Slack & client occasions';
     return () => {
       document.title = previousTitle;
     };
@@ -110,13 +110,13 @@ const ForBusiness: React.FC = () => {
           <div className="max-w-3xl mx-auto text-center relative z-10">
             <span className="inline-flex items-center gap-2 text-white/80 text-sm font-semibold uppercase tracking-wide bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
               <Building2 className="w-4 h-4" />
-              CardJoy for Business
+              Felicito for Business
             </span>
             <h1 className="text-white text-4xl md:text-6xl font-black leading-tight mb-6">
               The relationships your business runs on, remembered
             </h1>
             <p className="text-white/80 text-lg md:text-2xl font-medium max-w-2xl mx-auto">
-              Two ways businesses use CardJoy: group cards your team signs in Slack, and a contact
+              Two ways businesses use Felicito: group cards your team signs in Slack, and a contact
               book that reminds you before a client’s big day.
             </p>
           </div>
@@ -201,12 +201,12 @@ const ForBusiness: React.FC = () => {
           <div className="max-w-4xl mx-auto text-center">
             <Mail className="w-10 h-10 mx-auto mb-6" style={{ color: 'var(--color-brand-pink)' }} />
             <h2 className="text-gray-900 text-3xl md:text-5xl font-black mb-6">
-              You add the people. CardJoy keeps the dates.
+              You add the people. Felicito keeps the dates.
             </h2>
             <p className="text-gray-600 text-lg md:text-2xl font-medium max-w-3xl mx-auto">
               The Slack app makes a card in seconds when your team already knows an occasion is
               coming. The reminders come from your own contact book: add someone once, record the
-              date, and CardJoy emails you a week before it comes around — so the card gets written
+              date, and Felicito emails you a week before it comes around — so the card gets written
               while there is still time to send it.
             </p>
             <Link
@@ -267,7 +267,7 @@ const ForBusiness: React.FC = () => {
               </button>
               <a
                 href={slackInstallUrl()}
-                aria-label="Add CardJoy to Slack"
+                aria-label="Add Felicito to Slack"
                 className="bg-white/15 text-white border border-white/40 rounded-2xl px-9 py-5 font-bold text-lg hover:bg-white/25 hover:scale-105 transition-all backdrop-blur-sm w-full sm:w-auto text-center"
               >
                 Add to Slack

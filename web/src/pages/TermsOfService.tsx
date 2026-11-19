@@ -13,21 +13,21 @@ export default function TermsOfService() {
           <ScrollArea className="h-[70vh] pr-4">
             <div className="space-y-6 text-base leading-relaxed">
               <p>
-                Welcome to CardJoy! By using our service, you agree to the following Terms of
+                Welcome to Felicito! By using our service, you agree to the following Terms of
                 Service (“Terms”). Please read them carefully.
               </p>
 
               <h2 className="text-xl font-semibold">1. Overview</h2>
               <p>
-                CardJoy provides an online platform that allows users to create and share digital
-                greeting cards. These Terms govern your use of the CardJoy website, app, and related
-                services.
+                Felicito provides an online platform that allows users to create and share digital
+                greeting cards. These Terms govern your use of the Felicito website, app, and
+                related services.
               </p>
 
               <h2 className="text-xl font-semibold">2. Eligibility</h2>
               <p>
-                You must be at least 13 years old to use CardJoy. If you are under 18, you must have
-                permission from a parent or guardian.
+                You must be at least 13 years old to use Felicito. If you are under 18, you must
+                have permission from a parent or guardian.
               </p>
 
               <h2 className="text-xl font-semibold">3. User Accounts</h2>
@@ -42,13 +42,13 @@ export default function TermsOfService() {
 
               <h2 className="text-xl font-semibold">4. Content Ownership</h2>
               <p>
-                You retain ownership of the content you submit to CardJoy (e.g., messages, images).
+                You retain ownership of the content you submit to Felicito (e.g., messages, images).
                 By uploading content, you grant us a limited, non-exclusive license to display,
-                store, and share it as part of the CardJoy experience.
+                store, and share it as part of the Felicito experience.
               </p>
 
               <h2 className="text-xl font-semibold">5. Prohibited Uses</h2>
-              <p>You agree not to use CardJoy to:</p>
+              <p>You agree not to use Felicito to:</p>
               <ul className="list-disc list-inside ml-4">
                 <li>Violate any laws</li>
                 <li>Post harmful, abusive, or explicit content</li>
@@ -74,20 +74,20 @@ export default function TermsOfService() {
 
               <h2 className="text-xl font-semibold">8. Limitation of Liability</h2>
               <p>
-                To the maximum extent permitted by law, CardJoy shall not be liable for indirect,
+                To the maximum extent permitted by law, Felicito shall not be liable for indirect,
                 incidental, or consequential damages arising from your use of the service.
               </p>
 
               <h2 className="text-xl font-semibold">9. Changes to These Terms</h2>
               <p>
-                We may update these Terms from time to time. Continued use of CardJoy after changes
+                We may update these Terms from time to time. Continued use of Felicito after changes
                 means you accept the revised Terms.
               </p>
 
               <h2 className="text-xl font-semibold">10. Contact</h2>
               <p>If you have any questions or concerns about these Terms, please reach out to:</p>
               <p>
-                <strong>CardJoy Team</strong>
+                <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
                 <a className="underline" href="mailto:team.cardjoy@gmail.com">

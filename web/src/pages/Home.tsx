@@ -281,7 +281,7 @@ const Home: React.FC = () => {
             </div>
             <h2 className="text-white text-4xl md:text-6xl font-black mb-6">Built in the open</h2>
             <p className="text-white/80 text-lg md:text-2xl font-medium mb-10 max-w-2xl mx-auto">
-              CardJoy is fully open source. Inspect the code, self-host it, or contribute — no
+              Felicito is fully open source. Inspect the code, self-host it, or contribute — no
               lock-in, no hidden data practices, no paywalls.
             </p>
 
@@ -293,7 +293,7 @@ const Home: React.FC = () => {
                 },
                 {
                   title: 'Self-hostable',
-                  desc: 'Run CardJoy on your own infrastructure whenever you want.',
+                  desc: 'Run Felicito on your own infrastructure whenever you want.',
                 },
                 {
                   title: 'Community-driven',
@@ -339,7 +339,7 @@ const Home: React.FC = () => {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-white text-xl font-bold">Using CardJoy for your business?</h3>
+                <h3 className="text-white text-xl font-bold">Using Felicito for your business?</h3>
                 <p className="text-white/70">
                   Group cards your team signs in Slack, and reminders before your clients&apos; big
                   days.
@@ -350,7 +350,7 @@ const Home: React.FC = () => {
               to="/for-business"
               className="group inline-flex items-center gap-2 bg-white text-gray-900 rounded-2xl px-7 py-4 font-bold hover:scale-105 transition-all shadow-lg whitespace-nowrap"
             >
-              CardJoy for Business
+              Felicito for Business
               <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>

@@ -1,14 +1,14 @@
 /**
  * Slack OAuth install helpers.
  *
- * Bot scopes are kept to the minimum the CardJoy flow actually uses:
- *   - `commands`         — register and receive the `/cardjoy` slash command, open
+ * Bot scopes are kept to the minimum the Felicito flow actually uses:
+ *   - `commands`         — register and receive the `/felicito` slash command, open
  *                          modals (`views.open`), and post the follow-up message via
  *                          `response_url`.
  *   - `users:read`       — resolve the recipient's display name via `users.info`.
  *   - `users:read.email` — read the member's profile email via `users.info`, so
- *                          `/cardjoy` users resolve to a real, billable account
- *                          instead of a synthetic `slack+…@cardjoy.app` address.
+ *                          `/felicito` users resolve to a real, billable account
+ *                          instead of a synthetic `slack+…@felicito.app` address.
  *
  * Keep this list in sync with the scopes configured on the Slack app manifest.
  * It is the single source of truth for the "Add to Slack" button across the app,

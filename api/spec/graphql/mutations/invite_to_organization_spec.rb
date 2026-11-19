@@ -29,7 +29,7 @@ RSpec.describe Mutations::InviteToOrganization, type: :request do
     JSON.parse(response.body).dig("data", "inviteToOrganization")
   end
 
-  it "invites an email that has no CardJoy account" do
+  it "invites an email that has no Felicito account" do
     expect {
       data = exec({ organizationId: organization.id, emails: [ "newcomer@example.com" ] })
 

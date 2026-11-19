@@ -3,7 +3,7 @@
 # A dated event belonging to a Contact (birthday, work anniversary, graduation…).
 # `recurring` marks the annual occasions; for those the meaningful date is the
 # next anniversary of `occurs_on`, computed by #next_occurrence. This is the
-# retention engine's core datum — CardJoy reminds users as occasions approach.
+# retention engine's core datum — Felicito reminds users as occasions approach.
 class Occasion < ApplicationRecord
   extend T::Sig
 

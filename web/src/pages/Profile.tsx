@@ -389,8 +389,10 @@ function Profile() {
               <div className="space-y-2">
                 <p className="text-sm text-gray-500">Slack Integration</p>
                 <p className="text-sm text-gray-700">
-                  Install the Cardjoy Slack app to create cards directly from Slack using{' '}
-                  <code className="bg-gray-100 px-1 rounded">/cardjoy create for &lt;name&gt;</code>
+                  Install the Felicito Slack app to create cards directly from Slack using{' '}
+                  <code className="bg-gray-100 px-1 rounded">
+                    /felicito create for &lt;name&gt;
+                  </code>
                 </p>
                 <a href={slackInstallUrl()}>
                   <img

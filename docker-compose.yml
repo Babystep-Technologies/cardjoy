@@ -12,7 +12,7 @@ services:
       - db
       - redis
     networks:
-      - cardjoy-network-local
+      - felicito-network-local
     tty: true
     command: tail -f /dev/null
     environment:
@@ -33,9 +33,9 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - cardjoy-network-local
+      - felicito-network-local
     volumes:
-      - cardjoy-db:/var/lib/postgresql/data
+      - felicito-db:/var/lib/postgresql/data
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_PASSWORD: postgres
@@ -47,9 +47,9 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - cardjoy-network-local
+      - felicito-network-local
     volumes:
-      - cardjoy-redis:/data
+      - felicito-redis:/data
     command: redis-server --appendonly yes
   web:
     build: ./web
@@ -66,13 +66,13 @@ services:
     # depends_on:
     #   - api
     networks:
-      - cardjoy-network-local
+      - felicito-network-local
     command: tail -f /dev/null
     # this is needed for having react server available
     stdin_open: true
 volumes:
-  cardjoy-db:
-  cardjoy-redis:
+  felicito-db:
+  felicito-redis:
 networks:
-  cardjoy-network-local:
-    name: cardjoy_network_local
+  felicito-network-local:
+    name: felicito_network_local

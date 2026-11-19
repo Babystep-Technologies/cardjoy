@@ -41,7 +41,7 @@ export const BusinessMenu: React.FC = () => {
           ))}
         </div>
         <div className="mt-2 pt-3 border-t border-gray-200 flex justify-center">
-          <a href={slackInstallUrl()} aria-label="Add CardJoy to Slack">
+          <a href={slackInstallUrl()} aria-label="Add Felicito to Slack">
             <img
               alt="Add to Slack"
               height="40"

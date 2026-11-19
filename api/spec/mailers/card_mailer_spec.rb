@@ -18,7 +18,7 @@ RSpec.describe CardMailer, type: :mailer do
 
     it 'renders the correct headers' do
       expect(mail.to).to eq([ email ])
-      expect(mail.subject).to eq("You're invited to collaborate on a CardJoy card!")
+      expect(mail.subject).to eq("You're invited to collaborate on a Felicito card!")
     end
 
     it 'includes the editable link in the body' do
@@ -31,7 +31,7 @@ RSpec.describe CardMailer, type: :mailer do
 
     it 'renders the correct headers' do
       expect(mail.to).to eq([ email ])
-      expect(mail.subject).to eq("You've received a CardJoy card!")
+      expect(mail.subject).to eq("You've received a Felicito card!")
     end
 
     it 'points at the registry only when the card has a shared one' do
@@ -61,7 +61,7 @@ RSpec.describe CardMailer, type: :mailer do
 
     it 'renders the correct headers' do
       expect(mail.to).to eq([ email ])
-      expect(mail.subject).to eq("Someone sent you a CardJoy card!")
+      expect(mail.subject).to eq("Someone sent you a Felicito card!")
     end
 
     it 'links to the preview endpoint so the link unfurls when forwarded' do

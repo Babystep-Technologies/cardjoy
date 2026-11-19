@@ -684,7 +684,7 @@ const Contacts: React.FC = () => {
           <DialogHeader>
             <DialogTitle>{contactDialog?.id ? 'Edit contact' : 'Add contact'}</DialogTitle>
             <DialogDescription>
-              Someone whose occasions you want CardJoy to help you remember.
+              Someone whose occasions you want Felicito to help you remember.
             </DialogDescription>
           </DialogHeader>
           {contactDialog && (

@@ -9,7 +9,11 @@ import { OrganizationProvider } from '@/contexts/OrganizationContext';
 import { PostHogProvider } from 'posthog-js/react';
 import client from '@/lib/apollo-client';
 import { POSTHOG_HOST } from './lib/constants';
+import { migrateLegacyStorageKeys } from '@/lib/legacyStorage';
 import './index.css';
+
+// Carry CardJoy-era localStorage keys over to their Felicito names before anything reads them.
+migrateLegacyStorageKeys();
 
 // PostHog is optional — only wrap the app in the provider when a key is set.
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY as string | undefined;

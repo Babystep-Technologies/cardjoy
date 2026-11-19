@@ -1,7 +1,7 @@
 # typed: true
 
 class SupportTicketMailer < ApplicationMailer
-  # A staff reply to a customer's support ticket (#173). Always CardJoy's own
+  # A staff reply to a customer's support ticket (#173). Always Felicito's own
   # branding — SupportTicket has no organization, only a user.
   #
   # Reply-To is the ticket's own support+<token>@ address (#174), so hitting

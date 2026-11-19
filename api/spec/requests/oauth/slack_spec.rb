@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Oauth::Slack", type: :request do
-  let(:frontend_url) { "https://app.cardjoy.test" }
+  let(:frontend_url) { "https://app.felicito.test" }
 
   before do
     allow(Rails.application.credentials).to receive(:dig).and_call_original

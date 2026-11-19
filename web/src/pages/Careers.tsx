@@ -13,7 +13,7 @@ export default function Careers() {
         </CardHeader>
         <CardContent className="space-y-6 text-base text-muted-foreground leading-relaxed">
           <p>
-            At <strong>CardJoy</strong>, our mission is simple but powerful:{' '}
+            At <strong>Felicito</strong>, our mission is simple but powerful:{' '}
             <span className="text-foreground font-medium">
               cherish life moments with the best online greeting cards
             </span>

@@ -7,9 +7,9 @@ export interface Faq {
 
 export const faqs: Faq[] = [
   {
-    question: 'What is CardJoy?',
+    question: 'What is Felicito?',
     answer:
-      'CardJoy is an open-source platform for creating digital group cards and event invitations. Collect heartfelt messages on a shareable group card, or design an animated invitation with built-in RSVP tracking. No subscriptions, no hidden fees!',
+      'Felicito is an open-source platform for creating digital group cards and event invitations. Collect heartfelt messages on a shareable group card, or design an animated invitation with built-in RSVP tracking. No subscriptions, no hidden fees!',
   },
   {
     question: 'How much does it cost?',
@@ -36,9 +36,9 @@ export const faqs: Faq[] = [
     answer: 'Yes! You can update your card details anytime.',
   },
   {
-    question: 'Is CardJoy really open source?',
+    question: 'Is Felicito really open source?',
     answer:
-      'Yes! CardJoy is fully open source. You can inspect the code, self-host it on your own infrastructure, or contribute on GitHub at https://github.com/Babystep-Technologies/cardjoy. No lock-in and no hidden data practices.',
+      'Yes! Felicito is fully open source. You can inspect the code, self-host it on your own infrastructure, or contribute on GitHub at https://github.com/Babystep-Technologies/cardjoy. No lock-in and no hidden data practices.',
   },
   {
     question: 'Is my data safe and secure?',

@@ -1,7 +1,7 @@
 # Development guide: how to build a feature
 
 This is the shared reference for **humans, Claude skills, and the GitHub Action**. It shows the
-conventions CardJoy follows so a change fits the codebase and passes CI. For the big-picture map, see
+conventions Felicito follows so a change fits the codebase and passes CI. For the big-picture map, see
 [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 Everything runs in Docker. See [CONTRIBUTING.md](../CONTRIBUTING.md) for setup; the short version:
@@ -13,7 +13,7 @@ make dev     # start api :3000, web :3001
 
 ### Secrets in local development
 
-You do **not** need any secret to run CardJoy locally. `config/credentials/development.key` is
+You do **not** need any secret to run Felicito locally. `config/credentials/development.key` is
 gitignored and never committed, so on a fresh clone `Rails.application.credentials` decrypts to an
 empty hash — that is expected.
 
@@ -59,7 +59,7 @@ mailbox, bypassing the HTTP ingress entirely.
 |---|---|---|
 | `RAILS_INBOUND_EMAIL_INGRESS` | `action_mailbox.ingress` | `sendgrid`, `postmark`, `mailgun`, or `relay`. Unset ⇒ every ingress endpoint 404s. |
 | `RAILS_INBOUND_EMAIL_PASSWORD` | `action_mailbox.ingress_password` | HTTP Basic password the ingress authenticates with (Rails' own convention, not this app's). |
-| `SUPPORT_INBOUND_EMAIL_DOMAIN` | — | Domain in a ticket's `support+<token>@` address. Defaults to `cardjoy.app`. |
+| `SUPPORT_INBOUND_EMAIL_DOMAIN` | — | Domain in a ticket's `support+<token>@` address. Defaults to `felicito.app`. |
 
 See `AppConfig.inbound_email_ingress`/`AppConfig.support_inbound_email_domain`,
 `SupportTicket#reply_to_address`, and `SupportTicketMailbox`.

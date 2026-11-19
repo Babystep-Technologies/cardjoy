@@ -13,7 +13,7 @@ export default function Disclaimer() {
           <ScrollArea className="h-[70vh] pr-4">
             <div className="space-y-6 text-base leading-relaxed">
               <p>
-                The information provided by CardJoy (“we”, “us”, or “our”) on our website and
+                The information provided by Felicito (“we”, “us”, or “our”) on our website and
                 platform is for general informational purposes only. All information is provided in
                 good faith, but we make no representation or warranty regarding the accuracy,
                 adequacy, validity, reliability, or completeness of any information.
@@ -21,18 +21,18 @@ export default function Disclaimer() {
 
               <h2 className="text-xl font-semibold">1. No Professional Advice</h2>
               <p>
-                CardJoy is a platform for creating and sharing greeting cards. We do not provide
+                Felicito is a platform for creating and sharing greeting cards. We do not provide
                 legal, medical, psychological, financial, or any other form of professional advice.
               </p>
               <p>
-                Any content submitted or viewed through CardJoy should not be interpreted as
+                Any content submitted or viewed through Felicito should not be interpreted as
                 professional advice. For such matters, consult a qualified professional.
               </p>
 
               <h2 className="text-xl font-semibold">2. User-Generated Content</h2>
               <p>
-                CardJoy allows users and guests to submit messages, images, and other content. We do
-                not actively moderate every submission and cannot guarantee the appropriateness,
+                Felicito allows users and guests to submit messages, images, and other content. We
+                do not actively moderate every submission and cannot guarantee the appropriateness,
                 truthfulness, or legality of user-generated content.
               </p>
               <p>
@@ -49,7 +49,7 @@ export default function Disclaimer() {
 
               <h2 className="text-xl font-semibold">4. Use at Your Own Risk</h2>
               <p>
-                Your use of CardJoy is at your sole risk. The platform is provided “as is” and “as
+                Your use of Felicito is at your sole risk. The platform is provided “as is” and “as
                 available” without any warranties.
               </p>
 
@@ -63,7 +63,7 @@ export default function Disclaimer() {
               <h2 className="text-xl font-semibold">6. Contact</h2>
               <p>If you have any questions about this disclaimer, please contact us at:</p>
               <p>
-                <strong>CardJoy Team</strong>
+                <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
                 <a className="underline" href="mailto:team.cardjoy@gmail.com">

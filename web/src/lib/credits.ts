@@ -28,7 +28,7 @@ export const INSUFFICIENT_CREDITS_REDIRECT = '/buy_credits?reason=insufficient_b
  * throws in some private-browsing modes, so every access is guarded. Losing the note only costs
  * the nicer copy and the auto-refresh.
  */
-const ORGANIZATION_CHECKOUT_KEY = 'cardjoy:organization-checkout';
+const ORGANIZATION_CHECKOUT_KEY = 'felicito:organization-checkout';
 
 export type OrganizationCheckout = {
   organizationId: string;

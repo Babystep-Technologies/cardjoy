@@ -8,7 +8,7 @@ require 'rails_helper'
 #
 # The fixture was recorded from the pre-#123 layout. Regenerate it only when a
 # layout change is intended, and read the resulting diff as what it is: a change
-# to every customer-facing email CardJoy sends.
+# to every customer-facing email Felicito sends.
 #
 #   docker compose exec -e RECORD_MAILER_FIXTURE=1 api \
 #     bundle exec rspec spec/mailers/mailer_layout_spec.rb

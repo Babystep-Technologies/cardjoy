@@ -12,7 +12,7 @@ RSpec.describe Mutations::CreateStripeCheckoutSession, type: :request do
     create(:organization_membership, organization:, user: member)
 
     allow(Rails.application.credentials).to receive(:dig).and_call_original
-    allow(Rails.application.credentials).to receive(:dig).with(:frontend_url).and_return("https://cardjoy.test")
+    allow(Rails.application.credentials).to receive(:dig).with(:frontend_url).and_return("https://felicito.test")
   end
 
   def headers_for(user)
@@ -60,7 +60,7 @@ RSpec.describe Mutations::CreateStripeCheckoutSession, type: :request do
     expect(data["checkoutUrl"]).to eq("https://checkout.stripe.test/cs_test")
     expect(@stripe_args[:metadata]).to eq({ user_id: admin.id, product: "credits" })
     expect(@stripe_args[:line_items]).to eq([ { price: "price_test", quantity: 1 } ])
-    expect(@stripe_args[:success_url]).to start_with("https://cardjoy.test/buy_credits/success")
+    expect(@stripe_args[:success_url]).to start_with("https://felicito.test/buy_credits/success")
   end
 
   it "lets an org admin buy into the shared pool and tags the session with the organization" do

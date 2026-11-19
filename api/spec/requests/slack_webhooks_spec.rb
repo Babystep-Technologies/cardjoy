@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe "SlackWebhooks", type: :request do
   let(:signing_secret) { "test_slack_signing_secret" }
-  let(:frontend_url) { "https://app.cardjoy.test" }
-  let(:preview_url) { "https://preview.cardjoy.test" }
+  let(:frontend_url) { "https://app.felicito.test" }
+  let(:preview_url) { "https://preview.felicito.test" }
   let(:jwt_secret) { Rails.application.credentials.dig(:jwt, :secret) }
 
   before do
@@ -116,7 +116,7 @@ RSpec.describe "SlackWebhooks", type: :request do
     let(:team_id) { "T12345" }
     let(:slack_user_id) { "U67890" }
 
-    context "when the Slack user is not connected to a Cardjoy account" do
+    context "when the Slack user is not connected to a Felicito account" do
       before do
         create(:slack_installation, team_id: team_id)
         stub_slack_users_info(slack_user_id, "New User", email: "newuser@example.com")
@@ -193,7 +193,7 @@ RSpec.describe "SlackWebhooks", type: :request do
       end
     end
 
-    context "when the Slack user is connected to a Cardjoy account" do
+    context "when the Slack user is connected to a Felicito account" do
       before do
         create(:slack_installation, team_id: team_id)
         create(:slack_user_connection, user: user, slack_user_id: slack_user_id, slack_team_id: team_id)
@@ -384,7 +384,7 @@ RSpec.describe "SlackWebhooks", type: :request do
 
         json = JSON.parse(response.body)
         expect(json["response_action"]).to eq("errors")
-        expect(json["errors"].values.join).to include("out of CardJoy credits")
+        expect(json["errors"].values.join).to include("out of Felicito credits")
         expect(Card.count).to eq(card_count)
         expect(Credit.count).to eq(credit_count)
       end
@@ -450,7 +450,7 @@ RSpec.describe "SlackWebhooks", type: :request do
         post_modal_submission(submission_payload(response_url: response_url))
 
         errors = JSON.parse(response.body)["errors"].values.join
-        expect(errors).to include("out of CardJoy credits")
+        expect(errors).to include("out of Felicito credits")
         expect(errors).to include("buy more")
       end
 

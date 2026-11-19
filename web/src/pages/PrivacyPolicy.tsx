@@ -13,12 +13,12 @@ export default function PrivacyPolicy() {
           <ScrollArea className="h-[70vh] pr-4">
             <div className="space-y-6 text-base leading-relaxed">
               <p>
-                CardJoy (“we”, “us”, or “our”) provides a platform for users to create, personalize,
-                and share digital greeting cards with others.
+                Felicito (“we”, “us”, or “our”) provides a platform for users to create,
+                personalize, and share digital greeting cards with others.
               </p>
 
               <h2 className="text-xl font-semibold">1. Information We Collect</h2>
-              <p>We collect information you provide when you use CardJoy, including:</p>
+              <p>We collect information you provide when you use Felicito, including:</p>
               <ul className="list-disc list-inside ml-4">
                 <li>Name, email address, and optional profile image (for registered users)</li>
                 <li>Guest name (for non-logged-in contributors)</li>
@@ -73,7 +73,7 @@ export default function PrivacyPolicy() {
               </p>
 
               <h2 className="text-xl font-semibold">7. Children's Privacy</h2>
-              <p>CardJoy is not intended for use by children under 13 without parental consent.</p>
+              <p>Felicito is not intended for use by children under 13 without parental consent.</p>
 
               <h2 className="text-xl font-semibold">8. Updates</h2>
               <p>
@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
               <h2 className="text-xl font-semibold">9. Contact</h2>
               <p>If you have any questions or concerns, please contact us at:</p>
               <p>
-                <strong>CardJoy Team</strong>
+                <strong>Felicito Team</strong>
                 <br />
                 Email:{' '}
                 <a className="underline" href="mailto:team.cardjoy@gmail.com">

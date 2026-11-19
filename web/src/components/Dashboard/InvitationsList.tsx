@@ -292,7 +292,7 @@ export const InvitationsList: React.FC<InvitationsListProps> = ({
   if (invitations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
-        <img src="/logo.svg" alt="CardJoy Logo" className="opacity-80 w-24 h-24" />
+        <img src="/logo.svg" alt="Felicito Logo" className="opacity-80 w-24 h-24" />
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-gray-800">{emptyTitle}</h2>
           <p className="text-gray-500 text-lg">{emptyDescription}</p>

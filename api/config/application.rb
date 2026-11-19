@@ -59,7 +59,7 @@ module Api
 
     # Enable cookies and session middleware so OmniAuth can function.
     config.middleware.use ActionDispatch::Cookies
-    config.middleware.use ActionDispatch::Session::CookieStore, key: "cardjoy_session_#{Rails.env}", expire_after: 1.month, httponly: true, secure: Rails.env.production?
+    config.middleware.use ActionDispatch::Session::CookieStore, key: "felicito_session_#{Rails.env}", expire_after: 1.month, httponly: true, secure: Rails.env.production?
     config.middleware.use Rack::Attack
   end
 end

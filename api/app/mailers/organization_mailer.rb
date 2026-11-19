@@ -14,7 +14,7 @@ class OrganizationMailer < ApplicationMailer
 
     mail(
       to: organization_invitation.email,
-      subject: "#{@inviter.name} invited you to join #{@organization.name} on CardJoy",
+      subject: "#{@inviter.name} invited you to join #{@organization.name} on Felicito",
       **brand_reply_to
     )
   end

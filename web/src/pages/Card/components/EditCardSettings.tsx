@@ -390,7 +390,7 @@ const EditCardSettings: React.FC<EditCardSettingsViewProps & { cardId: string }>
             Create a memorable link for sharing (e.g., "sarahs-birthday")
           </p>
           <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-sm whitespace-nowrap">cardjoy.app/p/card/</span>
+            <span className="text-gray-500 text-sm whitespace-nowrap">felicito.app/p/card/</span>
             <div className="relative flex-1">
               <Input
                 id="slug"

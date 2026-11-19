@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 const AddToSlackButton: React.FC = () => (
-  <a href={slackInstallUrl()} aria-label="Add CardJoy to Slack">
+  <a href={slackInstallUrl()} aria-label="Add Felicito to Slack">
     <img
       alt="Add to Slack"
       height="48"
@@ -30,7 +30,7 @@ const features = [
     icon: Zap,
     title: 'Start a card without leaving Slack',
     description:
-      'Run /cardjoy, pick a coworker and an occasion, and CardJoy creates the group card for you — no tab-switching, no copy-pasting links.',
+      'Run /felicito, pick a coworker and an occasion, and Felicito creates the group card for you — no tab-switching, no copy-pasting links.',
   },
   {
     icon: Users,
@@ -48,18 +48,18 @@ const features = [
     icon: ShieldCheck,
     title: 'Minimal permissions',
     description:
-      'CardJoy only asks for what the flow needs: the slash command and reading a user’s name to address the card. Nothing else.',
+      'Felicito only asks for what the flow needs: the slash command and reading a user’s name to address the card. Nothing else.',
   },
 ];
 
 const steps = [
   {
     label: 'Add to Slack',
-    detail: 'Install CardJoy in your workspace with one click — any workspace admin can do it.',
+    detail: 'Install Felicito in your workspace with one click — any workspace admin can do it.',
   },
   {
-    label: 'Run /cardjoy',
-    detail: 'Choose who the card is for and the occasion. CardJoy sets up the card in seconds.',
+    label: 'Run /felicito',
+    detail: 'Choose who the card is for and the occasion. Felicito sets up the card in seconds.',
   },
   {
     label: 'Sign and send',
@@ -96,13 +96,13 @@ const DemoVideo: React.FC<{ src: string }> = ({ src }) => {
         controls={playing}
         playsInline
         preload="none"
-        aria-label="CardJoy for Slack demo"
+        aria-label="Felicito for Slack demo"
       />
       {!playing && (
         <button
           type="button"
           onClick={start}
-          aria-label="Play the CardJoy for Slack demo"
+          aria-label="Play the Felicito for Slack demo"
           className="absolute inset-0 flex items-center justify-center group cursor-pointer"
         >
           <span className="flex items-center justify-center w-20 h-20 rounded-full bg-black/55 border border-white/30 backdrop-blur-sm transition-transform group-hover:scale-110">
@@ -134,8 +134,8 @@ const DemoSection: React.FC = () => (
           See it in action
         </h2>
         <p className="text-gray-600 text-lg text-center mb-12 max-w-2xl mx-auto">
-          Watch how a group card goes from <code className="font-mono">/cardjoy</code> to signed and
-          sent — without anyone leaving Slack.
+          Watch how a group card goes from <code className="font-mono">/felicito</code> to signed
+          and sent — without anyone leaving Slack.
         </p>
       </Reveal>
       <Reveal>{DEMO_VIDEO_URL ? <DemoVideo src={DEMO_VIDEO_URL} /> : <DemoPlaceholder />}</Reveal>
@@ -149,7 +149,7 @@ const Slack: React.FC = () => {
 
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = 'CardJoy for Slack — group cards where your team already works';
+    document.title = 'Felicito for Slack — group cards where your team already works';
     return () => {
       document.title = previousTitle;
     };
@@ -178,14 +178,14 @@ const Slack: React.FC = () => {
           <div className="max-w-3xl mx-auto text-center relative z-10">
             <span className="inline-flex items-center gap-2 text-white/80 text-sm font-semibold uppercase tracking-wide bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
               <SlackIcon className="w-4 h-4" />
-              CardJoy for Slack
+              Felicito for Slack
             </span>
             <h1 className="text-white text-4xl md:text-6xl font-black leading-tight mb-6">
               Group cards, right where your team already works
             </h1>
             <p className="text-white/80 text-lg md:text-2xl font-medium max-w-2xl mx-auto">
               Celebrate birthdays, farewells, promotions, and work anniversaries with a group card
-              your whole team signs — all from a single <code className="font-mono">/cardjoy</code>{' '}
+              your whole team signs — all from a single <code className="font-mono">/felicito</code>{' '}
               command in Slack.
             </p>
           </div>
@@ -269,7 +269,7 @@ const Slack: React.FC = () => {
         <Reveal>
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-white text-3xl md:text-6xl font-black leading-tight mb-6">
-              Add CardJoy to your workspace
+              Add Felicito to your workspace
             </h2>
             <p className="text-white/90 text-lg md:text-2xl font-medium mb-10">
               Free to install. Start celebrating your team in the next minute.

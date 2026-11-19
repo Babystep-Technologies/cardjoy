@@ -1,7 +1,7 @@
 # typed: true
 
 # Mail about a specific invitation, branded by whoever owns that invitation —
-# the organization for an org-owned invitation, CardJoy for a personal one
+# the organization for an org-owned invitation, Felicito for a personal one
 # (#123). Both the guest-facing and host-facing mails are branded: a guest sees
 # who invited them, and a host sees their own organization.
 class RsvpMailer < ApplicationMailer

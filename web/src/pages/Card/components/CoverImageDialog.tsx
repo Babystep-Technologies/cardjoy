@@ -380,7 +380,7 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
                               <div className="absolute bottom-6 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-90 group-hover:opacity-100 pointer-events-none">
                                 Photo by{' '}
                                 <a
-                                  href={`${img.user.links.html}?utm_source=CardJoy&utm_medium=referral`}
+                                  href={`${img.user.links.html}?utm_source=Felicito&utm_medium=referral`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="underline pointer-events-auto"
@@ -389,7 +389,7 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
                                 </a>{' '}
                                 on{' '}
                                 <a
-                                  href="https://unsplash.com?utm_source=CardJoy&utm_medium=referral"
+                                  href="https://unsplash.com?utm_source=Felicito&utm_medium=referral"
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="underline pointer-events-auto"
@@ -427,7 +427,7 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
                               <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-90 group-hover:opacity-100 pointer-events-none">
                                 Photo by{' '}
                                 <a
-                                  href={`${img.user.links.html}?utm_source=CardJoy&utm_medium=referral`}
+                                  href={`${img.user.links.html}?utm_source=Felicito&utm_medium=referral`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="underline pointer-events-auto"
@@ -436,7 +436,7 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
                                 </a>{' '}
                                 on{' '}
                                 <a
-                                  href="https://unsplash.com?utm_source=CardJoy&utm_medium=referral"
+                                  href="https://unsplash.com?utm_source=Felicito&utm_medium=referral"
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="underline pointer-events-auto"
@@ -612,7 +612,7 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
                             <div className="absolute bottom-6 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded opacity-90 group-hover:opacity-100 pointer-events-none">
                               Photo by{' '}
                               <a
-                                href={`${img.user.links.html}?utm_source=CardJoy&utm_medium=referral`}
+                                href={`${img.user.links.html}?utm_source=Felicito&utm_medium=referral`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="underline pointer-events-auto"
@@ -621,7 +621,7 @@ const CoverImageDialog: React.FC<CoverImageDialogProps> = ({
                               </a>{' '}
                               on{' '}
                               <a
-                                href="https://unsplash.com?utm_source=CardJoy&utm_medium=referral"
+                                href="https://unsplash.com?utm_source=Felicito&utm_medium=referral"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="underline pointer-events-auto"

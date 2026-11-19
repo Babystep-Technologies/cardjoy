@@ -144,7 +144,7 @@ export function useAddressAutocomplete(
           const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
             signal: abortControllerRef.current.signal,
             headers: {
-              'User-Agent': 'CardjoyApp/1.0 (https://cardjoy.app)',
+              'User-Agent': 'FelicitoApp/1.0 (https://felicito.app)',
             },
           });
 

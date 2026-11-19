@@ -39,7 +39,7 @@ RSpec.describe "Invitation host view", type: :request do
     expect(fetch).to eq("viewerCanEdit" => false, "rsvps" => [])
   end
 
-  it "gives a CardJoy admin the guest list" do
+  it "gives a Felicito admin the guest list" do
     expect(fetch(admin_id: create(:admin).id)["rsvps"].size).to eq 1
   end
 end

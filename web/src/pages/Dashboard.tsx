@@ -291,10 +291,10 @@ const Dashboard: React.FC = () => {
 
       {!hasAnyContent ? (
         <div className="flex flex-col items-center justify-center flex-grow text-center space-y-8 mt-8">
-          <img src="/logo.svg" alt="CardJoy Logo" className="opacity-80 w-24 h-24" />
+          <img src="/logo.svg" alt="Felicito Logo" className="opacity-80 w-24 h-24" />
           <div className="space-y-2">
             <h2 className="text-2xl font-semibold text-gray-800">
-              {organizationName ? `Nothing in ${organizationName} yet` : 'Welcome to CardJoy!'}
+              {organizationName ? `Nothing in ${organizationName} yet` : 'Welcome to Felicito!'}
             </h2>
             <p className="text-gray-500 text-lg">
               {organizationName
