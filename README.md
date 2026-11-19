@@ -22,8 +22,8 @@ depends on the same schema.
 ### Quick start
 
 ```bash
-git clone git@github.com:Babystep-Technologies/cardjoy.git
-cd cardjoy
+git clone git@github.com:Babystep-Technologies/felicito.git
+cd felicito
 make setup   # build containers, install deps, create & seed the database
 make dev     # start the api and web dev servers
 ```
