@@ -38,7 +38,7 @@ export const faqs: Faq[] = [
   {
     question: 'Is Felicito really open source?',
     answer:
-      'Yes! Felicito is fully open source. You can inspect the code, self-host it on your own infrastructure, or contribute on GitHub at https://github.com/Babystep-Technologies/cardjoy. No lock-in and no hidden data practices.',
+      'Yes! Felicito is fully open source. You can inspect the code, self-host it on your own infrastructure, or contribute on GitHub at https://github.com/Babystep-Technologies/felicito. No lock-in and no hidden data practices.',
   },
   {
     question: 'Is my data safe and secure?',

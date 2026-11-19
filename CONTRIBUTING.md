@@ -9,8 +9,8 @@ Everything runs in Docker — you don't need Ruby or Node installed locally. A `
 common Docker commands.
 
 ```bash
-git clone git@github.com:Babystep-Technologies/cardjoy.git
-cd cardjoy
+git clone git@github.com:Babystep-Technologies/felicito.git
+cd felicito
 make setup   # build containers, install deps, create & seed the database
 make dev     # start the api and web dev servers
 make logs    # follow the server logs
@@ -81,7 +81,7 @@ docker compose exec web yarn format-check        # web Prettier
 
 ## Reporting bugs & requesting features
 
-Open a [new issue](https://github.com/Babystep-Technologies/cardjoy/issues/new/choose) and pick the
+Open a [new issue](https://github.com/Babystep-Technologies/felicito/issues/new/choose) and pick the
 **Bug report** or **Feature request** form. For features, fill in the **acceptance criteria** — a
 concrete checklist of what "done" means. Precise criteria make a proposal easy to review and easy to
 build.
